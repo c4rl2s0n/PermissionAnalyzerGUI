@@ -1,0 +1,41 @@
+name: flutter_template  # TODO: Replace in all files (Strg+Shift+R) flutter_template -> project_name; and FlutterTemplate -> ProjectName
+description: "A template for further flutter projects"  # {{projectDescription}}
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.5.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^8.1.6
+  flutter_modular: ^6.3.4
+  equatable: ^2.0.5
+  permission_handler: ^11.3.1
+  path: any
+  path_provider: any
+  isar:
+    version: ^3.1.0+1
+    hosted: https://pub.isar-community.dev/
+  isar_flutter_libs: # contains Isar Core
+    version: ^3.1.0+1
+    hosted: https://pub.isar-community.dev/
+  flutter_localization: any
+  intl: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+  build_runner: ^2.4.9
+  isar_generator:
+    version: ^3.1.0+1
+    hosted: https://pub.isar-community.dev/
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/

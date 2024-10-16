@@ -1,0 +1,12 @@
+{
+  "title": "FlutterTemplate",
+  "@title": {
+    "description": "The title of the application"
+  },
+  "home": "Dahoam",
+  "settings": "Einstellungen",
+  "darkMode": "Dunkler Modus",
+  "themeSettings": "Erscheinungspräferenzen",
+  "languageSettings": "Spracheinstellungen",
+  "selectedLanguage": "Ausgewählte Sprache"
+}

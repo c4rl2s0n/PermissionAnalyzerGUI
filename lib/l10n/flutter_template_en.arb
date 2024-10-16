@@ -1,0 +1,12 @@
+{
+  "title": "FlutterTemplate",
+  "@title": {
+    "description": "The title of the application"
+  },
+  "home": "Home",
+  "settings": "Settings",
+  "darkMode": "Dark Mode",
+  "themeSettings": "Theme Settings",
+  "languageSettings": "Language Settings",
+  "selectedLanguage": "Selected Language"
+}

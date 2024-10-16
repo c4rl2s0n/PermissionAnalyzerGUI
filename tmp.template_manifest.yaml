@@ -1,0 +1,13 @@
+{
+  "description": "A custom Flutter template.",
+  "parameters": {
+    "projectName": {
+      "required": true,
+      "default": "custom_app"
+    },
+    "projectDescription": {
+      "required": false,
+      "default": "A Flutter project template using BLoC state management and isar database"
+    },
+  }
+}
