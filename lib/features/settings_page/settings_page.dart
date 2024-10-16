@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_template/common/common.dart';
-import 'package:flutter_template/l10n/flutter_template_localizations.dart';
+import 'package:flutter_template/l10n/l10n.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -107,13 +107,13 @@ class SettingsPage extends StatelessWidget {
                 onSelected: (locale) => locale != null
                     ? context.settings.setLanguage(locale)
                     : null,
-                initialSelection: FlutterTemplateLocalizations.supportedLocales
+                initialSelection: AppLocalizations.supportedLocales
                     .map((l) => l.languageCode)
                     .firstWhere((l) => l == state.language,
                         orElse: () => context.strings.localeName),
                 requestFocusOnTap: false,
                 dropdownMenuEntries:
-                    FlutterTemplateLocalizations.supportedLocales
+                    AppLocalizations.supportedLocales
                         .map((l) => DropdownMenuEntry<String>(
                               value: l.languageCode,
                               label: l.languageCode,

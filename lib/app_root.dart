@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 import 'package:flutter_template/common/common.dart';
-import 'package:flutter_template/l10n/flutter_template_localizations.dart';
+import 'package:flutter_template/l10n/l10n.dart';
 
 import 'data/data.dart';
 import 'features/features.dart';
@@ -28,9 +28,9 @@ class AppRoot extends StatelessWidget {
             theme: getTheme(false),
             darkTheme: getTheme(true),
             themeMode: state.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-            localizationsDelegates:FlutterTemplateLocalizations.localizationsDelegates,
-            supportedLocales: FlutterTemplateLocalizations.supportedLocales,
-            locale: FlutterTemplateLocalizations.supportedLocales.firstWhere((l) => l.languageCode == state.language),
+            localizationsDelegates:AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: AppLocalizations.supportedLocales.firstWhere((l) => l.languageCode == state.language),
             home: Builder(
               builder: (context) => const SplashScreen(),
             ),

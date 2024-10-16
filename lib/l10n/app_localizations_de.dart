@@ -1,10 +1,10 @@
-import 'flutter_template_localizations.dart';
+import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
 
 /// The translations for German (`de`).
-class FlutterTemplateLocalizationsDe extends FlutterTemplateLocalizations {
-  FlutterTemplateLocalizationsDe([String locale = 'de']) : super(locale);
+class AppLocalizationsDe extends AppLocalizations {
+  AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
   String get title => 'FlutterTemplate';

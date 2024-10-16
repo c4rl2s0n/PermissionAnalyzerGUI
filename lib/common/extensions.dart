@@ -18,7 +18,7 @@ extension ContextSettingsAccessorExtension on BuildContext {
   ThemeData get themeData => Theme.of(this);
   CustomColors get colors => themeData.extension<CustomColors>()!;
   CustomIcons get icons => themeData.extension<CustomIcons>()!;
-  FlutterTemplateLocalizations get strings => FlutterTemplateLocalizations.of(this)!;
+  AppLocalizations get strings => AppLocalizations.of(this)!;
   ThemeConstants get constants => themeData.extension<ThemeConstants>()!;
   PopupMenuThemeData get popupMenuTheme => themeData.popupMenuTheme;
 

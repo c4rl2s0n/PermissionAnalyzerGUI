@@ -1,8 +1,8 @@
 arb-dir: lib/l10n
 output-dir: lib/l10n
 synthetic-package: false
-template-arb-file: flutter_template_en.arb
-output-localization-file: flutter_template_localizations.dart
-output-class: FlutterTemplateLocalizations
+template-arb-file: language_en.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
 
 # generate language files with 'flutter gen-l10n'
