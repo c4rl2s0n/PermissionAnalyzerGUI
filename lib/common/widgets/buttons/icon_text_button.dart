@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter_template/common/common.dart';
+import 'package:permission_analyzer_gui/common/common.dart';
 
 class IconTextButton extends StatelessWidget {
   const IconTextButton({

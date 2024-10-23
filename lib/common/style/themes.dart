@@ -49,13 +49,19 @@ ThemeData getTheme(bool dark) {
   DropdownMenuThemeData dropdownMenuTheme = DropdownMenuThemeData(
       textStyle: textTheme.bodyMedium,
       inputDecorationTheme: InputDecorationTheme(
+        labelStyle: textTheme.labelMedium?.copyWith(color: textTheme.labelMedium?.color?.withOpacity(constants.subtleColorOpacity)),
+        suffixIconColor: colors.onBackground,
         fillColor: Colors.transparent,
         hoverColor: colors.highlight,
-        border: OutlineInputBorder(borderSide: BorderSide(color: colors.onBackground)),
-        outlineBorder: BorderSide(color: colors.onBackground),
-        activeIndicatorBorder: BorderSide(color: Colors.green, width: 5),
+        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: colors.onBackground),),
         focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: colors.onBackground)),
       ));
+  ScrollbarThemeData scrollbarTheme = ScrollbarThemeData(
+    thickness: const WidgetStatePropertyAll(10),
+    radius: constants.roundedCornerRadius,
+    thumbColor: WidgetStatePropertyAll(colors.onBackground.withOpacity(constants.subtleColorOpacity)),
+    trackColor: WidgetStatePropertyAll(colors.onBackground.withOpacity(constants.strongColorOpacity)),
+  );
   return ThemeData(
     colorScheme: ColorScheme.fromSeed(seedColor: colors.primary),
     extensions: [colors, icons, constants],
@@ -64,6 +70,7 @@ ThemeData getTheme(bool dark) {
     buttonTheme: buttonTheme,
     dialogTheme: dialogTheme,
     dropdownMenuTheme: dropdownMenuTheme,
+    scrollbarTheme: scrollbarTheme,
     useMaterial3: true,
   );
 }

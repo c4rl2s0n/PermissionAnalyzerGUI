@@ -1,4 +1,4 @@
-# flutter_template
+# permission_analyzer_gui
 
 My Template for Flutter Projects
 
@@ -11,7 +11,7 @@ To use this template for a new project, copy the
   * *.yaml
 to the new Project.
 
-Then, replace all occurrences of flutter_template with your project_name (snake_case) and FlutterTemplate with ProjectName (CamelCase). (Strg+Shift+R in AndroidStudio)
+Then, replace all occurrences of permission_analyzer_gui with your project_name (snake_case) and PermissionAnalyzerGui with ProjectName (CamelCase). (Strg+Shift+R in AndroidStudio)
 
 
 To recompile the localization package, use 'flutter gen-l10n' from the command line.

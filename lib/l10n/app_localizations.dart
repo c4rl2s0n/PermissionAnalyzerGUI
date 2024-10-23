@@ -98,7 +98,7 @@ abstract class AppLocalizations {
   /// The title of the application
   ///
   /// In en, this message translates to:
-  /// **'FlutterTemplate'**
+  /// **'PermissionAnalyzerGui'**
   String get title;
 
   /// No description provided for @home.
@@ -136,6 +136,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Selected Language'**
   String get selectedLanguage;
+
+  /// No description provided for @testScenario.
+  ///
+  /// In en, this message translates to:
+  /// **'Test Scenario'**
+  String get testScenario;
+
+  /// No description provided for @warning.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning'**
+  String get warning;
+
+  /// No description provided for @error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// No description provided for @adbSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'ADB Executable Path'**
+  String get adbSettings;
+
+  /// No description provided for @adbDeviceSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Android Device Name'**
+  String get adbDeviceSettings;
+
+  /// No description provided for @adbNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not find ADB on the system.\nSpecify the path manually or install ADB.'**
+  String get adbNotFound;
+
+  /// No description provided for @pickAdbPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the path of ADB on your system.'**
+  String get pickAdbPath;
+
+  /// No description provided for @tsharkSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'TShark Executable Path'**
+  String get tsharkSettings;
+
+  /// No description provided for @tsharkNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not find TShark on the system.\nSpecify the path manually or install TShark.'**
+  String get tsharkNotFound;
+
+  /// No description provided for @pickTsharkPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the path of TShark on your system.'**
+  String get pickTsharkPath;
+
+  /// No description provided for @recorderLocalSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Gesture Recorder Executable Path'**
+  String get recorderLocalSettings;
+
+  /// No description provided for @recorderDestinationSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Gesture Recorder Destination Path'**
+  String get recorderDestinationSettings;
+
+  /// No description provided for @recorderDestinationSettingsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Location where the gesture recorder executable will be stored on the test device'**
+  String get recorderDestinationSettingsDescription;
+
+  /// No description provided for @pickRecorderPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the path of gesture recorder executable.'**
+  String get pickRecorderPath;
+
+  /// No description provided for @pathFound.
+  ///
+  /// In en, this message translates to:
+  /// **'The file was found on your system.'**
+  String get pathFound;
+
+  /// No description provided for @path.
+  ///
+  /// In en, this message translates to:
+  /// **'Path'**
+  String get path;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

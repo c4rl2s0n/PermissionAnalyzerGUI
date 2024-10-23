@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
-import 'package:flutter_template/common/common.dart';
-import 'package:flutter_template/l10n/l10n.dart';
+import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:permission_analyzer_gui/l10n/l10n.dart';
 
 import 'data/data.dart';
 import 'features/features.dart';
@@ -46,6 +46,7 @@ class AppRoot extends StatelessWidget {
         BlocProvider(
           create: (ctx) => SettingsCubit(Modular.get<ISettingsRepository>()),
         ),
+        BlocProvider(create: (ctx) => SessionCubit(ctx.settings)),
       ],
       child: child,
     );

@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_template/data/data.dart';
+import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:isar/isar.dart';
 
 class SettingsRepository extends ISettingsRepository {

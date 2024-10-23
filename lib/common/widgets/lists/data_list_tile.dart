@@ -1,4 +1,4 @@
-import 'package:flutter_template/common/common.dart';
+import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:flutter/material.dart';
 
 class DataListTile extends StatelessWidget {

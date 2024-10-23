@@ -13,10 +13,20 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
     this.checkboxDeselected = Icons.indeterminate_check_box,
     this.listItemIndicator = Icons.circle,
     this.add = Icons.add,
-    this.remove = Icons.remove,
+    this.remove = Icons.remove_circle_outline,
     this.question = Icons.question_mark,
     this.info = Icons.info_outline,
     this.settings = Icons.settings,
+    this.search = Icons.search,
+    this.error = Icons.error_outline,
+    this.warning = Icons.warning_amber,
+    this.pickFile = Icons.file_open_outlined,
+    this.pickDirectory = Icons.folder_shared_outlined,
+    this.reload = Icons.refresh,
+    this.record = Icons.fiber_manual_record,
+    this.create = Icons.build,
+    this.test = Icons.filter_alt_outlined,
+    this.run = Icons.directions_run,
   });
 
   final IconData infoPositive;
@@ -34,6 +44,16 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
   final IconData question;
   final IconData info;
   final IconData settings;
+  final IconData search;
+  final IconData error;
+  final IconData warning;
+  final IconData pickFile;
+  final IconData pickDirectory;
+  final IconData reload;
+  final IconData record;
+  final IconData create;
+  final IconData test;
+  final IconData run;
 
   @override
   ThemeExtension<CustomIcons> copyWith({
@@ -52,6 +72,16 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
     IconData? question,
     IconData? info,
     IconData? settings,
+    IconData? search,
+    IconData? error,
+    IconData? warning,
+    IconData? pickFile,
+    IconData? pickDirectory,
+    IconData? reload,
+    IconData? record,
+    IconData? create,
+    IconData? test,
+    IconData? run,
   }) {
     return CustomIcons(
       infoPositive: infoPositive ?? this.infoPositive,
@@ -69,6 +99,16 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
       question: question ?? this.question,
       info: info ?? this.info,
       settings: settings ?? this.settings,
+      search: search ?? this.search,
+      error: error ?? this.error,
+      warning: warning ?? this.warning,
+      pickFile: pickFile ?? this.pickFile,
+      pickDirectory: pickDirectory ?? this.pickDirectory,
+      reload: reload ?? this.reload,
+      record: record ?? this.record,
+      create: create ?? this.create,
+      test: test ?? this.test,
+      run: run ?? this.run,
     );
   }
 

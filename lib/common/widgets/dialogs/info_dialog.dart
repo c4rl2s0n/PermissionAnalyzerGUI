@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter_template/common/common.dart';
+import 'package:permission_analyzer_gui/common/common.dart';
 
 class InfoDialog extends StatelessWidget {
   const InfoDialog({
@@ -18,16 +18,8 @@ class InfoDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomDialog(
       title: title,
-      content: SingleChildScrollView(child: Row(
-        mainAxisSize: MainAxisSize.max,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconTheme(data: IconTheme.of(context).copyWith(size: 42), child: icon),
-          SizedBox(width: context.constants.spacing),
-          Expanded(child: Text(content, softWrap: true,))
-        ],
-      )),
+      icon: icon,
+      content: SingleChildScrollView(child: Text(content, softWrap: true)),
       actions: const [
         ConfirmButton(),
       ],
@@ -35,19 +27,65 @@ class InfoDialog extends StatelessWidget {
     );
   }
 
-  static Future<bool> showInfo(
-      BuildContext context, {
-        String? title,
-        String? content,
-        Icon? icon,
-      }) async {
+  static Future<bool> showCustomInfo(
+    BuildContext context, {
+    String? title,
+    String? content,
+    Icon? icon,
+  }) async {
     return await showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: true,
       builder: (context) => InfoDialog(
         title: title ?? "Did you know this?",
         content: content ?? "So much information...",
-        icon: icon ?? Icon(context.icons.info,),
+        icon: icon ??
+            Icon(
+              context.icons.info,
+            ),
+      ),
+    ) ?? false;
+  }
+
+  static Future<bool> showInfo(
+    BuildContext context, {
+    String? title,
+    String? content,
+  }) async {
+    return await showCustomInfo(
+      context,
+      title: title,
+      content: content,
+      icon: Icon(context.icons.info),
+    );
+  }
+
+  static Future<bool> showError(
+    BuildContext context, {
+    String? content,
+  }) async {
+    return await showCustomInfo(
+      context,
+      title: context.strings.error,
+      content: content,
+      icon: Icon(
+        context.icons.error,
+        color: context.colors.negative,
+      ),
+    );
+  }
+
+  static Future<bool> showWarning(
+    BuildContext context, {
+    String? content,
+  }) async {
+    return await showCustomInfo(
+      context,
+      title: context.strings.warning,
+      content: content,
+      icon: Icon(
+        context.icons.warning,
+        color: context.colors.warning,
       ),
     );
   }

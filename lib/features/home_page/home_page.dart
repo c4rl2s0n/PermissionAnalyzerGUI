@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_template/common/common.dart';
-import 'package:flutter_template/features/settings_page/settings_page.dart';
+import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:permission_analyzer_gui/features/settings_page/settings_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return PageComponentFactory.getScaffold(
+    return PageComponentFactory.scaffold(
       context,
-      appBar: PageComponentFactory.getAppBar(
+      appBar: PageComponentFactory.appBar(
         context,
         title: context.strings.home,
         actions: [
@@ -19,7 +19,7 @@ class HomePage extends StatelessWidget {
           )
         ],
       ),
-      body: SizedBox(),
+      body: const SizedBox(),
     );
   }
 }

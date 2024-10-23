@@ -1,28 +1,41 @@
-
 import 'package:flutter/material.dart';
-import 'package:flutter_template/common/common.dart';
+import 'package:permission_analyzer_gui/common/common.dart';
 
-class PageComponentFactory{
-  static Widget getScaffold(BuildContext context, {required AppBar appBar, required Widget body}){
+class PageComponentFactory {
+  static Widget scaffold(
+    BuildContext context, {
+    required AppBar appBar,
+    required Widget body,
+  }) {
     return Scaffold(
-        backgroundColor: context.colors.background,
-        appBar: appBar,
-        body: Padding(
-          padding: EdgeInsets.all(context.constants.spacing),
-          child: body,
-        ),
+      backgroundColor: context.colors.background,
+      appBar: appBar,
+      body: Padding(
+        padding: EdgeInsets.all(context.constants.spacing),
+        child: body,
+      ),
     );
   }
-  static AppBar getAppBar(BuildContext context, {required String title, List<Widget>? actions}){
+
+  static AppBar appBar(
+    BuildContext context, {
+    required String title,
+    List<Widget>? actions,
+  }) {
     CustomColors colors = context.colors;
-    IconThemeData iconTheme = context.themeData.iconTheme.copyWith(color: context.colors.onPrimary);
+    IconThemeData iconTheme =
+        context.themeData.iconTheme.copyWith(color: context.colors.onPrimary);
     return AppBar(
-      titleTextStyle: context.textTheme.displayMedium?.copyWith(color: colors.onPrimary),
+      toolbarHeight: 35,
+      titleTextStyle:
+          context.textTheme.headlineSmall?.copyWith(color: colors.onPrimary),
       title: Text(title),
       actionsIconTheme: iconTheme,
       actions: actions,
-      iconTheme: iconTheme,
+      iconTheme: iconTheme.copyWith(size: 20),
       backgroundColor: colors.primary,
     );
   }
+
+  
 }

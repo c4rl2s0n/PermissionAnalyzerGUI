@@ -1,4 +1,4 @@
-name: flutter_template
+name: permission_analyzer_gui
 description: "A template for further flutter projects"  # {{projectDescription}}
 publish_to: 'none'
 version: 0.1.0
@@ -12,7 +12,6 @@ dependencies:
   flutter_bloc: ^8.1.6
   flutter_modular: ^6.3.4
   equatable: ^2.0.5
-  permission_handler: ^11.3.1
   path: any
   path_provider: any
   isar:
@@ -23,6 +22,7 @@ dependencies:
     hosted: https://pub.isar-community.dev/
   flutter_localization: any
   intl: any
+  file_picker: ^8.1.2
 
 dev_dependencies:
   flutter_test:

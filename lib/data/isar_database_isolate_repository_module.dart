@@ -1,7 +1,6 @@
-import 'package:flutter_template/data/data.dart';
+import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
-import 'isar_data_module.dart';
 
 class IsarDataIsolateRepositoryModule extends Module {
   IsarDataIsolateRepositoryModule(
@@ -17,6 +16,7 @@ class IsarDataIsolateRepositoryModule extends Module {
   @override
   void binds(Injector i) {
     i.addSingleton<ISettingsRepository>(SettingsRepository.new);
+    i.addSingleton<ITestScenarioRepository>(TestScenarioRepository.new);
   }
 
   @override

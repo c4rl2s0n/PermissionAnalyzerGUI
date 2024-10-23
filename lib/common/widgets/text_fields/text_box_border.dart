@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter_template/common/common.dart';
+import 'package:permission_analyzer_gui/common/common.dart';
 
-OutlineInputBorder getTextBoxBorder(BuildContext context) {
-  return OutlineInputBorder(
+InputBorder getTextBoxBorder(BuildContext context) {
+  return UnderlineInputBorder(
     borderSide: BorderSide(
       color: context.colors.onBackground,
-      width: 2,
+      width: 1,
     ),
-    borderRadius: BorderRadius.all(context.constants.roundedCornerRadius),
+    //borderRadius: BorderRadius.all(context.constants.roundedCornerRadius),
   );
 }
 
-OutlineInputBorder getErrorTextBoxBorder(BuildContext context) {
-  OutlineInputBorder tbb = getTextBoxBorder(context);
+InputBorder getErrorTextBoxBorder(BuildContext context) {
+  InputBorder tbb = getTextBoxBorder(context);
   return tbb.copyWith(
     borderSide: tbb.borderSide.copyWith(color: context.colors.negative),
   );

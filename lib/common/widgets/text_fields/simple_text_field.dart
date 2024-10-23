@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter_template/common/common.dart';
+import 'package:permission_analyzer_gui/common/common.dart';
 
 class SimpleTextField extends StatefulWidget {
   const SimpleTextField({
@@ -75,7 +75,7 @@ class _SimpleTextFieldState extends State<SimpleTextField> {
           enabledBorder: getTextBoxBorder(context),
           focusedBorder: getTextBoxBorder(context),
           focusedErrorBorder: getErrorTextBoxBorder(context),
-          labelStyle: theme.textTheme.labelLarge,
+          labelStyle: theme.textTheme.labelMedium?.copyWith(color: theme.textTheme.labelMedium?.color?.withOpacity(context.constants.subtleColorOpacity)),
           labelText: widget.labelText,
           hintText: widget.hintText,
           errorText: _errorText,

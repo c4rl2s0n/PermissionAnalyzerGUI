@@ -1,5 +1,5 @@
 {
-  "title": "FlutterTemplate",
+  "title": "PermissionAnalyzerGui",
   "@title": {
     "description": "The title of the application"
   },
@@ -8,5 +8,21 @@
   "darkMode": "Dark Mode",
   "themeSettings": "Theme Settings",
   "languageSettings": "Language Settings",
-  "selectedLanguage": "Selected Language"
+  "selectedLanguage": "Selected Language",
+  "testScenario": "Test Scenario",
+  "warning": "Warning",
+  "error": "Error",
+  "adbSettings": "ADB Executable Path",
+  "adbDeviceSettings": "Android Device Name",
+  "adbNotFound": "Could not find ADB on the system.\nSpecify the path manually or install ADB.",
+  "pickAdbPath": "Select the path of ADB on your system.",
+  "tsharkSettings": "TShark Executable Path",
+  "tsharkNotFound": "Could not find TShark on the system.\nSpecify the path manually or install TShark.",
+  "pickTsharkPath": "Select the path of TShark on your system.",
+  "recorderLocalSettings": "Gesture Recorder Executable Path",
+  "recorderDestinationSettings": "Gesture Recorder Destination Path",
+  "recorderDestinationSettingsDescription": "Location where the gesture recorder executable will be stored on the test device",
+  "pickRecorderPath": "Select the path of gesture recorder executable.",
+  "pathFound": "The file was found on your system.",
+  "path": "Path"
 }

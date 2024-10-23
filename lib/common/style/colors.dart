@@ -18,8 +18,8 @@ class CustomColors extends ThemeExtension<CustomColors> {
 
   final ThemeConstants _themeConstants;
 
-  static const Color _black = Colors.black;
-  static const Color _white = Colors.white;
+  static const Color _black = Color(0xff0d1b2a); // Colors.black;
+  static const Color _white = Color(0xffe0e1dd); //Colors.white;
 
   final Color _onDark = CustomColors._white;
   final Color _onBright = CustomColors._black;
@@ -122,10 +122,10 @@ class MyDarkColors extends CustomColors {
   const MyDarkColors(super._themeConstants)
       : super(
           background: CustomColors._black,
-          primary: const Color(0xff16697a),
-          secondary: const Color(0xff489fb5),
-          surface: const Color(0xff444444),
-          highlight: const Color(0xffffa62b),
+          primary: const Color(0xff1b263b),
+          secondary: const Color(0xff415a77),
+          surface: const Color(0xff23130b),
+          highlight: const Color(0xff5cb5e1),
         );
   @override
   Color get onPrimary => _onDark;
