@@ -291,7 +291,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     TestRun testRun = TestRun();
     if (state.recordScreen) {
       // wait a short time for the device to properly store the screen record
-      await sleepSec(10);
+      await sleepSec(10); // TODO: test how long I have to wait here to be sure to get the video
 
       // get the screenrecord video from the device
       testRun.screenRecordPath = join(fileDirectory, "screenrecord.mp4");
