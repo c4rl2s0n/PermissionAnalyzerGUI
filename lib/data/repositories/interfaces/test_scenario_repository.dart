@@ -1,6 +1,9 @@
 import 'package:permission_analyzer_gui/data/data.dart';
 
 abstract class ITestScenarioRepository{
-  List<TestScenario> getTestScenarios(String applicationId);
-  void updateTestScenario(TestScenario testScenario);
+  List<TestScenario> getForApplication(String applicationId);
+  Stream<List<TestScenario>> watchForApplication(String applicationId);
+  void deleteForApplication(String applicationId);
+  void delete(int id);
+  void update(TestScenario testScenario);
 }

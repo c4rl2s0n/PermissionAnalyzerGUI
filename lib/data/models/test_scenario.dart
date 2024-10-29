@@ -8,10 +8,12 @@ class TestScenario {
   TestScenario({
     this.userInputRecord = "",
     this.name = "",
+    this.fileDirectory = "",
     this.applicationName = "",
     this.applicationId = "",
-    this.inputDevice = "",
-    this.inputDeviceInfo = "",
+    this.device = "",
+    this.deviceInput = const AndroidInputDevice(),
+    this.networkInterface = const TsharkNetworkInterface(),
     this.durationInSeconds = 60,
     this.numTestRuns = 1,
     this.permissions = const [],
@@ -23,12 +25,14 @@ class TestScenario {
   Id id = Isar.autoIncrement;
 
   String name;
+  String fileDirectory;
   String userInputRecord;
+  String device;
   String applicationName;
   @Index()
   String applicationId;
-  String inputDevice;
-  String inputDeviceInfo;
+  AndroidInputDevice deviceInput;
+  TsharkNetworkInterface networkInterface;
 
   int durationInSeconds;
   @ignore

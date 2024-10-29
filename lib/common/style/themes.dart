@@ -39,6 +39,7 @@ ThemeData getTheme(bool dark) {
   // Theme Data
   ButtonThemeData buttonTheme =
       ButtonThemeData(buttonColor: colors.onBackground);
+
   DialogTheme dialogTheme = DialogTheme(
     backgroundColor: colors.surface,
     titleTextStyle: textTheme.titleLarge
@@ -47,20 +48,36 @@ ThemeData getTheme(bool dark) {
   );
   IconThemeData iconTheme = IconThemeData(color: colors.onBackground);
   DropdownMenuThemeData dropdownMenuTheme = DropdownMenuThemeData(
-      textStyle: textTheme.bodyMedium,
-      inputDecorationTheme: InputDecorationTheme(
-        labelStyle: textTheme.labelMedium?.copyWith(color: textTheme.labelMedium?.color?.withOpacity(constants.subtleColorOpacity)),
-        suffixIconColor: colors.onBackground,
-        fillColor: Colors.transparent,
-        hoverColor: colors.highlight,
-        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: colors.onBackground),),
-        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: colors.onBackground)),
-      ));
+    textStyle: textTheme.labelSmall,
+    inputDecorationTheme: InputDecorationTheme(
+      labelStyle: textTheme.labelMedium?.copyWith(
+          color: textTheme.labelMedium?.color
+              ?.withOpacity(constants.subtleColorOpacity)),
+      suffixIconColor: colors.onBackground,
+      fillColor: colors.surface,
+      hoverColor: colors.highlight,
+      enabledBorder: UnderlineInputBorder(
+        borderSide: BorderSide(color: colors.onBackground),
+      ),
+      focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: colors.onBackground)),
+    ),
+    menuStyle: MenuStyle(
+        backgroundColor: WidgetStateProperty.resolveWith((state){
+          if(state.any((s)=>s == WidgetState.hovered))return colors.surface;
+          return colors.secondary;
+        }), //All<Color>(colors.surface),
+        shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(constants.roundedCornerRadius)))),
+  );
+
   ScrollbarThemeData scrollbarTheme = ScrollbarThemeData(
     thickness: const WidgetStatePropertyAll(10),
     radius: constants.roundedCornerRadius,
-    thumbColor: WidgetStatePropertyAll(colors.onBackground.withOpacity(constants.subtleColorOpacity)),
-    trackColor: WidgetStatePropertyAll(colors.onBackground.withOpacity(constants.strongColorOpacity)),
+    thumbColor: WidgetStatePropertyAll(
+        colors.onBackground.withOpacity(constants.subtleColorOpacity)),
+    trackColor: WidgetStatePropertyAll(
+        colors.onBackground.withOpacity(constants.strongColorOpacity)),
   );
   return ThemeData(
     colorScheme: ColorScheme.fromSeed(seedColor: colors.primary),
@@ -70,6 +87,7 @@ ThemeData getTheme(bool dark) {
     buttonTheme: buttonTheme,
     dialogTheme: dialogTheme,
     dropdownMenuTheme: dropdownMenuTheme,
+
     scrollbarTheme: scrollbarTheme,
     useMaterial3: true,
   );

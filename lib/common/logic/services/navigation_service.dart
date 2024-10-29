@@ -8,8 +8,8 @@ class NavigationService{
   const NavigationService(this.context);
   final BuildContext context;
   
-  void pop() {
-    Navigator.of(context).pop();
+  void pop<T>([T? result]) {
+    Navigator.of(context).pop(result);
   }
 
   void maybePop() {

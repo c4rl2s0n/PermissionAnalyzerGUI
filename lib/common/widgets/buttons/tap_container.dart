@@ -14,7 +14,7 @@ class TapContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: backgroundColor ?? context.colors.primary.withOpacity(context.constants.subtleColorOpacity),
+      color: backgroundColor ?? Colors.transparent,
       borderRadius: BorderRadius.all(context.constants.roundedCornerRadius),
       child: InkWell(
           borderRadius: BorderRadius.all(context.constants.roundedCornerRadius),

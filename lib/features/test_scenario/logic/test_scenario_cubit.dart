@@ -34,56 +34,79 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   int get _startAppDelay => 5;
   String get _videoStoragePathOnDevice => "/sdcard/out.mp4";
 
-  AdbService? _adbService;
-  AdbService get _adb {
-    _adbService ??= AdbService(settingsCubit,
-        device: state.testDevice.isNotEmpty ? state.testDevice : null);
+  final SystemProcess _process = SystemProcess();
+
+  Adb? _adbService;
+  Adb get _adb {
+    _adbService ??= Adb(
+      settingsCubit,
+      systemProcess: _process,
+      device: state.device.isNotEmpty ? state.device : null,
+    );
     return _adbService!;
+  }
+
+  Tshark? _tsharkService;
+  Tshark get _tshark {
+    _tsharkService ??= Tshark(settingsCubit, systemProcess: _process);
+    return _tsharkService!;
   }
 
   Future _initialize() async {
     //emit(state.copyWith(loading: true));
     if (_session.adbDevice.isEmpty) return;
-    emit(state.copyWith(testDevice: _session.adbDevice));
-    if(testScenario.permissions.isEmpty) {
-      var permissions = await _adb.getApplicationPermissions(
-          state.applicationId);
-      testScenario.permissions = permissions
-          .map((p) =>
-          PermissionSetting(permission: p, state: PermissionState.revoked))
-          .toList();
-      emit(state.copyWith(permissions: List.of(testScenario.permissions)));
+    emit(state.copyWith(
+        deviceFound: _session.adbDevices.contains(state.device)));
+    if (testScenario.permissions.isEmpty) {
+      await _loadAppPermissions();
     }
     //emit(state.copyWith(loading: false));
   }
 
+  Future delete()async{
+    testScenarioRepository.delete(testScenario.id);
+
+    Directory fileDir = Directory(state.fileDirectory);
+    if(await fileDir.exists()){
+      await fileDir.delete(recursive: true);
+    }
+  }
+
+  Future _loadAppPermissions() async {
+    var permissions = await _adb.getApplicationPermissions(state.applicationId);
+    testScenario.permissions = permissions
+        .map((p) =>
+            PermissionSetting(permission: p, state: PermissionState.revoked))
+        .toList();
+    emit(state.copyWith(permissions: List.of(testScenario.permissions)));
+  }
+
   void _storeScenario() {
-    testScenarioRepository.updateTestScenario(testScenario);
+    testScenarioRepository.update(testScenario);
   }
 
   void setName(String name) {
     testScenario.name = name;
     emit(state.copyWith(name: testScenario.name));
-  }
-
-  void setApplicationId(String appId) {
-    testScenario.applicationId = appId;
-    emit(state.copyWith(applicationId: testScenario.applicationId));
+    _storeScenario();
   }
 
   void setDuration(int seconds) {
     testScenario.durationInSeconds = seconds;
     emit(state.copyWith(duration: testScenario.duration));
+    _storeScenario();
   }
 
   void resetUserInput() {
     testScenario.userInputRecord = "";
     emit(state.copyWith(userInputRecord: testScenario.userInputRecord));
+    _storeScenario();
   }
 
   void setNumTestRuns(int numTestRuns) {
     testScenario.numTestRuns = numTestRuns;
     emit(state.copyWith(numTestRuns: testScenario.numTestRuns));
+    _storeScenario();
   }
 
   void togglePermissionState(String permission) {
@@ -98,25 +121,38 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
       permissions: List.of(testScenario.permissions),
       testConstellations: List.of(testScenario.testConstellations),
     ));
+    _storeScenario();
   }
 
   void toggleRecordScreen() {
     testScenario.recordScreen = !testScenario.recordScreen;
     emit(state.copyWith(recordScreen: testScenario.recordScreen));
+    _storeScenario();
   }
 
   void toggleCaptureTraffic() {
     testScenario.captureTraffic = !testScenario.captureTraffic;
     emit(state.copyWith(captureTraffic: testScenario.captureTraffic));
+    _storeScenario();
   }
 
-  Future setEventDevice(String dev, String? info) async {
-    testScenario.inputDevice = dev;
-    testScenario.inputDeviceInfo = info ?? "";
-    emit(state.copyWith(
-      inputDevice: testScenario.inputDevice,
-      inputDeviceInfo: testScenario.inputDeviceInfo,
-    ));
+  Future setAdbDevice(String device) async {
+    testScenario.device = device;
+    bool deviceFound = _session.adbDevices.contains(device);
+    emit(state.copyWith(device: testScenario.device, deviceFound: deviceFound));
+    _storeScenario();
+  }
+
+  Future setEventInputDevice(AndroidInputDevice deviceInput) async {
+    testScenario.deviceInput = deviceInput;
+    emit(state.copyWith(deviceInput: deviceInput));
+    _storeScenario();
+  }
+
+  Future setNetworkInterface(TsharkNetworkInterface interface) async {
+    testScenario.networkInterface = interface;
+    emit(state.copyWith(networkInterface: interface));
+    _storeScenario();
   }
 
   Future recordScenario() async {
@@ -130,9 +166,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     await _adb.root();
 
     // revoke all permissions
-    emit(state.copyWith(
-      loadingInfo: "Revoking permissions",
-    ));
+    emit(state.copyWith(loadingInfo: "Revoking permissions"));
     for (var permission in testScenario.permissions) {
       await _adb.setPermission(
         applicationId: testScenario.applicationId,
@@ -142,20 +176,16 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     }
 
     // restart the application
-    emit(state.copyWith(
-      loadingInfo: "Restart application",
-    ));
+    emit(state.copyWith(loadingInfo: "Restart application"));
     await _adb.stopApp(state.applicationId);
     await _adb.startApp(state.applicationId);
 
     await sleepSec(_startAppDelay);
 
     // record the input events
-    emit(state.copyWith(
-      loadingInfo: "Recording user input...",
-    ));
+    emit(state.copyWith(loadingInfo: "Recording user input..."));
     Process getEvents = await _adb.getEvents(
-      devicePath: state.inputDevice,
+      devicePath: state.deviceInput.path,
       duration: state.duration,
     );
     for (int i = 0; i < state.duration.inSeconds; i++) {
@@ -170,20 +200,18 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     await getEvents.exitCode;
 
     // stop the application
-    emit(state.copyWith(
-      loadingInfo: "Stopping the application",
-    ));
+    emit(state.copyWith(loadingInfo: "Stopping the application"));
     await _adb.stopApp(state.applicationId);
 
     // store the collected information (input events)
-    emit(state.copyWith(
-      loadingInfo: "Storing the results",
-    ));
+    emit(state.copyWith(loadingInfo: "Storing the results"));
     testScenario.userInputRecord = await getEvents.outText;
+
     emit(state.copyWith(
       loading: false,
       userInputRecord: testScenario.userInputRecord,
     ));
+
     _storeScenario();
   }
 
@@ -240,10 +268,13 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
 
   Future _runTest(TestConstellation constellation, String fileDirectory) async {
     String loadingInfoSuffix = basename(fileDirectory);
+    String pcapFilename = "traffic.pcap";
     // setup working directory to store capture files
     if (state.recordScreen || state.captureTraffic) {
       await Directory(fileDirectory).create(recursive: true);
     }
+    Process? pcapProcess;
+    String? pcapJson;
 
     // set all permissions according to test constellation
     emit(state.copyWith(
@@ -259,8 +290,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     // await application to start
     await sleepSec(_startAppDelay);
 
-    emit(state.copyWith(
-        loadingInfo: "$loadingInfoSuffix:\nRunning the test"));
+    emit(state.copyWith(loadingInfo: "$loadingInfoSuffix:\nRunning the test"));
     // setup screen recording
     if (state.recordScreen) {
       _adb.recordScreen(
@@ -271,27 +301,38 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
 
     // setup network sniffing
     if (state.captureTraffic) {
-      // TODO: integrate tshark
+      pcapProcess = await _tshark.capture(
+        pcapPath: join(fileDirectory, pcapFilename),
+        interface: state.networkInterface.name,
+        duration: state.duration,
+      );
+      pcapJson = "";
+      // need to flush streams to avoid getting stuck
+      pcapProcess.outLines.forEach((l) {
+        pcapJson = pcapJson! + l;
+      });
+      pcapProcess.errLines.forEach((_) {});
     }
 
     // replay user input
     await _adb.shell([
       _settings.recorderDestinationPath,
-      state.inputDevice,
+      state.deviceInput.path,
       _settings.inputRecordDestinationPath,
     ]);
 
     // stop application
     await _adb.stopApp(state.applicationId);
 
-    emit(state.copyWith(
-        loadingInfo: "$loadingInfoSuffix:\nFinishing the test"));
+    emit(
+        state.copyWith(loadingInfo: "$loadingInfoSuffix:\nFinishing the test"));
 
     // Fetch all the generated files and store them in fileDirectory and db
     TestRun testRun = TestRun();
     if (state.recordScreen) {
       // wait a short time for the device to properly store the screen record
-      await sleepSec(10); // TODO: test how long I have to wait here to be sure to get the video
+      // TODO: test how long I have to wait here to be sure to get the video
+      await sleepSec(10);
 
       // get the screenrecord video from the device
       testRun.screenRecordPath = join(fileDirectory, "screenrecord.mp4");
@@ -301,8 +342,9 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
       );
     }
     if (state.captureTraffic) {
-      testRun.pcapPath = join(fileDirectory, "traffic.pcap");
-      // TODO: eventually load the pcap to json and import to application?
+      //await pcapProcess?.exitCode;
+      testRun.pcapPath = join(fileDirectory, pcapFilename);
+      testRun.pcapJson = pcapJson;
     }
 
     if (testRun.hasData) {
@@ -315,6 +357,8 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
       loading: true,
       loadingInfo: "Preparing the environment for running the tests",
     ));
+
+    if(state.name.isEmpty)setName("Unknown_${DateTime.now()}");
 
     // make sure working directory exists
     await Directory(_workingDirectory).create(recursive: true);
@@ -335,15 +379,12 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
 
     emit(state.copyWith(loadingInfo: "Run the tests"));
     for (var constellation in state.testConstellations) {
-      String fileDirectory = join(
-          _workingDirectory,
-          constellation.permissions
-              .where((c) => c.state == PermissionState.granted)
-              .map((c) => permissionToShortcut(c.permission))
-              .join("_"));
+      String fileDirectory = join(_workingDirectory,
+          "${constellation.permissions.where((c) => c.state == PermissionState.granted).map((c) => permissionToShortcut(c.permission)).join("_")}_");
       // TODO: decide, run the same test multiple times, or iterate through all multiple times?
       for (int i = 0; i < state.numTestRuns; i++) {
-        await _runTest(constellation, "${fileDirectory}_(${i.toString().padLeft(3,"0")})");
+        await _runTest(
+            constellation, "$fileDirectory(${i.toString().padLeft(3, "0")})");
       }
     }
 
@@ -358,14 +399,16 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
 class TestScenarioState extends Equatable {
   const TestScenarioState({
     this.loading = false,
+    this.deviceFound = false,
     this.loadingInfo = "",
-    this.testDevice = "",
     this.applicationId = "",
     this.applicationName = "",
     this.name = "",
+    this.fileDirectory = "",
     this.userInputRecord = "",
-    this.inputDevice = "",
-    this.inputDeviceInfo = "",
+    this.device = "",
+    this.deviceInput = const AndroidInputDevice(),
+    this.networkInterface = const TsharkNetworkInterface(),
     this.duration = Duration.zero,
     this.numTestRuns = 1,
     this.permissions = const [],
@@ -378,9 +421,11 @@ class TestScenarioState extends Equatable {
           userInputRecord: scenario.userInputRecord,
           applicationId: scenario.applicationId,
           applicationName: scenario.applicationName,
-          inputDevice: scenario.inputDevice,
-          inputDeviceInfo: scenario.inputDeviceInfo,
+          device: scenario.device,
+          deviceInput: scenario.deviceInput,
+          networkInterface: scenario.networkInterface,
           name: scenario.name,
+          fileDirectory: scenario.fileDirectory,
           duration: scenario.duration,
           permissions: List.of(scenario.permissions),
           recordScreen: scenario.recordScreen,
@@ -389,15 +434,17 @@ class TestScenarioState extends Equatable {
         );
 
   final bool loading;
+  final bool deviceFound;
   final String loadingInfo;
-  final String testDevice;
   final String applicationId;
   final String applicationName;
   final String name;
+  final String fileDirectory;
   final String userInputRecord;
   bool get hasInputRecord => userInputRecord.isNotEmpty;
-  final String inputDevice;
-  final String inputDeviceInfo;
+  final String device;
+  final AndroidInputDevice deviceInput;
+  final TsharkNetworkInterface networkInterface;
   final Duration duration;
   final int numTestRuns;
   final List<PermissionSetting> permissions;
@@ -411,14 +458,16 @@ class TestScenarioState extends Equatable {
   @override
   List<Object?> get props => [
         loading,
+        deviceFound,
         loadingInfo,
-        testDevice,
         applicationId,
         applicationName,
         userInputRecord,
-        inputDevice,
-        inputDeviceInfo,
+        device,
+        deviceInput,
+        networkInterface,
         name,
+    fileDirectory,
         duration,
         numTestRuns,
         permissions,
@@ -429,14 +478,16 @@ class TestScenarioState extends Equatable {
 
   TestScenarioState copyWith({
     bool? loading,
+    bool? deviceFound,
     String? loadingInfo,
-    String? testDevice,
     String? applicationId,
     String? applicationName,
     String? userInputRecord,
-    String? inputDevice,
-    String? inputDeviceInfo,
+    String? device,
+    AndroidInputDevice? deviceInput,
+    TsharkNetworkInterface? networkInterface,
     String? name,
+    String? fileDirectory,
     Duration? duration,
     int? numTestRuns,
     List<PermissionSetting>? permissions,
@@ -446,14 +497,16 @@ class TestScenarioState extends Equatable {
   }) {
     return TestScenarioState(
       loading: loading ?? this.loading,
+      deviceFound: deviceFound ?? this.deviceFound,
       loadingInfo: loadingInfo ?? this.loadingInfo,
-      testDevice: testDevice ?? this.testDevice,
       applicationId: applicationId ?? this.applicationId,
       applicationName: applicationName ?? this.applicationName,
       userInputRecord: userInputRecord ?? this.userInputRecord,
-      inputDevice: inputDevice ?? this.inputDevice,
-      inputDeviceInfo: inputDeviceInfo ?? this.inputDeviceInfo,
+      device: device ?? this.device,
+      deviceInput: deviceInput ?? this.deviceInput,
+      networkInterface: networkInterface ?? this.networkInterface,
       name: name ?? this.name,
+      fileDirectory: fileDirectory ?? this.fileDirectory,
       duration: duration ?? this.duration,
       numTestRuns: numTestRuns ?? this.numTestRuns,
       permissions: permissions ?? this.permissions,

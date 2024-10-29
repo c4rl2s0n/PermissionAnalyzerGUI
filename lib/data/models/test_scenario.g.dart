@@ -32,50 +32,62 @@ const TestScenarioSchema = CollectionSchema(
       name: r'captureTraffic',
       type: IsarType.bool,
     ),
-    r'durationInSeconds': PropertySchema(
+    r'device': PropertySchema(
       id: 3,
+      name: r'device',
+      type: IsarType.string,
+    ),
+    r'deviceInput': PropertySchema(
+      id: 4,
+      name: r'deviceInput',
+      type: IsarType.object,
+      target: r'AndroidInputDevice',
+    ),
+    r'durationInSeconds': PropertySchema(
+      id: 5,
       name: r'durationInSeconds',
       type: IsarType.long,
     ),
-    r'inputDevice': PropertySchema(
-      id: 4,
-      name: r'inputDevice',
-      type: IsarType.string,
-    ),
-    r'inputDeviceInfo': PropertySchema(
-      id: 5,
-      name: r'inputDeviceInfo',
+    r'fileDirectory': PropertySchema(
+      id: 6,
+      name: r'fileDirectory',
       type: IsarType.string,
     ),
     r'name': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'name',
       type: IsarType.string,
     ),
+    r'networkInterface': PropertySchema(
+      id: 8,
+      name: r'networkInterface',
+      type: IsarType.object,
+      target: r'TsharkNetworkInterface',
+    ),
     r'numTestRuns': PropertySchema(
-      id: 7,
+      id: 9,
       name: r'numTestRuns',
       type: IsarType.long,
     ),
     r'permissions': PropertySchema(
-      id: 8,
+      id: 10,
       name: r'permissions',
       type: IsarType.objectList,
       target: r'PermissionSetting',
     ),
     r'recordScreen': PropertySchema(
-      id: 9,
+      id: 11,
       name: r'recordScreen',
       type: IsarType.bool,
     ),
     r'testConstellations': PropertySchema(
-      id: 10,
+      id: 12,
       name: r'testConstellations',
       type: IsarType.objectList,
       target: r'TestConstellation',
     ),
     r'userInputRecord': PropertySchema(
-      id: 11,
+      id: 13,
       name: r'userInputRecord',
       type: IsarType.string,
     )
@@ -102,6 +114,8 @@ const TestScenarioSchema = CollectionSchema(
   },
   links: {},
   embeddedSchemas: {
+    r'AndroidInputDevice': AndroidInputDeviceSchema,
+    r'TsharkNetworkInterface': TsharkNetworkInterfaceSchema,
     r'PermissionSetting': PermissionSettingSchema,
     r'TestConstellation': TestConstellationSchema,
     r'TestRun': TestRunSchema
@@ -120,9 +134,15 @@ int _testScenarioEstimateSize(
   var bytesCount = offsets.last;
   bytesCount += 3 + object.applicationId.length * 3;
   bytesCount += 3 + object.applicationName.length * 3;
-  bytesCount += 3 + object.inputDevice.length * 3;
-  bytesCount += 3 + object.inputDeviceInfo.length * 3;
+  bytesCount += 3 + object.device.length * 3;
+  bytesCount += 3 +
+      AndroidInputDeviceSchema.estimateSize(
+          object.deviceInput, allOffsets[AndroidInputDevice]!, allOffsets);
+  bytesCount += 3 + object.fileDirectory.length * 3;
   bytesCount += 3 + object.name.length * 3;
+  bytesCount += 3 +
+      TsharkNetworkInterfaceSchema.estimateSize(object.networkInterface,
+          allOffsets[TsharkNetworkInterface]!, allOffsets);
   bytesCount += 3 + object.permissions.length * 3;
   {
     final offsets = allOffsets[PermissionSetting]!;
@@ -154,25 +174,37 @@ void _testScenarioSerialize(
   writer.writeString(offsets[0], object.applicationId);
   writer.writeString(offsets[1], object.applicationName);
   writer.writeBool(offsets[2], object.captureTraffic);
-  writer.writeLong(offsets[3], object.durationInSeconds);
-  writer.writeString(offsets[4], object.inputDevice);
-  writer.writeString(offsets[5], object.inputDeviceInfo);
-  writer.writeString(offsets[6], object.name);
-  writer.writeLong(offsets[7], object.numTestRuns);
-  writer.writeObjectList<PermissionSetting>(
+  writer.writeString(offsets[3], object.device);
+  writer.writeObject<AndroidInputDevice>(
+    offsets[4],
+    allOffsets,
+    AndroidInputDeviceSchema.serialize,
+    object.deviceInput,
+  );
+  writer.writeLong(offsets[5], object.durationInSeconds);
+  writer.writeString(offsets[6], object.fileDirectory);
+  writer.writeString(offsets[7], object.name);
+  writer.writeObject<TsharkNetworkInterface>(
     offsets[8],
+    allOffsets,
+    TsharkNetworkInterfaceSchema.serialize,
+    object.networkInterface,
+  );
+  writer.writeLong(offsets[9], object.numTestRuns);
+  writer.writeObjectList<PermissionSetting>(
+    offsets[10],
     allOffsets,
     PermissionSettingSchema.serialize,
     object.permissions,
   );
-  writer.writeBool(offsets[9], object.recordScreen);
+  writer.writeBool(offsets[11], object.recordScreen);
   writer.writeObjectList<TestConstellation>(
-    offsets[10],
+    offsets[12],
     allOffsets,
     TestConstellationSchema.serialize,
     object.testConstellations,
   );
-  writer.writeString(offsets[11], object.userInputRecord);
+  writer.writeString(offsets[13], object.userInputRecord);
 }
 
 TestScenario _testScenarioDeserialize(
@@ -185,27 +217,39 @@ TestScenario _testScenarioDeserialize(
     applicationId: reader.readStringOrNull(offsets[0]) ?? "",
     applicationName: reader.readStringOrNull(offsets[1]) ?? "",
     captureTraffic: reader.readBoolOrNull(offsets[2]) ?? true,
-    durationInSeconds: reader.readLongOrNull(offsets[3]) ?? 60,
-    inputDevice: reader.readStringOrNull(offsets[4]) ?? "",
-    inputDeviceInfo: reader.readStringOrNull(offsets[5]) ?? "",
-    name: reader.readStringOrNull(offsets[6]) ?? "",
-    numTestRuns: reader.readLongOrNull(offsets[7]) ?? 1,
-    permissions: reader.readObjectList<PermissionSetting>(
+    device: reader.readStringOrNull(offsets[3]) ?? "",
+    deviceInput: reader.readObjectOrNull<AndroidInputDevice>(
+          offsets[4],
+          AndroidInputDeviceSchema.deserialize,
+          allOffsets,
+        ) ??
+        const AndroidInputDevice(),
+    durationInSeconds: reader.readLongOrNull(offsets[5]) ?? 60,
+    fileDirectory: reader.readStringOrNull(offsets[6]) ?? "",
+    name: reader.readStringOrNull(offsets[7]) ?? "",
+    networkInterface: reader.readObjectOrNull<TsharkNetworkInterface>(
           offsets[8],
+          TsharkNetworkInterfaceSchema.deserialize,
+          allOffsets,
+        ) ??
+        const TsharkNetworkInterface(),
+    numTestRuns: reader.readLongOrNull(offsets[9]) ?? 1,
+    permissions: reader.readObjectList<PermissionSetting>(
+          offsets[10],
           PermissionSettingSchema.deserialize,
           allOffsets,
           PermissionSetting(),
         ) ??
         const [],
-    recordScreen: reader.readBoolOrNull(offsets[9]) ?? true,
+    recordScreen: reader.readBoolOrNull(offsets[11]) ?? true,
     testConstellations: reader.readObjectList<TestConstellation>(
-          offsets[10],
+          offsets[12],
           TestConstellationSchema.deserialize,
           allOffsets,
           TestConstellation(),
         ) ??
         const [],
-    userInputRecord: reader.readStringOrNull(offsets[11]) ?? "",
+    userInputRecord: reader.readStringOrNull(offsets[13]) ?? "",
   );
   object.id = id;
   return object;
@@ -225,16 +269,30 @@ P _testScenarioDeserializeProp<P>(
     case 2:
       return (reader.readBoolOrNull(offset) ?? true) as P;
     case 3:
-      return (reader.readLongOrNull(offset) ?? 60) as P;
+      return (reader.readStringOrNull(offset) ?? "") as P;
     case 4:
-      return (reader.readStringOrNull(offset) ?? "") as P;
+      return (reader.readObjectOrNull<AndroidInputDevice>(
+            offset,
+            AndroidInputDeviceSchema.deserialize,
+            allOffsets,
+          ) ??
+          const AndroidInputDevice()) as P;
     case 5:
-      return (reader.readStringOrNull(offset) ?? "") as P;
+      return (reader.readLongOrNull(offset) ?? 60) as P;
     case 6:
       return (reader.readStringOrNull(offset) ?? "") as P;
     case 7:
-      return (reader.readLongOrNull(offset) ?? 1) as P;
+      return (reader.readStringOrNull(offset) ?? "") as P;
     case 8:
+      return (reader.readObjectOrNull<TsharkNetworkInterface>(
+            offset,
+            TsharkNetworkInterfaceSchema.deserialize,
+            allOffsets,
+          ) ??
+          const TsharkNetworkInterface()) as P;
+    case 9:
+      return (reader.readLongOrNull(offset) ?? 1) as P;
+    case 10:
       return (reader.readObjectList<PermissionSetting>(
             offset,
             PermissionSettingSchema.deserialize,
@@ -242,9 +300,9 @@ P _testScenarioDeserializeProp<P>(
             PermissionSetting(),
           ) ??
           const []) as P;
-    case 9:
+    case 11:
       return (reader.readBoolOrNull(offset) ?? true) as P;
-    case 10:
+    case 12:
       return (reader.readObjectList<TestConstellation>(
             offset,
             TestConstellationSchema.deserialize,
@@ -252,7 +310,7 @@ P _testScenarioDeserializeProp<P>(
             TestConstellation(),
           ) ??
           const []) as P;
-    case 11:
+    case 13:
       return (reader.readStringOrNull(offset) ?? "") as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -680,6 +738,141 @@ extension TestScenarioQueryFilter
     });
   }
 
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition> deviceEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'device',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      deviceGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'device',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      deviceLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'device',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition> deviceBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'device',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      deviceStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'device',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      deviceEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'device',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      deviceContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'device',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition> deviceMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'device',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      deviceIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'device',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      deviceIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'device',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
       durationInSecondsEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
@@ -736,6 +929,142 @@ extension TestScenarioQueryFilter
     });
   }
 
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      fileDirectoryEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fileDirectory',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      fileDirectoryGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fileDirectory',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      fileDirectoryLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fileDirectory',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      fileDirectoryBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fileDirectory',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      fileDirectoryStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'fileDirectory',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      fileDirectoryEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'fileDirectory',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      fileDirectoryContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'fileDirectory',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      fileDirectoryMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'fileDirectory',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      fileDirectoryIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fileDirectory',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      fileDirectoryIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'fileDirectory',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition> idEqualTo(
       Id value) {
     return QueryBuilder.apply(this, (query) {
@@ -785,278 +1114,6 @@ extension TestScenarioQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'inputDevice',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'inputDevice',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'inputDevice',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'inputDevice',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'inputDevice',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'inputDevice',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'inputDevice',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'inputDevice',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'inputDevice',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'inputDevice',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceInfoEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'inputDeviceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceInfoGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'inputDeviceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceInfoLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'inputDeviceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceInfoBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'inputDeviceInfo',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceInfoStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'inputDeviceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceInfoEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'inputDeviceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceInfoContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'inputDeviceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceInfoMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'inputDeviceInfo',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceInfoIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'inputDeviceInfo',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      inputDeviceInfoIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'inputDeviceInfo',
-        value: '',
       ));
     });
   }
@@ -1578,6 +1635,20 @@ extension TestScenarioQueryFilter
 
 extension TestScenarioQueryObject
     on QueryBuilder<TestScenario, TestScenario, QFilterCondition> {
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition> deviceInput(
+      FilterQuery<AndroidInputDevice> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'deviceInput');
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      networkInterface(FilterQuery<TsharkNetworkInterface> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'networkInterface');
+    });
+  }
+
   QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
       permissionsElement(FilterQuery<PermissionSetting> q) {
     return QueryBuilder.apply(this, (query) {
@@ -1639,6 +1710,18 @@ extension TestScenarioQuerySortBy
     });
   }
 
+  QueryBuilder<TestScenario, TestScenario, QAfterSortBy> sortByDevice() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'device', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterSortBy> sortByDeviceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'device', Sort.desc);
+    });
+  }
+
   QueryBuilder<TestScenario, TestScenario, QAfterSortBy>
       sortByDurationInSeconds() {
     return QueryBuilder.apply(this, (query) {
@@ -1653,30 +1736,16 @@ extension TestScenarioQuerySortBy
     });
   }
 
-  QueryBuilder<TestScenario, TestScenario, QAfterSortBy> sortByInputDevice() {
+  QueryBuilder<TestScenario, TestScenario, QAfterSortBy> sortByFileDirectory() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'inputDevice', Sort.asc);
+      return query.addSortBy(r'fileDirectory', Sort.asc);
     });
   }
 
   QueryBuilder<TestScenario, TestScenario, QAfterSortBy>
-      sortByInputDeviceDesc() {
+      sortByFileDirectoryDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'inputDevice', Sort.desc);
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterSortBy>
-      sortByInputDeviceInfo() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'inputDeviceInfo', Sort.asc);
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterSortBy>
-      sortByInputDeviceInfoDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'inputDeviceInfo', Sort.desc);
+      return query.addSortBy(r'fileDirectory', Sort.desc);
     });
   }
 
@@ -1776,6 +1845,18 @@ extension TestScenarioQuerySortThenBy
     });
   }
 
+  QueryBuilder<TestScenario, TestScenario, QAfterSortBy> thenByDevice() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'device', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterSortBy> thenByDeviceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'device', Sort.desc);
+    });
+  }
+
   QueryBuilder<TestScenario, TestScenario, QAfterSortBy>
       thenByDurationInSeconds() {
     return QueryBuilder.apply(this, (query) {
@@ -1790,6 +1871,19 @@ extension TestScenarioQuerySortThenBy
     });
   }
 
+  QueryBuilder<TestScenario, TestScenario, QAfterSortBy> thenByFileDirectory() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fileDirectory', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterSortBy>
+      thenByFileDirectoryDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fileDirectory', Sort.desc);
+    });
+  }
+
   QueryBuilder<TestScenario, TestScenario, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1799,33 +1893,6 @@ extension TestScenarioQuerySortThenBy
   QueryBuilder<TestScenario, TestScenario, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterSortBy> thenByInputDevice() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'inputDevice', Sort.asc);
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterSortBy>
-      thenByInputDeviceDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'inputDevice', Sort.desc);
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterSortBy>
-      thenByInputDeviceInfo() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'inputDeviceInfo', Sort.asc);
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterSortBy>
-      thenByInputDeviceInfoDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'inputDeviceInfo', Sort.desc);
     });
   }
 
@@ -1907,6 +1974,13 @@ extension TestScenarioQueryWhereDistinct
     });
   }
 
+  QueryBuilder<TestScenario, TestScenario, QDistinct> distinctByDevice(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'device', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<TestScenario, TestScenario, QDistinct>
       distinctByDurationInSeconds() {
     return QueryBuilder.apply(this, (query) {
@@ -1914,17 +1988,10 @@ extension TestScenarioQueryWhereDistinct
     });
   }
 
-  QueryBuilder<TestScenario, TestScenario, QDistinct> distinctByInputDevice(
+  QueryBuilder<TestScenario, TestScenario, QDistinct> distinctByFileDirectory(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'inputDevice', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QDistinct> distinctByInputDeviceInfo(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'inputDeviceInfo',
+      return query.addDistinctBy(r'fileDirectory',
           caseSensitive: caseSensitive);
     });
   }
@@ -1984,6 +2051,19 @@ extension TestScenarioQueryProperty
     });
   }
 
+  QueryBuilder<TestScenario, String, QQueryOperations> deviceProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'device');
+    });
+  }
+
+  QueryBuilder<TestScenario, AndroidInputDevice, QQueryOperations>
+      deviceInputProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'deviceInput');
+    });
+  }
+
   QueryBuilder<TestScenario, int, QQueryOperations>
       durationInSecondsProperty() {
     return QueryBuilder.apply(this, (query) {
@@ -1991,22 +2071,22 @@ extension TestScenarioQueryProperty
     });
   }
 
-  QueryBuilder<TestScenario, String, QQueryOperations> inputDeviceProperty() {
+  QueryBuilder<TestScenario, String, QQueryOperations> fileDirectoryProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'inputDevice');
-    });
-  }
-
-  QueryBuilder<TestScenario, String, QQueryOperations>
-      inputDeviceInfoProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'inputDeviceInfo');
+      return query.addPropertyName(r'fileDirectory');
     });
   }
 
   QueryBuilder<TestScenario, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'name');
+    });
+  }
+
+  QueryBuilder<TestScenario, TsharkNetworkInterface, QQueryOperations>
+      networkInterfaceProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'networkInterface');
     });
   }
 

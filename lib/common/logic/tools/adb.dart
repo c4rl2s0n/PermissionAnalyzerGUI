@@ -1,25 +1,26 @@
 import 'dart:io';
 
 import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:permission_analyzer_gui/data/data.dart';
 
-class AdbService {
-  AdbService(
+class Adb {
+  Adb(
     this._settingsCubit, {
-    ProcessService? processService,
+    SystemProcess? systemProcess,
     this.device,
   }) {
-    _ps = processService ?? ProcessService();
+    _ps = systemProcess ?? SystemProcess();
   }
 
   final SettingsCubit _settingsCubit;
   SettingsState get _settings => _settingsCubit.state;
-  late final ProcessService _ps;
+  late final SystemProcess _ps;
   final String? device;
 
   // TODO: Test if functions return usefull resultCodes
 
   static Future<String?> lookupPath() async {
-    return await ProcessService.which("adb");
+    return await SystemProcess.which("adb");
   }
 
   List<String> _getArguments(List<String> arguments) {
@@ -35,7 +36,7 @@ class AdbService {
   }
 
   Future<Process> shellProc(List<String> arguments, {Duration? timeout}) {
-    return start(_getArguments(["shell", ...arguments]), timeout: timeout);
+    return start(["shell", ...arguments], timeout: timeout);
   }
 
   Future<ProcessResult> run(List<String> arguments) {
@@ -43,7 +44,7 @@ class AdbService {
   }
 
   Future<ProcessResult> shell(List<String> arguments) {
-    return run(_getArguments(["shell", ...arguments]));
+    return run(["shell", ...arguments]);
   }
 
   Future<List<String>> devices() async {
@@ -88,18 +89,20 @@ class AdbService {
     return result.exitCode >= 0;
   }
 
-  Future<Map<String, String>> getEventDevices() async {
-    Map<String, String> events = {};
+  Future<List<AndroidInputDevice>> getDeviceInputs() async {
+    List<AndroidInputDevice> deviceInputs = [];
     List<String> infos =
         (await shell(["getevent", "-p"])).outText.split("add device");
     for (String info in infos) {
       List<String> infoLines = info.split("\n");
       if (infoLines.length <= 1) continue;
-      String dev = infoLines[0].split(":")[1].trim();
-      infoLines[0] = "Input Device: $dev";
-      events[dev] = infoLines.join("\n");
+      String path = infoLines[0].split(":")[1].trim();
+      String name = infoLines[1].split("name:")[1].trim().replaceAll('"', "");
+      infoLines[0] = "Input Device: $path";
+      deviceInputs.add(AndroidInputDevice(
+          path: path, name: name, info: infoLines.join("\n")));
     }
-    return events;
+    return deviceInputs;
   }
 
   Future<Process> getEvents({
@@ -138,14 +141,43 @@ class AdbService {
 
   Future<List<String>> getApplicationPermissions(String applicaitonId) async {
     var dump = (await shell(["dumpsys", "package", applicaitonId])).outText;
-    List<String> permissions = dump
-        .split("requested permissions:")[1]
-        .split("install permissions:")[0]
-        .trim()
-        .split("\n")
-        .map((p) => p.trim())
-        .toList();
+    List<String> permissions = [];
+    List<String> permissionDump = dump.split("requested permissions:")[1].split("\n");
+    for(var line in permissionDump){
+      if(line.isEmpty) continue;
+      if(line.contains(":")) break;
+      permissions.add(line.trim());
+    }
     permissions.sort();
     return permissions;
+  }
+
+  Future<Process> captureTraffic({
+    required String pcapPath,
+    required String interface,
+    required Duration duration,
+  }) async {
+    return await start(
+      [
+        "tcpdump",
+        "-w",
+        pcapPath,
+        "-i",
+        interface,
+      ],
+      timeout: duration,
+    );
+  }
+
+  Future<List<String>> getApplications() async {
+    return (await shell(["pm", "list", "packages"]))
+        .outLines
+        .where((l) => l.contains(":"))
+        .map((l) => l.split(":")[1])
+        .toList();
+  }
+
+  Future<bool> applicationExists(String appId) async {
+    return (await getApplications()).any((p) => p == appId);
   }
 }

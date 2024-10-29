@@ -16,24 +16,13 @@ class ConfirmationDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomDialog(
       title: title,
+      icon: Icon(context.icons.info),
       content: SingleChildScrollView(
-          child: Row(
-        mainAxisSize: MainAxisSize.max,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconTheme(
-            data: IconTheme.of(context).copyWith(size: 42),
-            child: Icon(context.icons.question),
-          ),
-          SizedBox(width: context.constants.spacing),
-          Expanded(
+          child: Expanded(
               child: Text(
             content,
             softWrap: true,
-          ))
-        ],
-      )),
+          ))),
       actions: const [
         DeclineButton(),
         ConfirmButton(),

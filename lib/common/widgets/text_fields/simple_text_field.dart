@@ -13,6 +13,7 @@ class SimpleTextField extends StatefulWidget {
     this.padding,
     this.isPassword = false,
     this.updateWhenInvalid = false,
+    this.enabled = true,
     super.key,
   });
 
@@ -25,6 +26,7 @@ class SimpleTextField extends StatefulWidget {
   final EdgeInsets? padding;
   final bool isPassword;
   final bool updateWhenInvalid;
+  final bool enabled;
 
   @override
   State<SimpleTextField> createState() => _SimpleTextFieldState();
@@ -66,6 +68,7 @@ class _SimpleTextFieldState extends State<SimpleTextField> {
     return Padding(
       padding: widget.padding ??  EdgeInsets.only(bottom: context.constants.spacing),
       child: TextFormField(
+        enabled: widget.enabled,
         style: theme.textTheme.bodyMedium,
         controller: controller,
         obscureText: obscured,

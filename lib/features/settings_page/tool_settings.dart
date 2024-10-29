@@ -12,7 +12,7 @@ class ToolSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SettingsGroup(
-      title: context.strings.themeSettings,
+      title: "Tools",
       settings: [
         _workingDirectory(),
         _adbPathSettings(),
@@ -63,7 +63,7 @@ class ToolSettings extends StatelessWidget {
             // Scan for file
             IconButton(
               onPressed: () async {
-                String? adbPath = await AdbService.lookupPath();
+                String? adbPath = await Adb.lookupPath();
                 if (!context.mounted) return;
                 if (adbPath != null && adbPath.isNotEmpty) {
                   context.settings.setAdbPath(adbPath);
@@ -146,7 +146,7 @@ class ToolSettings extends StatelessWidget {
             // Scan for file
             IconButton(
               onPressed: () async {
-                String? tsharkPath = await TsharkService.lookupPath();
+                String? tsharkPath = await Tshark.lookupPath();
                 if (!context.mounted) return;
                 if (tsharkPath != null && tsharkPath.isNotEmpty) {
                   context.settings.setTsharkPath(tsharkPath);

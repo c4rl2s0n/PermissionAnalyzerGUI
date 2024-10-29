@@ -7,10 +7,12 @@ class TestRun {
   TestRun({
     this.screenRecordPath,
     this.pcapPath,
+    this.pcapJson,
   });
 
   String? screenRecordPath;
   String? pcapPath;
+  String? pcapJson;
   bool get hasData =>
       screenRecordPath != null &&
       screenRecordPath!.isNotEmpty &&

@@ -22,33 +22,38 @@ const SettingsSchema = CollectionSchema(
       name: r'adbPath',
       type: IsarType.string,
     ),
-    r'isDarkMode': PropertySchema(
+    r'inputRecordDestinationPath': PropertySchema(
       id: 1,
+      name: r'inputRecordDestinationPath',
+      type: IsarType.string,
+    ),
+    r'isDarkMode': PropertySchema(
+      id: 2,
       name: r'isDarkMode',
       type: IsarType.bool,
     ),
     r'language': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'language',
       type: IsarType.string,
     ),
     r'recorderDestinationPath': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'recorderDestinationPath',
       type: IsarType.string,
     ),
     r'recorderPath': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'recorderPath',
       type: IsarType.string,
     ),
     r'tsharkPath': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'tsharkPath',
       type: IsarType.string,
     ),
     r'workingDirectory': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'workingDirectory',
       type: IsarType.string,
     )
@@ -75,6 +80,12 @@ int _settingsEstimateSize(
   var bytesCount = offsets.last;
   {
     final value = object.adbPath;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.inputRecordDestinationPath;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
@@ -114,12 +125,13 @@ void _settingsSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.adbPath);
-  writer.writeBool(offsets[1], object.isDarkMode);
-  writer.writeString(offsets[2], object.language);
-  writer.writeString(offsets[3], object.recorderDestinationPath);
-  writer.writeString(offsets[4], object.recorderPath);
-  writer.writeString(offsets[5], object.tsharkPath);
-  writer.writeString(offsets[6], object.workingDirectory);
+  writer.writeString(offsets[1], object.inputRecordDestinationPath);
+  writer.writeBool(offsets[2], object.isDarkMode);
+  writer.writeString(offsets[3], object.language);
+  writer.writeString(offsets[4], object.recorderDestinationPath);
+  writer.writeString(offsets[5], object.recorderPath);
+  writer.writeString(offsets[6], object.tsharkPath);
+  writer.writeString(offsets[7], object.workingDirectory);
 }
 
 Settings _settingsDeserialize(
@@ -130,12 +142,13 @@ Settings _settingsDeserialize(
 ) {
   final object = Settings(
     adbPath: reader.readStringOrNull(offsets[0]),
-    isDarkMode: reader.readBoolOrNull(offsets[1]) ?? true,
-    language: reader.readStringOrNull(offsets[2]) ?? "en",
-    recorderDestinationPath: reader.readStringOrNull(offsets[3]),
-    recorderPath: reader.readStringOrNull(offsets[4]),
-    tsharkPath: reader.readStringOrNull(offsets[5]),
-    workingDirectory: reader.readStringOrNull(offsets[6]),
+    inputRecordDestinationPath: reader.readStringOrNull(offsets[1]),
+    isDarkMode: reader.readBoolOrNull(offsets[2]) ?? true,
+    language: reader.readStringOrNull(offsets[3]) ?? "en",
+    recorderDestinationPath: reader.readStringOrNull(offsets[4]),
+    recorderPath: reader.readStringOrNull(offsets[5]),
+    tsharkPath: reader.readStringOrNull(offsets[6]),
+    workingDirectory: reader.readStringOrNull(offsets[7]),
   );
   object.id = id;
   return object;
@@ -151,16 +164,18 @@ P _settingsDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readBoolOrNull(offset) ?? true) as P;
-    case 2:
-      return (reader.readStringOrNull(offset) ?? "en") as P;
-    case 3:
       return (reader.readStringOrNull(offset)) as P;
+    case 2:
+      return (reader.readBoolOrNull(offset) ?? true) as P;
+    case 3:
+      return (reader.readStringOrNull(offset) ?? "en") as P;
     case 4:
       return (reader.readStringOrNull(offset)) as P;
     case 5:
       return (reader.readStringOrNull(offset)) as P;
     case 6:
+      return (reader.readStringOrNull(offset)) as P;
+    case 7:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -450,6 +465,162 @@ extension SettingsQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      inputRecordDestinationPathIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'inputRecordDestinationPath',
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      inputRecordDestinationPathIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'inputRecordDestinationPath',
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      inputRecordDestinationPathEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'inputRecordDestinationPath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      inputRecordDestinationPathGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'inputRecordDestinationPath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      inputRecordDestinationPathLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'inputRecordDestinationPath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      inputRecordDestinationPathBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'inputRecordDestinationPath',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      inputRecordDestinationPathStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'inputRecordDestinationPath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      inputRecordDestinationPathEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'inputRecordDestinationPath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      inputRecordDestinationPathContains(String value,
+          {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'inputRecordDestinationPath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      inputRecordDestinationPathMatches(String pattern,
+          {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'inputRecordDestinationPath',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      inputRecordDestinationPathIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'inputRecordDestinationPath',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      inputRecordDestinationPathIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'inputRecordDestinationPath',
+        value: '',
       ));
     });
   }
@@ -1223,6 +1394,20 @@ extension SettingsQuerySortBy on QueryBuilder<Settings, Settings, QSortBy> {
     });
   }
 
+  QueryBuilder<Settings, Settings, QAfterSortBy>
+      sortByInputRecordDestinationPath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inputRecordDestinationPath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterSortBy>
+      sortByInputRecordDestinationPathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inputRecordDestinationPath', Sort.desc);
+    });
+  }
+
   QueryBuilder<Settings, Settings, QAfterSortBy> sortByIsDarkMode() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isDarkMode', Sort.asc);
@@ -1324,6 +1509,20 @@ extension SettingsQuerySortThenBy
     });
   }
 
+  QueryBuilder<Settings, Settings, QAfterSortBy>
+      thenByInputRecordDestinationPath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inputRecordDestinationPath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterSortBy>
+      thenByInputRecordDestinationPathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'inputRecordDestinationPath', Sort.desc);
+    });
+  }
+
   QueryBuilder<Settings, Settings, QAfterSortBy> thenByIsDarkMode() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isDarkMode', Sort.asc);
@@ -1408,6 +1607,14 @@ extension SettingsQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Settings, Settings, QDistinct>
+      distinctByInputRecordDestinationPath({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'inputRecordDestinationPath',
+          caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Settings, Settings, QDistinct> distinctByIsDarkMode() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isDarkMode');
@@ -1463,6 +1670,13 @@ extension SettingsQueryProperty
   QueryBuilder<Settings, String?, QQueryOperations> adbPathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'adbPath');
+    });
+  }
+
+  QueryBuilder<Settings, String?, QQueryOperations>
+      inputRecordDestinationPathProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'inputRecordDestinationPath');
     });
   }
 

@@ -1,31 +1,62 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:permission_analyzer_gui/data/data.dart';
 
 class SessionCubit extends Cubit<SessionState> {
   SessionCubit(this._settingsCubit) : super(const SessionState()) {
-    loadAdbDevices();
+    _initialize();
   }
   final SettingsCubit _settingsCubit;
-  void setAdbDevice(String adbDevice) {
+
+  Future _initialize()async{
+    await loadAdbDevices();
+    if(state.adbDevices.isNotEmpty){
+      await setAdbDevice(state.adbDevices.first);
+    }
+  }
+
+  bool _checkAdbDevice(){
+    if(state.hasDevice){
+      return true;
+    }
+    emit(const SessionState());
+    return false;
+  }
+
+  Future setAdbDevice(String adbDevice) async {
     emit(state.copyWith(adbDevice: adbDevice));
-    loadAdbDeviceEventInputs();
+    await Adb(_settingsCubit, device: adbDevice).root();
+    await loadAdbDeviceEventInputs();
+    await loadNetworkInterfaces();
   }
 
   Future loadAdbDevices() async {
-    AdbService adb = AdbService(_settingsCubit);
+    Adb adb = Adb(_settingsCubit);
     List<String> devices = await adb.devices();
-    emit(state.copyWith(
-      adbDevice: state.adbDevice.isEmpty ? devices.firstOrNull : null,
-      adbDevices: devices,
-    ));
+    emit(state.copyWith(adbDevices: devices));
   }
 
   Future loadAdbDeviceEventInputs() async {
-    if(state.adbDevice.isEmpty) return;
-    AdbService adb = AdbService(_settingsCubit, device: state.adbDevice);
-    Map<String, String> eventDevices = await adb.getEventDevices();
-    emit(state.copyWith(adbDeviceEventInputs: eventDevices));
+    if (!_checkAdbDevice()) return;
+    Adb adb = Adb(_settingsCubit, device: state.adbDevice);
+    List<AndroidInputDevice> deviceInputs = await adb.getDeviceInputs();
+    emit(state.copyWith(adbDeviceEventInputs: deviceInputs));
+  }
+
+  Future loadNetworkInterfaces() async {
+    if(!_checkAdbDevice()) return;
+    Tshark tshark = Tshark(_settingsCubit);
+    List<TsharkNetworkInterface> interfaces = await tshark.getInterfaces();
+    emit(state.copyWith(networkInterfaces: interfaces));
+  }
+
+
+  Future loadApplications() async {
+    if (!_checkAdbDevice()) return;
+    Adb adb = Adb(_settingsCubit, device: state.adbDevice);
+    List<AndroidInputDevice> deviceInputs = await adb.getDeviceInputs();
+    emit(state.copyWith(adbDeviceEventInputs: deviceInputs));
   }
 }
 
@@ -33,38 +64,51 @@ class SessionState extends Equatable {
   const SessionState({
     this.adbDevice = "",
     this.adbDevices = const [],
-    this.adbDeviceEventInputs = const {},
+    this.adbDeviceEventInputs = const [],
+    this.networkInterfaces = const [],
+    this.applications = const [],
   });
 
   final String adbDevice;
+  bool get hasDevice => adbDevice.isNotEmpty;
+
   final List<String> adbDevices;
-  final Map<String, String> adbDeviceEventInputs;
-  List<String> get inputDevices {
-    List<String> devices = adbDeviceEventInputs.keys.toList();
-    devices.sort((a,b) => a.length != b.length ? a.length.compareTo(b.length) : a.compareTo(b));
+  final List<AndroidInputDevice> adbDeviceEventInputs;
+
+  List<AndroidInputDevice> get inputDevices {
+    List<AndroidInputDevice> devices = List.of(adbDeviceEventInputs);
+    devices.sort((a, b) => a.path.length != b.path.length
+        ? a.path.length.compareTo(b.path.length)
+        : a.path.compareTo(b.path));
     return devices;
   }
-  String? inputDeviceInfo(String dev){
-    if(adbDeviceEventInputs.containsKey(dev)) return adbDeviceEventInputs[dev];
-    return null;
-  }
+
+  final List<TsharkNetworkInterface> networkInterfaces;
+
+  final List<TestApplication> applications;
 
   @override
   List<Object?> get props => [
         adbDevice,
         adbDevices,
         adbDeviceEventInputs,
+        networkInterfaces,
+        applications,
       ];
 
   SessionState copyWith({
     String? adbDevice,
     List<String>? adbDevices,
-    Map<String, String>? adbDeviceEventInputs,
+    List<AndroidInputDevice>? adbDeviceEventInputs,
+    List<TsharkNetworkInterface>? networkInterfaces,
+    List<TestApplication>? applications,
   }) {
     return SessionState(
       adbDevice: adbDevice ?? this.adbDevice,
       adbDevices: adbDevices ?? this.adbDevices,
       adbDeviceEventInputs: adbDeviceEventInputs ?? this.adbDeviceEventInputs,
+      networkInterfaces: networkInterfaces ?? this.networkInterfaces,
+      applications: applications ?? this.applications,
     );
   }
 }

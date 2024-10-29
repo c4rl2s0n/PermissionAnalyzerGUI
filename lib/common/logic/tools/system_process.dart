@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 
-class ProcessService {
-  ProcessService({
+class SystemProcess {
+  SystemProcess({
     this.workingDirectory,
     this.environment,
     this.includeParentEnvironment = true,
@@ -12,11 +12,11 @@ class ProcessService {
     this.mode = ProcessStartMode.normal,
   });
 
-  final String? workingDirectory;
-  final Map<String, String>? environment;
-  final bool includeParentEnvironment;
-  final bool runInShell;
-  final ProcessStartMode mode;
+  String? workingDirectory;
+  Map<String, String>? environment;
+  bool includeParentEnvironment;
+  bool runInShell;
+  ProcessStartMode mode;
 
   Future<Process> start(
     String executable,

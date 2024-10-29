@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:permission_analyzer_gui/data/data.dart';
 
 import '../logic/logic.dart';
 
 class ScenarioDetails extends StatelessWidget {
   const ScenarioDetails({super.key});
+
+  final double textFieldWidth = 200;
+  final double dropDownWidth = 350;
 
   @override
   Widget build(BuildContext context) {
@@ -18,13 +22,23 @@ class ScenarioDetails extends StatelessWidget {
             children: [
               Expanded(child: _scenarioName()),
               Margin.horizontal(context.constants.largeSpacing),
-              Expanded(child: _appId()),
+              _appId(),
+            ],
+          ),
+          Row(
+            //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(child: _inputDeviceSelection()),
+              Margin.horizontal(context.constants.largeSpacing),
+              _appName(),
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.max,
             children: [
-              _inputDeviceSelection(),
+              Expanded(child: _networkInterfaceSelection()),
+              Margin.horizontal(context.constants.spacing),
               _duration(),
             ],
           ),
@@ -46,22 +60,46 @@ class ScenarioDetails extends StatelessWidget {
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
       buildWhen: (oldState, state) => oldState.name != state.name,
       builder: (context, state) {
-        return SimpleTextField(
-          initialValue: state.name,
-          onChanged: (s) => context.testScenarioCubit.setName(s),
-          labelText: "Name",
+        return SizedBox(
+          width: 300,
+          child: SimpleTextField(
+            initialValue: state.name,
+            onChanged: (s) => context.testScenarioCubit.setName(s),
+            labelText: "Name",
+          ),
         );
       },
     );
   }
+
   Widget _appId() {
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
-      buildWhen: (oldState, state) => oldState.applicationId != state.applicationId,
+      buildWhen: (oldState, state) =>
+          oldState.applicationId != state.applicationId,
       builder: (context, state) {
-        return SimpleTextField(
-          initialValue: state.applicationId,
-          onChanged: context.testScenarioCubit.setApplicationId,
-          labelText: "Application-ID",
+        return SizedBox(
+          width: textFieldWidth,
+          child: SimpleTextField(
+            enabled: false,
+            initialValue: state.applicationId,
+            labelText: "Application-ID",
+          ),
+        );
+      },
+    );
+  }
+  Widget _appName() {
+    return BlocBuilder<TestScenarioCubit, TestScenarioState>(
+      buildWhen: (oldState, state) =>
+          oldState.applicationName != state.applicationName,
+      builder: (context, state) {
+        return SizedBox(
+          width: textFieldWidth,
+          child: SimpleTextField(
+            enabled: false,
+            initialValue: state.applicationName,
+            labelText: "Application-Name",
+          ),
         );
       },
     );
@@ -74,39 +112,69 @@ class ScenarioDetails extends StatelessWidget {
       builder: (context, session) {
         return BlocBuilder<TestScenarioCubit, TestScenarioState>(
           buildWhen: (oldState, state) =>
-              oldState.inputDevice != state.inputDevice ||
-              oldState.inputDeviceInfo != state.inputDeviceInfo ||
+              oldState.deviceInput != state.deviceInput ||
               oldState.hasInputRecord != state.hasInputRecord,
           builder: (context, state) {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                AbsorbPointer(
-                  absorbing: state.hasInputRecord,
-                  child: DropdownMenu(
-                    label: const Text("Input Device"),
-                    onSelected: (i) => i == null
-                        ? null
-                        : context.testScenarioCubit
-                            .setEventDevice(i, session.inputDeviceInfo(i)),
-                    initialSelection: state.inputDevice,
-                    requestFocusOnTap: false,
-                    dropdownMenuEntries: session.inputDevices
-                        .map((i) => DropdownMenuEntry(value: i, label: i))
-                        .toList(),
-                  ),
+                DropdownMenu<AndroidInputDevice>(
+                  key: const Key("InputDeviceSelection"),
+                  width: dropDownWidth,
+                  enabled: !state.hasInputRecord,
+                  label: const Text("Input Device"),
+                  onSelected: (i) => i == null
+                      ? null
+                      : context.testScenarioCubit.setEventInputDevice(i),
+                  initialSelection: state.deviceInput,
+                  requestFocusOnTap: false,
+                  dropdownMenuEntries: session.inputDevices
+                      .map((i) => DropDownMenuFactory.dropdownMenuEntry(context,
+                          value: i, label: i.name,))
+                      .toList(),
                 ),
                 IconButton(
-                  onPressed: state.inputDeviceInfo.isNotEmpty
+                  onPressed: state.deviceInput.info.isNotEmpty
                       ? () => InfoDialog.showInfo(
                             context,
-                            title: "Input Device: ${state.inputDevice}",
-                            content: state.inputDeviceInfo,
+                            title: "Input Device: ${state.deviceInput.name}",
+                            content: state.deviceInput.info,
                           )
                       : null,
                   icon: Icon(context.icons.info),
                 ),
               ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _networkInterfaceSelection() {
+    return BlocBuilder<SessionCubit, SessionState>(
+      buildWhen: (oldState, state) =>
+          oldState.networkInterfaces != state.networkInterfaces,
+      builder: (context, session) {
+        return BlocBuilder<TestScenarioCubit, TestScenarioState>(
+          buildWhen: (oldState, state) =>
+              oldState.networkInterface != state.networkInterface ||
+              oldState.hasInputRecord != state.hasInputRecord,
+          builder: (context, state) {
+            return DropdownMenu<TsharkNetworkInterface>(
+              key: const Key("NetworkInterfaceSelection"),
+              width: dropDownWidth,
+              enabled: !state.hasInputRecord,
+              label: const Text("Network Interface"),
+              onSelected: (i) => i == null
+                  ? null
+                  : context.testScenarioCubit.setNetworkInterface(i),
+              initialSelection: state.networkInterface,
+              requestFocusOnTap: false,
+              dropdownMenuEntries: session.networkInterfaces
+                  .map((i) => DropDownMenuFactory.dropdownMenuEntry(context,
+                      value: i, label: i.name,))
+                  .toList(),
             );
           },
         );
@@ -130,21 +198,20 @@ class ScenarioDetails extends StatelessWidget {
       buildWhen: (oldState, state) =>
           oldState.duration != state.duration ||
           oldState.hasInputRecord != state.hasInputRecord,
-      builder: (context, state) => AbsorbPointer(
-        absorbing: state.hasInputRecord,
-        child: SizedBox(
-          width: 150,
-          child: SimpleTextField(
-            initialValue: state.duration.inSeconds.toString(),
-            validate: validateDuration,
-            onChanged: (s) =>
-                context.testScenarioCubit.setDuration(int.parse(s)),
-            labelText: "Test Duration",
-          ),
+      builder: (context, state) => SizedBox(
+        width: textFieldWidth,
+        child: SimpleTextField(
+          enabled: !state.hasInputRecord,
+          initialValue: state.duration.inSeconds.toString(),
+          validate: validateDuration,
+          onChanged: (s) =>
+              context.testScenarioCubit.setDuration(int.parse(s)),
+          labelText: "Test Duration",
         ),
       ),
     );
   }
+
   Widget _numTestRuns() {
     String? validateNumTestRuns(String? s) {
       if (s == null) return null;
@@ -156,10 +223,9 @@ class ScenarioDetails extends StatelessWidget {
 
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
       buildWhen: (oldState, state) =>
-          oldState.duration != state.duration ||
-          oldState.hasInputRecord != state.hasInputRecord,
+          oldState.numTestRuns != state.numTestRuns,
       builder: (context, state) => SizedBox(
-        width: 150,
+        width: textFieldWidth,
         child: SimpleTextField(
           initialValue: state.numTestRuns.toString(),
           validate: validateNumTestRuns,
@@ -178,7 +244,8 @@ class ScenarioDetails extends StatelessWidget {
       builder: (context, state) {
         return Row(
           children: [
-            Text("${!state.hasInputRecord ? " (REQUIRED) " : ""}User Input Recorded"),
+            Text(
+                "${!state.hasInputRecord ? " (REQUIRED) " : ""}User Input Recorded"),
             if (state.hasInputRecord) ...[
               // TODO: Ask for confirmation before deleting anything!
               IconButton(

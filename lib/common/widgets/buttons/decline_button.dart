@@ -16,6 +16,7 @@ class DeclineButton extends StatelessWidget {
       ),
       icon: Icon(context.icons.cancel),
       text: text,
+      color: context.colors.negative,
     );
   }
 }

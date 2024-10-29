@@ -18,5 +18,6 @@ class IsarDataRepositoryModule extends Module {
   void exportedBinds(i) {
     i.addSingleton<ISettingsRepository>(SettingsRepository.new);
     i.addSingleton<ITestScenarioRepository>(TestScenarioRepository.new);
+    i.addSingleton<ITestApplicationRepository>(TestApplicationRepository.new);
   }
 }

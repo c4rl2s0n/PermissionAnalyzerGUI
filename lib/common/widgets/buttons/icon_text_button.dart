@@ -9,6 +9,7 @@ class IconTextButton extends StatelessWidget {
     this.textStyle,
     this.onTap,
     this.loading = false,
+    this.color,
     super.key,
   });
 
@@ -17,12 +18,13 @@ class IconTextButton extends StatelessWidget {
   final TextStyle? textStyle;
   final Function()? onTap;
   final bool loading;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
     Color color = onTap == null
         ? context.colors.disabled
-        : context.colors.highlight;
+        : this.color ?? context.colors.highlight;
     TextStyle? usedTextStyle = textStyle ??
         context.textTheme.labelMedium?.copyWith(color: color);
     return TapContainer(

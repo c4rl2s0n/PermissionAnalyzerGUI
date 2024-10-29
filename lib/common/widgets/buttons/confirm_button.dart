@@ -18,6 +18,7 @@ class ConfirmButton extends StatelessWidget{
       ),
       icon: Icon(context.icons.check),
       text: text,
+      color: context.colors.positive,
     );
   }
 

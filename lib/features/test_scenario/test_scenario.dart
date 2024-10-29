@@ -10,9 +10,9 @@ import 'logic/logic.dart';
 import 'widgets/widgets.dart';
 
 class TestScenario extends StatelessWidget {
-  const TestScenario(this._testScenario, {super.key});
+  const TestScenario(this.scenario, {super.key});
 
-  final models.TestScenario _testScenario;
+  final models.TestScenario scenario;
 
   // TODO:
   //  Set Duration,
@@ -27,24 +27,23 @@ class TestScenario extends StatelessWidget {
       appBar: PageComponentFactory.appBar(context,
           title: context.strings.testScenario,
           actions: [
-            IconButton(
-              onPressed: () =>
-                  context.navigator.navigateTo(const SettingsPage()),
-              icon: Icon(context.icons.settings),
-            ),
+            PageComponentFactory.navigationIconButton(
+              context,
+              const SettingsPage(),
+            )
           ]),
       body: BlocProvider(
-        create: (context) => TestScenarioCubit(
-          testScenarioRepository: Modular.get<ITestScenarioRepository>(),
-          sessionCubit: context.session,
-          settingsCubit: context.settings,
-          testScenario: _testScenario,
-        ),
+        create: (context) =>
+            TestScenarioCubit(
+              testScenarioRepository: Modular.get<ITestScenarioRepository>(),
+              sessionCubit: context.session,
+              settingsCubit: context.settings,
+              testScenario: scenario,
+            ),
         child: _buildContent(context),
       ),
     );
   }
-
 
   Widget _buildContent(BuildContext context) {
     return BlocListener<TestScenarioCubit, TestScenarioState>(
@@ -65,7 +64,7 @@ class TestScenario extends StatelessWidget {
                       const ScenarioDetails(),
                       const Expanded(child: TestConstellationsOverview()),
                     ].insertBetweenItems(
-                        () => Margin.vertical(context.constants.spacing)),
+                            () => Margin.vertical(context.constants.spacing)),
                   ),
                 ),
                 // Once tests have been created and were executed, the settings can not be changed anymore!
@@ -76,12 +75,12 @@ class TestScenario extends StatelessWidget {
                       const Expanded(child: PermissionSelector()),
                       const RecordingOptions(),
                     ].insertBetweenItems(
-                      () => Margin.vertical(context.constants.spacing),
+                          () => Margin.vertical(context.constants.spacing),
                     ),
                   ),
                 ),
               ].insertBetweenItems(
-                  () => Margin.horizontal(context.constants.largeSpacing)),
+                      () => Margin.horizontal(context.constants.largeSpacing)),
             ),
           ),
           _actions(),
@@ -97,7 +96,8 @@ class TestScenario extends StatelessWidget {
     showDialog(
         barrierDismissible: false,
         context: context,
-        builder: (context) => LoadingDialog(
+        builder: (context) =>
+            LoadingDialog(
               cubit,
               title: state.loadingInfo,
             ));
@@ -106,34 +106,78 @@ class TestScenario extends StatelessWidget {
   Widget _actions() {
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
       buildWhen: (oldState, state) =>
-          oldState.hasTests != state.hasTests ||
+      oldState.hasTests != state.hasTests ||
           oldState.canRun != state.canRun,
-      builder: (context, state) => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          IconTextButton(
+      builder: (context, state) =>
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              _deleteScenarioButton(context),
+              _recordButton(),
+              _createConstellationsButton(),
+              _runButton(),
+            ],
+          ),
+    );
+  }
+
+  Widget _deleteScenarioButton(BuildContext context) {
+    return IconTextButton(
+        text: "Delete Scenario",
+        icon: Icon(context.icons.remove),
+        color: context.colors.negative,
+        onTap: () async {
+          if(await ConfirmationDialog.ask(context, title: "Are you sure?", content: "Do you want to delete the scenario '${scenario.name}'?") && context.mounted) {
+            context.navigator.pop();
+            await context.testScenarioCubit.delete();
+          }
+        }
+    );
+  }
+
+  Widget _recordButton() {
+    return
+      BlocBuilder<TestScenarioCubit, TestScenarioState>(
+        buildWhen: (oldState, state) => oldState.hasTests != state.hasTests,
+        builder: (context, state) {
+          return IconTextButton(
             onTap: state.hasTests
                 ? null
                 : () => context.testScenarioCubit.recordScenario(),
             text: "Record Scenario",
             icon: Icon(context.icons.record),
-          ),
-          IconTextButton(
-            onTap: state.hasTests
-                ? null
-                : () => context.testScenarioCubit.createConstellations(),
-            text: "Create Constellations",
-            icon: Icon(context.icons.create),
-          ),
-          IconTextButton(
-            onTap: state.canRun
-                ? () => context.testScenarioCubit.runTests()
-                : null,
-            text: "Run Tests",
-            icon: Icon(context.icons.run),
-          ),
-        ],
-      ),
+          );
+        },
+      );
+  }
+
+  Widget _createConstellationsButton() {
+    return BlocBuilder<TestScenarioCubit, TestScenarioState>(
+      buildWhen: (oldState, state) => oldState.hasTests != state.hasTests,
+      builder: (context, state) {
+        return IconTextButton(
+          onTap: state.hasTests
+              ? null
+              : () => context.testScenarioCubit.createConstellations(),
+          text: "Create Constellations",
+          icon: Icon(context.icons.create),
+        );
+      },
+    );
+  }
+
+  Widget _runButton() {
+    return BlocBuilder<TestScenarioCubit, TestScenarioState>(
+      buildWhen: (oldState, state) => oldState.canRun != state.canRun,
+      builder: (context, state) {
+        return IconTextButton(
+          onTap: state.canRun
+              ? () => context.testScenarioCubit.runTests()
+              : null,
+          text: "Run Tests",
+          icon: Icon(context.icons.run),
+        );
+      },
     );
   }
 }

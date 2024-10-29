@@ -20,6 +20,7 @@ class IsarDataModule extends Module {
       [
         SettingsSchema,
         TestScenarioSchema,
+        TestApplicationSchema,
       ],
       directory: applicationDocumentDirectory,
       name: databaseFilename.replaceAll(".isar", ""),

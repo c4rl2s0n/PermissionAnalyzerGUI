@@ -2,6 +2,12 @@
 
 My Template for Flutter Projects
 
+## required executables:
+* adb
+* tshark
+* unzip
+* ...?
+
 ## Setup
 To use this template for a new project, copy the
 * folders
