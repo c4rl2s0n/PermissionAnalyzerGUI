@@ -6,10 +6,11 @@ import 'package:permission_analyzer_gui/common/common.dart';
 part 'splash_screen_state.dart';
 
 class SplashScreenCubit extends Cubit<SplashScreenState> {
-  SplashScreenCubit(this.sessionCubit) : super(const SplashScreenState()) {
+  SplashScreenCubit(this.settingsCubit, this.sessionCubit) : super(const SplashScreenState()) {
     _loadData();
   }
 
+  SettingsCubit settingsCubit;
   SessionCubit sessionCubit;
 
 
@@ -17,8 +18,10 @@ class SplashScreenCubit extends Cubit<SplashScreenState> {
     await _checkPermissions();
     await _performMigration();
 
-    await sessionCubit.loadAdbDevices();
-    await sessionCubit.loadAdbDeviceEventInputs();
+    if(settingsCubit.state.adbPath.isNotEmpty) {
+      await sessionCubit.loadAdbDevices();
+      await sessionCubit.loadAdbDeviceEventInputs();
+    }
 
     emit(state.copyWith(isDone: true));
   }

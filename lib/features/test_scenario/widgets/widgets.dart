@@ -1,3 +1,4 @@
+export 'actions.dart';
 export 'loading_dialog.dart';
 export 'permission_selector.dart';
 export 'recording_options.dart';

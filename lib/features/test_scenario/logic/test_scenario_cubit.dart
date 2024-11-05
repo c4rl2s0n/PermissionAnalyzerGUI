@@ -31,8 +31,8 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
       );
 
   // TODO: Think about making it a variable configurable for each scenario/app
-  int get _startAppDelay => 5;
-  String get _videoStoragePathOnDevice => "/sdcard/out.mp4";
+  int get _startAppDelay => 0;
+  String get _videoStoragePathOnDevice => "/data/local/tmp/out.mp4";
 
   final SystemProcess _process = SystemProcess();
 
@@ -63,11 +63,11 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     //emit(state.copyWith(loading: false));
   }
 
-  Future delete()async{
+  Future delete() async {
     testScenarioRepository.delete(testScenario.id);
 
     Directory fileDir = Directory(state.fileDirectory);
-    if(await fileDir.exists()){
+    if (await fileDir.exists()) {
       await fileDir.delete(recursive: true);
     }
   }
@@ -267,7 +267,8 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   }
 
   Future _runTest(TestConstellation constellation, String fileDirectory) async {
-    String loadingInfoSuffix = basename(fileDirectory);
+    String loadingInfoSuffix =
+        "${constellation.abbreviation} - ${basename(fileDirectory)}";
     String pcapFilename = "traffic.pcap";
     // setup working directory to store capture files
     if (state.recordScreen || state.captureTraffic) {
@@ -308,24 +309,27 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
       );
       pcapJson = "";
       // need to flush streams to avoid getting stuck
-      pcapProcess.outLines.forEach((l) {
-        pcapJson = pcapJson! + l;
+      pcapProcess.outLines.forEach((line) {
+        pcapJson = pcapJson! + line;
       });
       pcapProcess.errLines.forEach((_) {});
     }
 
     // replay user input
-    await _adb.shell([
+    Process userInputProcess = await _adb.shellProc([
       _settings.recorderDestinationPath,
       state.deviceInput.path,
       _settings.inputRecordDestinationPath,
     ]);
 
+    // let test run through
+    await sleep(state.duration);
+    await userInputProcess.exitCode;
+
     // stop application
     await _adb.stopApp(state.applicationId);
 
-    emit(
-        state.copyWith(loadingInfo: "$loadingInfoSuffix:\nFinishing the test"));
+    emit(state.copyWith(loadingInfo: "$loadingInfoSuffix:\nFinish the test"));
 
     // Fetch all the generated files and store them in fileDirectory and db
     TestRun testRun = TestRun();
@@ -342,7 +346,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
       );
     }
     if (state.captureTraffic) {
-      //await pcapProcess?.exitCode;
+      await pcapProcess?.exitCode;
       testRun.pcapPath = join(fileDirectory, pcapFilename);
       testRun.pcapJson = pcapJson;
     }
@@ -358,7 +362,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
       loadingInfo: "Preparing the environment for running the tests",
     ));
 
-    if(state.name.isEmpty)setName("Unknown_${DateTime.now()}");
+    if (state.name.isEmpty) setName("Unknown_${DateTime.now()}");
 
     // make sure working directory exists
     await Directory(_workingDirectory).create(recursive: true);
@@ -379,12 +383,27 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
 
     emit(state.copyWith(loadingInfo: "Run the tests"));
     for (var constellation in state.testConstellations) {
-      String fileDirectory = join(_workingDirectory,
-          "${constellation.permissions.where((c) => c.state == PermissionState.granted).map((c) => permissionToShortcut(c.permission)).join("_")}_");
+      String fileDirectory =
+          join(_workingDirectory, constellation.abbreviation);
+
+      // write the current permission constellation to a file
+      File permissionsTxt = File(join(fileDirectory, "permissions.txt"));
+      if (!await permissionsTxt.exists()) {
+        await permissionsTxt.create(recursive: true);
+      }
+      String permissionString = constellation.permissions
+          .where((p) => p.state == PermissionState.granted)
+          .map((p) => p.permission)
+          .join("\n");
+      await permissionsTxt.writeAsString(permissionString);
+
       // TODO: decide, run the same test multiple times, or iterate through all multiple times?
+      // run the Test #numTestRuns times
       for (int i = 0; i < state.numTestRuns; i++) {
         await _runTest(
-            constellation, "$fileDirectory(${i.toString().padLeft(3, "0")})");
+          constellation,
+          join(fileDirectory, "(${i.toString().padLeft(3, "0")})"),
+        );
       }
     }
 
@@ -427,6 +446,7 @@ class TestScenarioState extends Equatable {
           name: scenario.name,
           fileDirectory: scenario.fileDirectory,
           duration: scenario.duration,
+          numTestRuns: scenario.numTestRuns,
           permissions: List.of(scenario.permissions),
           recordScreen: scenario.recordScreen,
           captureTraffic: scenario.captureTraffic,
@@ -452,7 +472,7 @@ class TestScenarioState extends Equatable {
   final bool captureTraffic;
   final List<TestConstellation> testConstellations;
   bool get canConfigure => !hasTests;
-  bool get canRun => hasInputRecord && testConstellations.isNotEmpty;
+  bool get canRun => testConstellations.isNotEmpty;
   bool get hasTests => testConstellations.any((c) => c.tests.isNotEmpty);
 
   @override
@@ -467,7 +487,7 @@ class TestScenarioState extends Equatable {
         deviceInput,
         networkInterface,
         name,
-    fileDirectory,
+        fileDirectory,
         duration,
         numTestRuns,
         permissions,

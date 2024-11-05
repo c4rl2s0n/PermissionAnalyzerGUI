@@ -254,6 +254,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+  fl_chart:
+    dependency: "direct main"
+    description:
+      name: fl_chart
+      sha256: "94307bef3a324a0d329d3ab77b2f0c6e5ed739185ffc029ed28c0f9b019ea7ef"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.69.0"
+  flame:
+    dependency: transitive
+    description:
+      name: flame
+      sha256: baafe5c38075b60577db05e0421c12941695b246547d9aca95166def3f29e57f
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.21.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -267,6 +283,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "8.1.6"
+  flutter_graph_view:
+    dependency: "direct main"
+    description:
+      name: flutter_graph_view
+      sha256: "92c9fd70c2be2716a9fbd35a22a755028d816bad3fc9ef1a175f0d2e1b64e946"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.3+1"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -506,6 +530,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  ordered_set:
+    dependency: transitive
+    description:
+      name: ordered_set
+      sha256: fc861bb51fc863cd3e0718e21768af9586e0d5022b91a0fd4437636456cdb7d0
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.1.1"
   package_config:
     dependency: transitive
     description:

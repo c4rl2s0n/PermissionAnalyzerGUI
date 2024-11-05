@@ -7,6 +7,8 @@ My Template for Flutter Projects
 * tshark
 * unzip
 * ...?
+## Brainstorming
+* get ip location from https://www.geodatatool.com/en/?ip=3.160.226.226
 
 ## Setup
 To use this template for a new project, copy the

@@ -76,7 +76,7 @@ class ProjectOverview extends StatelessWidget {
       buildWhen: (oldState, state) =>
           oldState.applications != state.applications,
       builder: (context, state) {
-        double tileWidth = 200;
+        double tileWidth = 130;
         double tileHeight = tileWidth * 1.2;
         return LayoutBuilder(
           builder: (context, constraints) => GridView.count(

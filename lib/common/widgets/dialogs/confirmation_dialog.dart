@@ -40,7 +40,7 @@ class ConfirmationDialog extends StatelessWidget {
       context: context,
       barrierDismissible: false,
       builder: (context) => ConfirmationDialog(
-        title: title ?? "Do you trust this?",
+        title: title ?? "Are you sure?",
         content: content ?? "",
       ),
     );

@@ -9,7 +9,7 @@ class ScenarioDetails extends StatelessWidget {
   const ScenarioDetails({super.key});
 
   final double textFieldWidth = 200;
-  final double dropDownWidth = 350;
+  final double dropDownWidth = 330;
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +88,7 @@ class ScenarioDetails extends StatelessWidget {
       },
     );
   }
+
   Widget _appName() {
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
       buildWhen: (oldState, state) =>
@@ -129,8 +130,11 @@ class ScenarioDetails extends StatelessWidget {
                   initialSelection: state.deviceInput,
                   requestFocusOnTap: false,
                   dropdownMenuEntries: session.inputDevices
-                      .map((i) => DropDownMenuFactory.dropdownMenuEntry(context,
-                          value: i, label: i.name,))
+                      .map((i) => DropDownMenuFactory.dropdownMenuEntry(
+                            context,
+                            value: i,
+                            label: i.name,
+                          ))
                       .toList(),
                 ),
                 IconButton(
@@ -159,12 +163,12 @@ class ScenarioDetails extends StatelessWidget {
         return BlocBuilder<TestScenarioCubit, TestScenarioState>(
           buildWhen: (oldState, state) =>
               oldState.networkInterface != state.networkInterface ||
-              oldState.hasInputRecord != state.hasInputRecord,
+              oldState.hasTests != state.hasTests,
           builder: (context, state) {
             return DropdownMenu<TsharkNetworkInterface>(
               key: const Key("NetworkInterfaceSelection"),
               width: dropDownWidth,
-              enabled: !state.hasInputRecord,
+              enabled: !state.hasTests,
               label: const Text("Network Interface"),
               onSelected: (i) => i == null
                   ? null
@@ -172,8 +176,11 @@ class ScenarioDetails extends StatelessWidget {
               initialSelection: state.networkInterface,
               requestFocusOnTap: false,
               dropdownMenuEntries: session.networkInterfaces
-                  .map((i) => DropDownMenuFactory.dropdownMenuEntry(context,
-                      value: i, label: i.name,))
+                  .map((i) => DropDownMenuFactory.dropdownMenuEntry(
+                        context,
+                        value: i,
+                        label: i.name,
+                      ))
                   .toList(),
             );
           },
@@ -204,8 +211,7 @@ class ScenarioDetails extends StatelessWidget {
           enabled: !state.hasInputRecord,
           initialValue: state.duration.inSeconds.toString(),
           validate: validateDuration,
-          onChanged: (s) =>
-              context.testScenarioCubit.setDuration(int.parse(s)),
+          onChanged: (s) => context.testScenarioCubit.setDuration(int.parse(s)),
           labelText: "Test Duration",
         ),
       ),
@@ -222,8 +228,7 @@ class ScenarioDetails extends StatelessWidget {
     }
 
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
-      buildWhen: (oldState, state) =>
-          oldState.numTestRuns != state.numTestRuns,
+      buildWhen: (oldState, state) => oldState.numTestRuns != state.numTestRuns,
       builder: (context, state) => SizedBox(
         width: textFieldWidth,
         child: SimpleTextField(
@@ -245,12 +250,16 @@ class ScenarioDetails extends StatelessWidget {
         return Row(
           children: [
             Text(
-                "${!state.hasInputRecord ? " (REQUIRED) " : ""}User Input Recorded"),
+              "${!state.hasInputRecord ? " (EMPTY) " : ""}User Input Recorded",
+            ),
             if (state.hasInputRecord) ...[
-              // TODO: Ask for confirmation before deleting anything!
               IconButton(
                 onPressed: state.hasInputRecord
-                    ? context.testScenarioCubit.resetUserInput
+                    ? () async {
+                      if(await ConfirmationDialog.ask(context, content: "Do you want to reset the recorded user input?") && context.mounted) {
+                        context.testScenarioCubit.resetUserInput();
+                      }
+                    }
                     : null,
                 icon: Icon(
                   context.icons.remove,
