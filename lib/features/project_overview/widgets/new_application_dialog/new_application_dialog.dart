@@ -17,18 +17,18 @@ class NewApplicationDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          NewApplicationDialogCubit(
-            context.settings,
-            context.session,
-          ),
+      create: (context) => NewApplicationDialogCubit(
+        context.settings,
+        context.session,
+      ),
       child: BlocBuilder<NewApplicationDialogCubit, NewApplicationDialogState>(
         buildWhen: (oldState, state) => oldState.searching != state.searching,
         builder: (context, state) {
           return CustomDialog(
             expand: false,
             title: "New Application",
-            titleTrailing: state.searching ? const CircularProgressIndicator() : null,
+            titleTrailing:
+                state.searching ? const CircularProgressIndicator() : null,
             content: _buildContent(context),
             actions: [
               _cancelButton(context),
@@ -54,19 +54,18 @@ class NewApplicationDialog extends StatelessWidget {
 
   Widget _cancelButton(BuildContext context) {
     return IconTextButton(
-      text: "Cancel",
-      icon: Icon(context.icons.cancel),
-      onTap: () {
-        context.newApplicationDialogCubit.cleanup();
-        context.navigator.pop(null);
-      } 
-    );
+        text: "Cancel",
+        icon: Icon(context.icons.cancel),
+        onTap: () {
+          context.newApplicationDialogCubit.cleanup();
+          context.navigator.pop(null);
+        });
   }
 
   Widget _createButton() {
     return BlocBuilder<NewApplicationDialogCubit, NewApplicationDialogState>(
       buildWhen: (oldState, state) =>
-      oldState.searching != state.searching ||
+          oldState.searching != state.searching ||
           oldState.applicationId != state.applicationId ||
           oldState.iconPath != state.iconPath,
       builder: (context, state) {
@@ -82,17 +81,17 @@ class NewApplicationDialog extends StatelessWidget {
   Widget _loadIconButton() {
     return BlocBuilder<NewApplicationDialogCubit, NewApplicationDialogState>(
       buildWhen: (oldState, state) =>
-      oldState.searching != state.searching ||
+          oldState.searching != state.searching ||
           oldState.iconFound != state.iconFound ||
           oldState.applicationId != state.applicationId,
       builder: (context, state) {
         return IconTextButton(
           text: "Load Icon",
           icon: Icon(context.icons.search),
-          onTap: state.searching || state.iconFound || state.applicationId.isEmpty
-              ? null
-              : () =>
-              context.newApplicationDialogCubit.extractAppIcon(),
+          onTap:
+              state.searching || state.iconFound || state.applicationId.isEmpty
+                  ? null
+                  : () => context.newApplicationDialogCubit.extractAppIcon(),
         );
       },
     );
@@ -101,19 +100,17 @@ class NewApplicationDialog extends StatelessWidget {
   Widget _applicationSelection() {
     return BlocBuilder<NewApplicationDialogCubit, NewApplicationDialogState>(
       buildWhen: (oldState, state) =>
-      oldState.applicationId != state.applicationId,
+          oldState.applicationId != state.applicationId,
       builder: (context, state) {
         return DropdownMenu(
           label: const Text("Select the application"),
-          onSelected: (a) =>
-          a != null
+          onSelected: (a) => a != null
               ? context.newApplicationDialogCubit.selectApplication(a)
               : null,
           requestFocusOnTap: false,
           initialSelection: state.applicationId,
           dropdownMenuEntries: applications
-              .map((a) =>
-              DropDownMenuFactory.dropdownMenuEntry(context,
+              .map((a) => DropDownMenuFactory.dropdownMenuEntry(context,
                   value: a, label: a))
               .toList(),
         );
@@ -124,21 +121,22 @@ class NewApplicationDialog extends StatelessWidget {
   Widget _applicationName() {
     return BlocBuilder<NewApplicationDialogCubit, NewApplicationDialogState>(
       buildWhen: (oldState, state) =>
-      oldState.applicationId != state.applicationId,
-      builder: (context, state) =>
-          SimpleTextField(
-            initialValue: state.name,
-            labelText: "Application Name",
-            onChanged: (n) => context.newApplicationDialogCubit.selectName(n),
-          ),
+          oldState.applicationId != state.applicationId,
+      builder: (context, state) => SimpleTextField(
+        initialValue: state.name,
+        labelText: "Application Name",
+        onChanged: (n) => context.newApplicationDialogCubit.selectName(n),
+      ),
     );
   }
 
-  static Future<TestApplication?> newApplication(BuildContext context,
-      List<TestApplication> existingApplications,) async {
+  static Future<TestApplication?> newApplication(
+    BuildContext context,
+    List<TestApplication> existingApplications,
+  ) async {
     List<String> applications =
-    await Adb(context.settings, device: context.session.state.adbDevice)
-        .getApplications();
+        await Adb(context.settings, device: context.session.state.adbDevice)
+            .getApplications();
     List<String> newApplications = applications
         .where((a) => !existingApplications.any((ea) => ea.id == a))
         .toList();

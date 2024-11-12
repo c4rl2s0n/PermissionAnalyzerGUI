@@ -5,11 +5,8 @@ import 'package:permission_analyzer_gui/data/data.dart';
 
 import 'test_scenario_cubit.dart';
 
-
 extension CtxTestScenarioCubit on BuildContext {
-  TestScenarioCubit get testScenarioCubit =>
-      read<TestScenarioCubit>();
-
+  TestScenarioCubit get testScenarioCubit => read<TestScenarioCubit>();
 
   Icon permissionStateIcon(PermissionState state) {
     switch (state) {

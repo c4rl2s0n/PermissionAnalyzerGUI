@@ -12,6 +12,7 @@ class TestScenarioRepository extends ITestScenarioRepository {
         .applicationIdEqualTo(applicationId)
         .findAllSync();
   }
+
   @override
   Stream<List<TestScenario>> watchForApplication(String applicationId) {
     return _isar.testScenarios

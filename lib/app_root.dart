@@ -18,8 +18,9 @@ class AppRoot extends StatelessWidget {
   Widget build(BuildContext context) {
     return _registerGlobalBlocs(
       child: BlocBuilder<SettingsCubit, SettingsState>(
-        buildWhen: (oldState, state) => oldState.isDarkMode != state.isDarkMode
-            || oldState.language != state.language,
+        buildWhen: (oldState, state) =>
+            oldState.isDarkMode != state.isDarkMode ||
+            oldState.language != state.language,
         builder: (context, state) {
           return MaterialApp(
             title: title,
@@ -28,9 +29,10 @@ class AppRoot extends StatelessWidget {
             theme: getTheme(false),
             darkTheme: getTheme(true),
             themeMode: state.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-            localizationsDelegates:AppLocalizations.localizationsDelegates,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            locale: AppLocalizations.supportedLocales.firstWhere((l) => l.languageCode == state.language),
+            locale: AppLocalizations.supportedLocales
+                .firstWhere((l) => l.languageCode == state.language),
             home: Builder(
               builder: (context) => const SplashScreen(),
             ),

@@ -16,8 +16,7 @@ class LanguageSettings extends StatelessWidget {
         SimpleSetting(
           name: context.strings.selectedLanguage,
           action: BlocBuilder<SettingsCubit, SettingsState>(
-            buildWhen: (oldState, state) =>
-            oldState.language != state.language,
+            buildWhen: (oldState, state) => oldState.language != state.language,
             builder: (context, state) {
               return DropdownMenu<String>(
                 onSelected: (locale) => locale != null
@@ -26,14 +25,13 @@ class LanguageSettings extends StatelessWidget {
                 initialSelection: AppLocalizations.supportedLocales
                     .map((l) => l.languageCode)
                     .firstWhere((l) => l == state.language,
-                    orElse: () => context.strings.localeName),
+                        orElse: () => context.strings.localeName),
                 requestFocusOnTap: false,
-                dropdownMenuEntries:
-                AppLocalizations.supportedLocales
+                dropdownMenuEntries: AppLocalizations.supportedLocales
                     .map((l) => DropdownMenuEntry<String>(
-                  value: l.languageCode,
-                  label: l.languageCode,
-                ))
+                          value: l.languageCode,
+                          label: l.languageCode,
+                        ))
                     .toList(),
               );
             },

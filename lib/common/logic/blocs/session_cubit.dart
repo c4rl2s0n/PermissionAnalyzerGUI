@@ -9,15 +9,17 @@ class SessionCubit extends Cubit<SessionState> {
   }
   final SettingsCubit _settingsCubit;
 
-  Future _initialize()async{
+  Future _initialize() async {
     await loadAdbDevices();
-    if(state.adbDevices.isNotEmpty){
+    if (state.adbDevices.isNotEmpty) {
       await setAdbDevice(state.adbDevices.first);
     }
   }
 
-  bool _checkAdbDevice(){
-    if(state.hasDevice){
+  bool get _hasAdb => _settingsCubit.state.adbPath.isNotEmpty;
+
+  bool _checkAdbDevice() {
+    if (_hasAdb && state.hasDevice) {
       return true;
     }
     emit(const SessionState());
@@ -32,9 +34,13 @@ class SessionCubit extends Cubit<SessionState> {
   }
 
   Future loadAdbDevices() async {
+    if (!_hasAdb) return;
     Adb adb = Adb(_settingsCubit);
     List<String> devices = await adb.devices();
-    emit(state.copyWith(adbDevices: devices));
+    emit(state.copyWith(
+      adbDevices: devices,
+      adbDevice: state.adbDevice.isEmpty ? devices.firstOrNull : null,
+    ));
   }
 
   Future loadAdbDeviceEventInputs() async {
@@ -45,12 +51,11 @@ class SessionCubit extends Cubit<SessionState> {
   }
 
   Future loadNetworkInterfaces() async {
-    if(!_checkAdbDevice()) return;
+    if (!_checkAdbDevice()) return;
     Tshark tshark = Tshark(_settingsCubit);
     List<TsharkNetworkInterface> interfaces = await tshark.getInterfaces();
     emit(state.copyWith(networkInterfaces: interfaces));
   }
-
 
   Future loadApplications() async {
     if (!_checkAdbDevice()) return;

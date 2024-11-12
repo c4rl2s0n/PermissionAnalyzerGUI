@@ -43,7 +43,7 @@ class _SimpleTextFieldState extends State<SimpleTextField> {
     });
   }
 
-  void _toggleObscure(){
+  void _toggleObscure() {
     setState(() {
       obscured = !obscured;
     });
@@ -66,7 +66,8 @@ class _SimpleTextFieldState extends State<SimpleTextField> {
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     return Padding(
-      padding: widget.padding ??  EdgeInsets.only(bottom: context.constants.spacing),
+      padding:
+          widget.padding ?? EdgeInsets.only(bottom: context.constants.spacing),
       child: TextFormField(
         enabled: widget.enabled,
         style: theme.textTheme.bodyMedium,
@@ -78,14 +79,19 @@ class _SimpleTextFieldState extends State<SimpleTextField> {
           enabledBorder: getTextBoxBorder(context),
           focusedBorder: getTextBoxBorder(context),
           focusedErrorBorder: getErrorTextBoxBorder(context),
-          labelStyle: theme.textTheme.labelMedium?.copyWith(color: theme.textTheme.labelMedium?.color?.withOpacity(context.constants.subtleColorOpacity)),
+          labelStyle: theme.textTheme.labelMedium?.copyWith(
+              color: theme.textTheme.labelMedium?.color
+                  ?.withOpacity(context.constants.subtleColorOpacity)),
           labelText: widget.labelText,
           hintText: widget.hintText,
           errorText: _errorText,
           suffixIcon: widget.isPassword
               ? IconButton(
                   onPressed: _toggleObscure,
-                  icon: Icon(Icons.remove_red_eye_outlined, color: theme.iconTheme.color,),
+                  icon: Icon(
+                    Icons.remove_red_eye_outlined,
+                    color: theme.iconTheme.color,
+                  ),
                 )
               : null,
         ),

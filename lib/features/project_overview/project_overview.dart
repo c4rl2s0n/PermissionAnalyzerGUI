@@ -20,8 +20,9 @@ class ProjectOverview extends StatelessWidget {
           PageComponentFactory.appBar(context, title: "Applications", actions: [
         PageComponentFactory.navigationIconButton(
           context,
-          const SettingsPage(),
-        )
+          () => const SettingsPage(),
+          context.icons.settings,
+        ),
       ]),
       body: _buildContent(context),
     );

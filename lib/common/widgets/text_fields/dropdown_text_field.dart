@@ -62,7 +62,8 @@ class _DropdownTextFieldState extends State<DropdownTextField> {
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     return Padding(
-      padding: widget.padding ?? EdgeInsets.only(bottom: context.constants.spacing),
+      padding:
+          widget.padding ?? EdgeInsets.only(bottom: context.constants.spacing),
       child: TextFormField(
         style: theme.textTheme.bodyMedium,
         controller: controller,
@@ -77,7 +78,10 @@ class _DropdownTextFieldState extends State<DropdownTextField> {
           errorText: _errorText,
           suffixIcon: PopupMenuButton<String>(
             initialValue: "",
-            icon: Icon(Icons.arrow_drop_down, color: theme.iconTheme.color,),
+            icon: Icon(
+              Icons.arrow_drop_down,
+              color: theme.iconTheme.color,
+            ),
             onSelected: (String item) {
               controller.text = item;
             },
@@ -91,7 +95,6 @@ class _DropdownTextFieldState extends State<DropdownTextField> {
                 .toList(),
           ),
         ),
-
         keyboardType: widget.keyboardType,
       ),
     );

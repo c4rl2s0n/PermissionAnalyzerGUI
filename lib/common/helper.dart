@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -7,7 +6,7 @@ Future performDelayedTap(BuildContext context, void Function() onTap) async {
   // Delay to show ripple-effect before executing the command
   await Future.delayed(
     const Duration(milliseconds: 150),
-        () {
+    () {
       if (context.mounted) onTap.call();
     },
   );
@@ -21,7 +20,7 @@ bool isMobile() {
   return Platform.isAndroid || Platform.isIOS;
 }
 
-String permissionToShortcut(String permission){
+String permissionToShortcut(String permission) {
   return permission
       .split(".")
       .last
@@ -30,9 +29,10 @@ String permissionToShortcut(String permission){
       .join();
 }
 
-Future sleepSec(int seconds){
+Future sleepSec(int seconds) {
   return sleep(Duration(seconds: seconds));
 }
-Future sleep(Duration duration){
+
+Future sleep(Duration duration) {
   return Future.delayed(duration);
 }

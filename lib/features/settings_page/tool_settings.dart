@@ -16,7 +16,6 @@ class ToolSettings extends StatelessWidget {
       settings: [
         _workingDirectory(),
         _adbPathSettings(),
-        _adbPathSettings(),
         _adbDeviceSettings(),
         _tsharkPathSettings(),
         _recorderPathSettings(),
@@ -28,25 +27,25 @@ class ToolSettings extends StatelessWidget {
 
   Widget _workingDirectory() {
     return BlocBuilder<SettingsCubit, SettingsState>(
-      buildWhen: (oldState, state) => oldState.workingDirectory != state.workingDirectory,
+      buildWhen: (oldState, state) =>
+          oldState.workingDirectory != state.workingDirectory,
       builder: (context, state) {
         return SimpleSetting(
           name: "Working Directory",
           description: state.workingDirectory,
           action:
-            // pick file manually
-            IconButton(
-              onPressed: () async {
-                String? directory = await FilePickerFactory.getFilePicker()
-                    .getDirectoryPath(dialogTitle: "Pick your working directory");
-                if (!context.mounted) return;
-                if (directory != null && directory.isNotEmpty) {
-                  context.settings.setWorkingDirectory(directory);
-                }
-              },
-              icon: Icon(context.icons.pickDirectory),
-            ),
-
+              // pick file manually
+              IconButton(
+            onPressed: () async {
+              String? directory = await FilePickerFactory.getFilePicker()
+                  .getDirectoryPath(dialogTitle: "Pick your working directory");
+              if (!context.mounted) return;
+              if (directory != null && directory.isNotEmpty) {
+                context.settings.setWorkingDirectory(directory);
+              }
+            },
+            icon: Icon(context.icons.pickDirectory),
+          ),
         );
       },
     );
@@ -224,14 +223,17 @@ class ToolSettings extends StatelessWidget {
       },
     );
   }
+
   Widget _inputRecordDestinationPathSettings() {
     return BlocBuilder<SettingsCubit, SettingsState>(
       buildWhen: (oldState, state) =>
-          oldState.inputRecordDestinationPath != state.inputRecordDestinationPath,
+          oldState.inputRecordDestinationPath !=
+          state.inputRecordDestinationPath,
       builder: (context, state) {
         return SimpleSetting(
           name: "User Input Record Destination Path",
-          description: "Location where the record of the user input will be stored on the test device",
+          description:
+              "Location where the record of the user input will be stored on the test device",
           action: SimpleTextField(
             initialValue: state.inputRecordDestinationPath,
             labelText: context.strings.path,

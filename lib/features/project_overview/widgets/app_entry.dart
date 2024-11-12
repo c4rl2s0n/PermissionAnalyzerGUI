@@ -23,13 +23,15 @@ class AppEntry extends StatelessWidget {
       width: width,
       height: height,
       child: TapContainer(
-        onTap: () => context.navigator.navigateTo(feature.TestApplication(application: application)),
+        onTap: () => context.navigator
+            .navigateTo(feature.TestApplication(application: application)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             Margin.vertical(context.constants.smallSpacing),
-            if (application.iconPath != null && application.iconPath!.isNotEmpty) ...[
+            if (application.iconPath != null &&
+                application.iconPath!.isNotEmpty) ...[
               Expanded(
                 child: Image.file(
                   File(application.iconPath!),
@@ -37,10 +39,18 @@ class AppEntry extends StatelessWidget {
                 ),
               ),
             ] else ...[
-              Expanded(child: Icon(context.icons.question, size: width/2,)),
+              Expanded(
+                  child: Icon(
+                context.icons.question,
+                size: width / 2,
+              )),
             ],
             Margin.vertical(context.constants.smallSpacing),
-            Text(application.name, style: context.textTheme.labelLarge?.copyWith(fontSize: width/8),),
+            Text(
+              application.name,
+              style:
+                  context.textTheme.labelLarge?.copyWith(fontSize: width / 8),
+            ),
             Margin.vertical(context.constants.smallSpacing),
           ],
         ),

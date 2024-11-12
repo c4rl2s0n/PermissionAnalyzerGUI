@@ -10,6 +10,7 @@ class IconTextButton extends StatelessWidget {
     this.onTap,
     this.loading = false,
     this.color,
+    this.padding,
     super.key,
   });
 
@@ -19,20 +20,21 @@ class IconTextButton extends StatelessWidget {
   final Function()? onTap;
   final bool loading;
   final Color? color;
+  final double? padding;
 
   @override
   Widget build(BuildContext context) {
     Color color = onTap == null
         ? context.colors.disabled
         : this.color ?? context.colors.highlight;
-    TextStyle? usedTextStyle = textStyle ??
-        context.textTheme.labelMedium?.copyWith(color: color);
+    TextStyle? usedTextStyle =
+        textStyle ?? context.textTheme.labelMedium?.copyWith(color: color);
     return TapContainer(
       onTap: onTap,
       splashColor: color.withOpacity(context.constants.strongColorOpacity),
       backgroundColor: Colors.transparent,
       child: Container(
-        padding: EdgeInsets.all(context.constants.smallSpacing),
+        padding: EdgeInsets.all(padding ?? context.constants.smallSpacing),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(context.constants.roundedCornerRadius),
           border: Border.all(color: color, width: 2),
@@ -45,9 +47,7 @@ class IconTextButton extends StatelessWidget {
               CircularProgressIndicator(color: usedTextStyle?.color),
             ] else if (icon != null) ...[
               IconTheme(
-                  data: context
-                      .iconTheme
-                      .copyWith(color: usedTextStyle?.color),
+                  data: context.iconTheme.copyWith(color: usedTextStyle?.color),
                   child: icon!)
             ],
             if (icon != null && text != null) ...[

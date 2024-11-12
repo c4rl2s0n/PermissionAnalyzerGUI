@@ -1,6 +1,5 @@
 part of 'splash_screen_cubit.dart';
 
-
 class SplashScreenState extends Equatable {
   const SplashScreenState({this.isDone = false});
 

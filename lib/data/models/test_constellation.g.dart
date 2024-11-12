@@ -24,6 +24,12 @@ const TestConstellationSchema = Schema(
       name: r'tests',
       type: IsarType.objectList,
       target: r'TestRun',
+    ),
+    r'trafficConnections': PropertySchema(
+      id: 2,
+      name: r'trafficConnections',
+      type: IsarType.objectList,
+      target: r'TrafficConnection',
     )
   },
   estimateSize: _testConstellationEstimateSize,
@@ -55,6 +61,15 @@ int _testConstellationEstimateSize(
       bytesCount += TestRunSchema.estimateSize(value, offsets, allOffsets);
     }
   }
+  bytesCount += 3 + object.trafficConnections.length * 3;
+  {
+    final offsets = allOffsets[TrafficConnection]!;
+    for (var i = 0; i < object.trafficConnections.length; i++) {
+      final value = object.trafficConnections[i];
+      bytesCount +=
+          TrafficConnectionSchema.estimateSize(value, offsets, allOffsets);
+    }
+  }
   return bytesCount;
 }
 
@@ -75,6 +90,12 @@ void _testConstellationSerialize(
     allOffsets,
     TestRunSchema.serialize,
     object.tests,
+  );
+  writer.writeObjectList<TrafficConnection>(
+    offsets[2],
+    allOffsets,
+    TrafficConnectionSchema.serialize,
+    object.trafficConnections,
   );
 }
 
@@ -126,6 +147,14 @@ P _testConstellationDeserializeProp<P>(
             TestRun(),
           ) ??
           const []) as P;
+    case 2:
+      return (reader.readObjectList<TrafficConnection>(
+            offset,
+            TrafficConnectionSchema.deserialize,
+            allOffsets,
+            TrafficConnection(),
+          ) ??
+          []) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -310,6 +339,95 @@ extension TestConstellationQueryFilter
       );
     });
   }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      trafficConnectionsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'trafficConnections',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      trafficConnectionsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'trafficConnections',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      trafficConnectionsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'trafficConnections',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      trafficConnectionsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'trafficConnections',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      trafficConnectionsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'trafficConnections',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      trafficConnectionsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'trafficConnections',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
 }
 
 extension TestConstellationQueryObject
@@ -325,6 +443,13 @@ extension TestConstellationQueryObject
       testsElement(FilterQuery<TestRun> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'tests');
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      trafficConnectionsElement(FilterQuery<TrafficConnection> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'trafficConnections');
     });
   }
 }

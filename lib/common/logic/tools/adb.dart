@@ -20,7 +20,7 @@ class Adb {
   // TODO: Test if functions return usefull resultCodes
 
   static Future<String?> lookupPath() async {
-    return await SystemProcess.which("adb");
+    return (await SystemProcess.which("adb"))?.replaceAll("\n", "");
   }
 
   List<String> _getArguments(List<String> arguments) {
@@ -31,8 +31,12 @@ class Adb {
   }
 
   Future<Process> start(List<String> arguments, {Duration? timeout}) {
-    return _ps.start(_settings.adbPath, _getArguments(arguments),
-        timeout: timeout);
+    assert(_settings.adbPath.isNotEmpty);
+    return _ps.start(
+      _settings.adbPath,
+      _getArguments(arguments),
+      timeout: timeout,
+    );
   }
 
   Future<Process> shellProc(List<String> arguments, {Duration? timeout}) {
@@ -40,6 +44,7 @@ class Adb {
   }
 
   Future<ProcessResult> run(List<String> arguments) {
+    assert(_settings.adbPath.isNotEmpty);
     return _ps.run(_settings.adbPath, _getArguments(arguments));
   }
 
@@ -142,10 +147,11 @@ class Adb {
   Future<List<String>> getApplicationPermissions(String applicaitonId) async {
     var dump = (await shell(["dumpsys", "package", applicaitonId])).outText;
     List<String> permissions = [];
-    List<String> permissionDump = dump.split("requested permissions:")[1].split("\n");
-    for(var line in permissionDump){
-      if(line.isEmpty) continue;
-      if(line.contains(":")) break;
+    List<String> permissionDump =
+        dump.split("requested permissions:")[1].split("\n");
+    for (var line in permissionDump) {
+      if (line.isEmpty) continue;
+      if (line.contains(":")) break;
       permissions.add(line.trim());
     }
     permissions.sort();

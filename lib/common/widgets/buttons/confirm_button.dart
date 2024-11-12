@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:permission_analyzer_gui/common/common.dart';
 
-
-class ConfirmButton extends StatelessWidget{
-
+class ConfirmButton extends StatelessWidget {
   const ConfirmButton({this.returnValue = true, this.text = "Okay", super.key});
 
   final dynamic returnValue;
@@ -21,5 +19,4 @@ class ConfirmButton extends StatelessWidget{
       color: context.colors.positive,
     );
   }
-
 }

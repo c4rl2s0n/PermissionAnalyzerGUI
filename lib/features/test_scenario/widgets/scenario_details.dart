@@ -245,7 +245,8 @@ class ScenarioDetails extends StatelessWidget {
   Widget _hasUserInputRecordedIndicator() {
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
       buildWhen: (oldState, state) =>
-          oldState.hasInputRecord != state.hasInputRecord,
+          oldState.hasInputRecord != state.hasInputRecord ||
+          oldState.hasTests != state.hasTests,
       builder: (context, state) {
         return Row(
           children: [
@@ -254,12 +255,17 @@ class ScenarioDetails extends StatelessWidget {
             ),
             if (state.hasInputRecord) ...[
               IconButton(
-                onPressed: state.hasInputRecord
+                onPressed: state.hasInputRecord && !state.hasTests
                     ? () async {
-                      if(await ConfirmationDialog.ask(context, content: "Do you want to reset the recorded user input?") && context.mounted) {
-                        context.testScenarioCubit.resetUserInput();
+                        if (await ConfirmationDialog.ask(
+                              context,
+                              content:
+                                  "Do you want to reset the recorded user input?",
+                            ) &&
+                            context.mounted) {
+                          context.testScenarioCubit.resetUserInput();
+                        }
                       }
-                    }
                     : null,
                 icon: Icon(
                   context.icons.remove,

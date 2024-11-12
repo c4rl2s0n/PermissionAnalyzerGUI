@@ -17,77 +17,83 @@ const TestScenarioSchema = CollectionSchema(
   name: r'TestScenario',
   id: 5064110888938082989,
   properties: {
-    r'applicationId': PropertySchema(
+    r'analysis': PropertySchema(
       id: 0,
+      name: r'analysis',
+      type: IsarType.object,
+      target: r'Analysis',
+    ),
+    r'applicationId': PropertySchema(
+      id: 1,
       name: r'applicationId',
       type: IsarType.string,
     ),
     r'applicationName': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'applicationName',
       type: IsarType.string,
     ),
     r'captureTraffic': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'captureTraffic',
       type: IsarType.bool,
     ),
     r'device': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'device',
       type: IsarType.string,
     ),
     r'deviceInput': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'deviceInput',
       type: IsarType.object,
       target: r'AndroidInputDevice',
     ),
     r'durationInSeconds': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'durationInSeconds',
       type: IsarType.long,
     ),
     r'fileDirectory': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'fileDirectory',
       type: IsarType.string,
     ),
     r'name': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'name',
       type: IsarType.string,
     ),
     r'networkInterface': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'networkInterface',
       type: IsarType.object,
       target: r'TsharkNetworkInterface',
     ),
     r'numTestRuns': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'numTestRuns',
       type: IsarType.long,
     ),
     r'permissions': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'permissions',
       type: IsarType.objectList,
       target: r'PermissionSetting',
     ),
     r'recordScreen': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'recordScreen',
       type: IsarType.bool,
     ),
     r'testConstellations': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'testConstellations',
       type: IsarType.objectList,
       target: r'TestConstellation',
     ),
     r'userInputRecord': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'userInputRecord',
       type: IsarType.string,
     )
@@ -118,7 +124,13 @@ const TestScenarioSchema = CollectionSchema(
     r'TsharkNetworkInterface': TsharkNetworkInterfaceSchema,
     r'PermissionSetting': PermissionSettingSchema,
     r'TestConstellation': TestConstellationSchema,
-    r'TestRun': TestRunSchema
+    r'TestRun': TestRunSchema,
+    r'NetworkPacket': NetworkPacketSchema,
+    r'TrafficConnection': TrafficConnectionSchema,
+    r'TrafficEndpoint': TrafficEndpointSchema,
+    r'Analysis': AnalysisSchema,
+    r'EndpointAnalysis': EndpointAnalysisSchema,
+    r'TrafficGroup': TrafficGroupSchema
   },
   getId: _testScenarioGetId,
   getLinks: _testScenarioGetLinks,
@@ -132,6 +144,13 @@ int _testScenarioEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  {
+    final value = object.analysis;
+    if (value != null) {
+      bytesCount += 3 +
+          AnalysisSchema.estimateSize(value, allOffsets[Analysis]!, allOffsets);
+    }
+  }
   bytesCount += 3 + object.applicationId.length * 3;
   bytesCount += 3 + object.applicationName.length * 3;
   bytesCount += 3 + object.device.length * 3;
@@ -171,40 +190,46 @@ void _testScenarioSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.applicationId);
-  writer.writeString(offsets[1], object.applicationName);
-  writer.writeBool(offsets[2], object.captureTraffic);
-  writer.writeString(offsets[3], object.device);
+  writer.writeObject<Analysis>(
+    offsets[0],
+    allOffsets,
+    AnalysisSchema.serialize,
+    object.analysis,
+  );
+  writer.writeString(offsets[1], object.applicationId);
+  writer.writeString(offsets[2], object.applicationName);
+  writer.writeBool(offsets[3], object.captureTraffic);
+  writer.writeString(offsets[4], object.device);
   writer.writeObject<AndroidInputDevice>(
-    offsets[4],
+    offsets[5],
     allOffsets,
     AndroidInputDeviceSchema.serialize,
     object.deviceInput,
   );
-  writer.writeLong(offsets[5], object.durationInSeconds);
-  writer.writeString(offsets[6], object.fileDirectory);
-  writer.writeString(offsets[7], object.name);
+  writer.writeLong(offsets[6], object.durationInSeconds);
+  writer.writeString(offsets[7], object.fileDirectory);
+  writer.writeString(offsets[8], object.name);
   writer.writeObject<TsharkNetworkInterface>(
-    offsets[8],
+    offsets[9],
     allOffsets,
     TsharkNetworkInterfaceSchema.serialize,
     object.networkInterface,
   );
-  writer.writeLong(offsets[9], object.numTestRuns);
+  writer.writeLong(offsets[10], object.numTestRuns);
   writer.writeObjectList<PermissionSetting>(
-    offsets[10],
+    offsets[11],
     allOffsets,
     PermissionSettingSchema.serialize,
     object.permissions,
   );
-  writer.writeBool(offsets[11], object.recordScreen);
+  writer.writeBool(offsets[12], object.recordScreen);
   writer.writeObjectList<TestConstellation>(
-    offsets[12],
+    offsets[13],
     allOffsets,
     TestConstellationSchema.serialize,
     object.testConstellations,
   );
-  writer.writeString(offsets[13], object.userInputRecord);
+  writer.writeString(offsets[14], object.userInputRecord);
 }
 
 TestScenario _testScenarioDeserialize(
@@ -214,42 +239,47 @@ TestScenario _testScenarioDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = TestScenario(
-    applicationId: reader.readStringOrNull(offsets[0]) ?? "",
-    applicationName: reader.readStringOrNull(offsets[1]) ?? "",
-    captureTraffic: reader.readBoolOrNull(offsets[2]) ?? true,
-    device: reader.readStringOrNull(offsets[3]) ?? "",
+    analysis: reader.readObjectOrNull<Analysis>(
+      offsets[0],
+      AnalysisSchema.deserialize,
+      allOffsets,
+    ),
+    applicationId: reader.readStringOrNull(offsets[1]) ?? "",
+    applicationName: reader.readStringOrNull(offsets[2]) ?? "",
+    captureTraffic: reader.readBoolOrNull(offsets[3]) ?? true,
+    device: reader.readStringOrNull(offsets[4]) ?? "",
     deviceInput: reader.readObjectOrNull<AndroidInputDevice>(
-          offsets[4],
+          offsets[5],
           AndroidInputDeviceSchema.deserialize,
           allOffsets,
         ) ??
         const AndroidInputDevice(),
-    durationInSeconds: reader.readLongOrNull(offsets[5]) ?? 60,
-    fileDirectory: reader.readStringOrNull(offsets[6]) ?? "",
-    name: reader.readStringOrNull(offsets[7]) ?? "",
+    durationInSeconds: reader.readLongOrNull(offsets[6]) ?? 60,
+    fileDirectory: reader.readStringOrNull(offsets[7]) ?? "",
+    name: reader.readStringOrNull(offsets[8]) ?? "",
     networkInterface: reader.readObjectOrNull<TsharkNetworkInterface>(
-          offsets[8],
+          offsets[9],
           TsharkNetworkInterfaceSchema.deserialize,
           allOffsets,
         ) ??
         const TsharkNetworkInterface(),
-    numTestRuns: reader.readLongOrNull(offsets[9]) ?? 1,
+    numTestRuns: reader.readLongOrNull(offsets[10]) ?? 1,
     permissions: reader.readObjectList<PermissionSetting>(
-          offsets[10],
+          offsets[11],
           PermissionSettingSchema.deserialize,
           allOffsets,
           PermissionSetting(),
         ) ??
         const [],
-    recordScreen: reader.readBoolOrNull(offsets[11]) ?? true,
+    recordScreen: reader.readBoolOrNull(offsets[12]) ?? true,
     testConstellations: reader.readObjectList<TestConstellation>(
-          offsets[12],
+          offsets[13],
           TestConstellationSchema.deserialize,
           allOffsets,
           TestConstellation(),
         ) ??
         const [],
-    userInputRecord: reader.readStringOrNull(offsets[13]) ?? "",
+    userInputRecord: reader.readStringOrNull(offsets[14]) ?? "",
   );
   object.id = id;
   return object;
@@ -263,36 +293,42 @@ P _testScenarioDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readStringOrNull(offset) ?? "") as P;
+      return (reader.readObjectOrNull<Analysis>(
+        offset,
+        AnalysisSchema.deserialize,
+        allOffsets,
+      )) as P;
     case 1:
       return (reader.readStringOrNull(offset) ?? "") as P;
     case 2:
-      return (reader.readBoolOrNull(offset) ?? true) as P;
-    case 3:
       return (reader.readStringOrNull(offset) ?? "") as P;
+    case 3:
+      return (reader.readBoolOrNull(offset) ?? true) as P;
     case 4:
+      return (reader.readStringOrNull(offset) ?? "") as P;
+    case 5:
       return (reader.readObjectOrNull<AndroidInputDevice>(
             offset,
             AndroidInputDeviceSchema.deserialize,
             allOffsets,
           ) ??
           const AndroidInputDevice()) as P;
-    case 5:
-      return (reader.readLongOrNull(offset) ?? 60) as P;
     case 6:
-      return (reader.readStringOrNull(offset) ?? "") as P;
+      return (reader.readLongOrNull(offset) ?? 60) as P;
     case 7:
       return (reader.readStringOrNull(offset) ?? "") as P;
     case 8:
+      return (reader.readStringOrNull(offset) ?? "") as P;
+    case 9:
       return (reader.readObjectOrNull<TsharkNetworkInterface>(
             offset,
             TsharkNetworkInterfaceSchema.deserialize,
             allOffsets,
           ) ??
           const TsharkNetworkInterface()) as P;
-    case 9:
-      return (reader.readLongOrNull(offset) ?? 1) as P;
     case 10:
+      return (reader.readLongOrNull(offset) ?? 1) as P;
+    case 11:
       return (reader.readObjectList<PermissionSetting>(
             offset,
             PermissionSettingSchema.deserialize,
@@ -300,9 +336,9 @@ P _testScenarioDeserializeProp<P>(
             PermissionSetting(),
           ) ??
           const []) as P;
-    case 11:
-      return (reader.readBoolOrNull(offset) ?? true) as P;
     case 12:
+      return (reader.readBoolOrNull(offset) ?? true) as P;
+    case 13:
       return (reader.readObjectList<TestConstellation>(
             offset,
             TestConstellationSchema.deserialize,
@@ -310,7 +346,7 @@ P _testScenarioDeserializeProp<P>(
             TestConstellation(),
           ) ??
           const []) as P;
-    case 13:
+    case 14:
       return (reader.readStringOrNull(offset) ?? "") as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -456,6 +492,24 @@ extension TestScenarioQueryWhere
 
 extension TestScenarioQueryFilter
     on QueryBuilder<TestScenario, TestScenario, QFilterCondition> {
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      analysisIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'analysis',
+      ));
+    });
+  }
+
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
+      analysisIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'analysis',
+      ));
+    });
+  }
+
   QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
       applicationIdEqualTo(
     String value, {
@@ -1635,6 +1689,13 @@ extension TestScenarioQueryFilter
 
 extension TestScenarioQueryObject
     on QueryBuilder<TestScenario, TestScenario, QFilterCondition> {
+  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition> analysis(
+      FilterQuery<Analysis> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'analysis');
+    });
+  }
+
   QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition> deviceInput(
       FilterQuery<AndroidInputDevice> q) {
     return QueryBuilder.apply(this, (query) {
@@ -2029,6 +2090,12 @@ extension TestScenarioQueryProperty
   QueryBuilder<TestScenario, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<TestScenario, Analysis?, QQueryOperations> analysisProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'analysis');
     });
   }
 

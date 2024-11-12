@@ -9,14 +9,14 @@ class ProjectOverviewCubit extends Cubit<ProjectOverviewState> {
       : super(
           ProjectOverviewState(
               applications: _testApplicationRepository.getAll()),
-        ){
+        ) {
     _initialize();
   }
 
-  void _initialize(){
+  void _initialize() {
     applicationWatcher = _testApplicationRepository.watchAll().listen(
-        (apps) => emit(state.copyWith(applications: apps)),
-    );
+          (apps) => emit(state.copyWith(applications: apps)),
+        );
   }
 
   late StreamSubscription applicationWatcher;

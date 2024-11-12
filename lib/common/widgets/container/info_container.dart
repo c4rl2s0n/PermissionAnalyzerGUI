@@ -7,7 +7,9 @@ class InfoContainer extends StatelessWidget {
     required this.child,
     this.width,
     this.height,
+    this.headerHeight = 30,
     this.scrollable,
+    this.action,
     super.key,
   });
 
@@ -15,7 +17,9 @@ class InfoContainer extends StatelessWidget {
   final Widget child;
   final double? width;
   final double? height;
+  final double? headerHeight;
   final bool? scrollable;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
@@ -23,11 +27,8 @@ class InfoContainer extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (title != null && title!.isNotEmpty) ...[
-          Text(
-            title!,
-            style: context.textTheme.labelLarge,
-          )
+        if (title != null && title!.isNotEmpty || action != null) ...[
+          _headerRow(context),
         ],
         Flexible(
           child: Container(
@@ -37,7 +38,7 @@ class InfoContainer extends StatelessWidget {
             decoration: BoxDecoration(
               border: Border.all(color: context.colors.onBackground),
               borderRadius:
-              BorderRadius.all(context.constants.roundedCornerRadius),
+                  BorderRadius.all(context.constants.roundedCornerRadius),
             ),
             child: _buildChild(),
           ),
@@ -46,9 +47,30 @@ class InfoContainer extends StatelessWidget {
     );
   }
 
-  Widget _buildChild(){
+  Widget _headerRow(BuildContext context) {
+    return SizedBox(
+      height: headerHeight,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          if (title != null && title!.isNotEmpty) ...[
+            Text(
+              title!,
+              style: context.textTheme.labelLarge,
+            ),
+          ],
+          if (action != null) ...[
+            action!,
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChild() {
     Widget c = child;
-    if(scrollable == true){
+    if (scrollable == true) {
       c = ScrollContainer(
           scrollbarOrientation: ScrollbarOrientation.right,
           scrollDirection: Axis.vertical,

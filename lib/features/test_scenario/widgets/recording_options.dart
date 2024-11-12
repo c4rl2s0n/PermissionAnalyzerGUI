@@ -10,7 +10,8 @@ class RecordingOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
-      buildWhen: (oldState, state) => oldState.canConfigure != state.canConfigure,
+      buildWhen: (oldState, state) =>
+          oldState.canConfigure != state.canConfigure,
       builder: (context, state) {
         return AbsorbPointer(
           absorbing: !state.canConfigure,
@@ -20,7 +21,7 @@ class RecordingOptions extends StatelessWidget {
               children: <Widget>[
                 BlocBuilder<TestScenarioCubit, TestScenarioState>(
                   buildWhen: (oldState, state) =>
-                  oldState.recordScreen != state.recordScreen,
+                      oldState.recordScreen != state.recordScreen,
                   builder: (context, state) {
                     return _boolSetting(
                       context,
@@ -33,7 +34,7 @@ class RecordingOptions extends StatelessWidget {
                 ),
                 BlocBuilder<TestScenarioCubit, TestScenarioState>(
                   buildWhen: (oldState, state) =>
-                  oldState.captureTraffic != state.captureTraffic,
+                      oldState.captureTraffic != state.captureTraffic,
                   builder: (context, state) {
                     return _boolSetting(
                       context,
@@ -45,7 +46,7 @@ class RecordingOptions extends StatelessWidget {
                   },
                 ),
               ].insertBetweenItems(
-                      () => Margin.vertical(context.constants.spacing)),
+                  () => Margin.vertical(context.constants.spacing)),
             ),
           ),
         );
@@ -53,7 +54,8 @@ class RecordingOptions extends StatelessWidget {
     );
   }
 
-  Widget _boolSetting(BuildContext context, {
+  Widget _boolSetting(
+    BuildContext context, {
     required String name,
     required bool value,
     void Function()? onToggle,

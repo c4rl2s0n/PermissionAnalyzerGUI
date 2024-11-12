@@ -1,4 +1,3 @@
-
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -16,7 +15,7 @@ class ThemeConstants extends ThemeExtension<ThemeConstants> {
     this.listTileImageMargin = 10,
     this.scrollbarThickness = 10,
     this.dividerHeight = 5,
-});
+  });
   final Radius roundedCornerRadius;
   final double largeSpacing;
   final double spacing;
@@ -59,21 +58,29 @@ class ThemeConstants extends ThemeExtension<ThemeConstants> {
   }
 
   @override
-  ThemeExtension<ThemeConstants> lerp(covariant ThemeExtension<ThemeConstants>? other, double t) {
-    if(other == null) return this;
+  ThemeExtension<ThemeConstants> lerp(
+      covariant ThemeExtension<ThemeConstants>? other, double t) {
+    if (other == null) return this;
     other = other as ThemeConstants;
     return ThemeConstants(
-      roundedCornerRadius: Radius.elliptical(lerpDouble(other.roundedCornerRadius.x, roundedCornerRadius.x, t)!, lerpDouble(other.roundedCornerRadius.y, roundedCornerRadius.y, t)!),
+      roundedCornerRadius: Radius.elliptical(
+          lerpDouble(other.roundedCornerRadius.x, roundedCornerRadius.x, t)!,
+          lerpDouble(other.roundedCornerRadius.y, roundedCornerRadius.y, t)!),
       largeSpacing: lerpDouble(other.largeSpacing, largeSpacing, t)!,
-      spacing : lerpDouble(other.spacing, spacing, t)!,
-      smallSpacing : lerpDouble(other.smallSpacing, smallSpacing, t)!,
-      subtleColorOpacity : lerpDouble(other.subtleColorOpacity, subtleColorOpacity, t)!,
-      strongColorOpacity : lerpDouble(other.strongColorOpacity, strongColorOpacity, t)!,
-      statusMarkerSize : lerpDouble(other.statusMarkerSize, statusMarkerSize, t)!,
-      listTileHeight : lerpDouble(other.listTileHeight, listTileHeight, t)!,
-      listTileImageMargin : lerpDouble(other.listTileImageMargin, listTileImageMargin, t)!,
-      scrollbarThickness : lerpDouble(other.scrollbarThickness, scrollbarThickness, t)!,
-      dividerHeight : lerpDouble(other.dividerHeight, dividerHeight, t)!,
+      spacing: lerpDouble(other.spacing, spacing, t)!,
+      smallSpacing: lerpDouble(other.smallSpacing, smallSpacing, t)!,
+      subtleColorOpacity:
+          lerpDouble(other.subtleColorOpacity, subtleColorOpacity, t)!,
+      strongColorOpacity:
+          lerpDouble(other.strongColorOpacity, strongColorOpacity, t)!,
+      statusMarkerSize:
+          lerpDouble(other.statusMarkerSize, statusMarkerSize, t)!,
+      listTileHeight: lerpDouble(other.listTileHeight, listTileHeight, t)!,
+      listTileImageMargin:
+          lerpDouble(other.listTileImageMargin, listTileImageMargin, t)!,
+      scrollbarThickness:
+          lerpDouble(other.scrollbarThickness, scrollbarThickness, t)!,
+      dividerHeight: lerpDouble(other.dividerHeight, dividerHeight, t)!,
     );
   }
 }

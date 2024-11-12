@@ -13,7 +13,7 @@ void main() async {
     "BackupService",
     (await getApplicationDocumentsDirectory()).path,
   );
-  String databaseFilename = "database";
+  String databaseFilename = "permission_analyzer_db.isar";
 
   runApp(
     ModularApp(

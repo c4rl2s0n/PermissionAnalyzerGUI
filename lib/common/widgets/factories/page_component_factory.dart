@@ -37,12 +37,16 @@ class PageComponentFactory {
     );
   }
 
-  static Widget navigationIconButton(BuildContext context, Widget destination){
+  static Widget navigationIconButton(
+    BuildContext context,
+    Widget Function()? getDestination,
+    IconData icon,
+  ) {
     return IconButton(
-      onPressed: () => context.navigator.navigateTo(destination),
-      icon: Icon(context.icons.settings),
+      onPressed: getDestination != null
+          ? () => context.navigator.navigateTo(getDestination())
+          : null,
+      icon: Icon(icon),
     );
   }
-
-  
 }

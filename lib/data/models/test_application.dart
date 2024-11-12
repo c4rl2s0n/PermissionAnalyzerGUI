@@ -1,10 +1,9 @@
-
 import 'package:isar/isar.dart';
 
 part 'test_application.g.dart';
 
 @collection
-class TestApplication{
+class TestApplication {
   TestApplication({
     this.name = "",
     this.id = "",

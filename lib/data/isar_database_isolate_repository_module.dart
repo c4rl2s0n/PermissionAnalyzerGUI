@@ -1,7 +1,6 @@
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
-
 class IsarDataIsolateRepositoryModule extends Module {
   IsarDataIsolateRepositoryModule(
       this.applicationDocumentDirectory, this.databaseFilename);

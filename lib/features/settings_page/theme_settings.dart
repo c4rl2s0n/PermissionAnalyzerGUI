@@ -16,7 +16,7 @@ class ThemeSettings extends StatelessWidget {
           name: context.strings.darkMode,
           action: BlocBuilder<SettingsCubit, SettingsState>(
             buildWhen: (oldState, state) =>
-            oldState.isDarkMode != state.isDarkMode,
+                oldState.isDarkMode != state.isDarkMode,
             builder: (context, state) {
               return Switch(
                 value: state.isDarkMode,

@@ -12,19 +12,18 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return PageComponentFactory.scaffold(
       context,
-      appBar: PageComponentFactory.appBar(context,
-          title: context.strings.settings),
+      appBar:
+          PageComponentFactory.appBar(context, title: context.strings.settings),
       body: ScrollContainer(
         child: Column(
           children: [
             const ThemeSettings(),
             const LanguageSettings(),
             const ToolSettings(),
-          ].insertBetweenItems(() => const Divider())
-           .insertBetweenItems(() => Margin.vertical(context.constants.largeSpacing)),
+          ].insertBetweenItems(() => const Divider()).insertBetweenItems(
+              () => Margin.vertical(context.constants.largeSpacing)),
         ),
       ),
     );
   }
-
 }

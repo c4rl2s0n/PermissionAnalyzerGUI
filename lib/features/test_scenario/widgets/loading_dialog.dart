@@ -19,16 +19,19 @@ class LoadingDialog extends StatelessWidget {
         child: BlocListener<TestScenarioCubit, TestScenarioState>(
           listenWhen: (oldState, state) => oldState.loading != state.loading,
           listener: (context, state) =>
-          !state.loading ? context.navigator.pop() : null,
+              !state.loading ? context.navigator.pop() : null,
           child: BlocBuilder<TestScenarioCubit, TestScenarioState>(
-            buildWhen: (oldState, state) => oldState.loadingInfo != state.loadingInfo,
+            buildWhen: (oldState, state) =>
+                oldState.loadingInfo != state.loadingInfo,
             builder: (context, state) {
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const CircularProgressIndicator(),
                   Margin.vertical(context.constants.spacing),
-                  if(state.loadingInfo.isNotEmpty)...[Text(state.loadingInfo)],
+                  if (state.loadingInfo.isNotEmpty) ...[
+                    Text(state.loadingInfo)
+                  ],
                 ],
               );
             },

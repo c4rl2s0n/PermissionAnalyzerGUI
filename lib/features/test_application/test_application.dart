@@ -25,7 +25,8 @@ class TestApplication extends StatelessWidget {
         actions: [
           PageComponentFactory.navigationIconButton(
             context,
-            const SettingsPage(),
+            () => const SettingsPage(),
+            context.icons.settings,
           )
         ],
       ),
@@ -63,17 +64,21 @@ class TestApplication extends StatelessWidget {
 
   Widget _deleteApplicationButton(BuildContext context) {
     return IconTextButton(
-          text: "Delete Application",
-          icon: Icon(context.icons.remove),
-          color: context.colors.negative,
-          onTap: () async {
-            if(await ConfirmationDialog.ask(context, title: "Are you sure?", content: "Do you want to delete the application '${application.name}'?") && context.mounted) {
-              context.navigator.pop();
-              await context.testApplicationCubit.delete();
-            }
+        text: "Delete Application",
+        icon: Icon(context.icons.remove),
+        color: context.colors.negative,
+        onTap: () async {
+          if (await ConfirmationDialog.ask(context,
+                  title: "Are you sure?",
+                  content:
+                      "Do you want to delete the application '${application.name}'?") &&
+              context.mounted) {
+            context.navigator.pop();
+            await context.testApplicationCubit.delete();
           }
-    );
+        });
   }
+
   Widget _newScenarioButton() {
     return BlocBuilder<TestApplicationCubit, TestApplicationState>(
       buildWhen: (oldState, state) => oldState.scenarios != state.scenarios,
@@ -81,8 +86,9 @@ class TestApplication extends StatelessWidget {
           text: "New Scenario",
           icon: Icon(context.icons.add),
           onTap: () async {
-            model.TestScenario scenario = await context.testApplicationCubit.newScenario();
-            if(context.mounted) {
+            model.TestScenario scenario =
+                await context.testApplicationCubit.newScenario();
+            if (context.mounted) {
               context.navigator.navigateTo(TestScenario(scenario));
             }
           }),

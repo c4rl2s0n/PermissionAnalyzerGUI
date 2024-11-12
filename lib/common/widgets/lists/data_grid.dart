@@ -21,7 +21,7 @@ class DataGridRow {
   final Function()? onTap;
 }
 
-class DataGrid extends StatelessWidget {
+class DataGrid extends StatefulWidget {
   DataGrid({
     required this.columns,
     required this.rows,
@@ -37,23 +37,63 @@ class DataGrid extends StatelessWidget {
   static const double _indexColumnWidth = 30;
 
   @override
+  State<DataGrid> createState() => _DataGridTestState();
+}
+
+class _DataGridTestState extends State<DataGrid> {
+  final ScrollController vertical = ScrollController();
+  final ScrollController horizontalHeader = ScrollController();
+  late final List<ScrollController> horizontalControllers;
+  bool _isAutoScrolling = false;
+
+  @override
+  void initState() {
+    super.initState();
+    horizontalControllers = widget.rows.map((_) => ScrollController()).toList();
+    horizontalHeader.addListener(() async {
+      if(_isAutoScrolling) return;
+      _isAutoScrolling = true;
+      for (var c in horizontalControllers) {
+        c.jumpTo(horizontalHeader.offset);
+      }
+      _isAutoScrolling = false;
+    });
+    for(var controller in horizontalControllers){
+      controller.addListener(() async {
+        if(_isAutoScrolling) return;
+        _isAutoScrolling = true;
+        horizontalHeader.position.jumpTo(controller.offset);
+        horizontalHeader.jumpTo(controller.offset);
+        for (var c in horizontalControllers) {
+          c.jumpTo(controller.offset);
+        }
+        _isAutoScrolling = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ScrollContainer(
-      scrollDirection: Axis.horizontal,
-      scrollbarOrientation: ScrollbarOrientation.bottom,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          _columnHeaders(context),
-          Expanded(
-            child: ScrollContainer(
-              scrollDirection: Axis.vertical,
-              child: _rows(context),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        _columnHeaders(context),
+        ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+          child: Expanded(
+            child: Scrollbar(
+              controller: vertical,
+              scrollbarOrientation: ScrollbarOrientation.right,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                controller: vertical,
+                child: _rows(context),
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -70,13 +110,30 @@ class DataGrid extends StatelessWidget {
             EdgeInsets.symmetric(horizontal: context.constants.smallSpacing),
         child: Row(
           children: [
-            if (showIndex) ...[
+            if (widget.showIndex) ...[
               const SizedBox(
-                width: _indexColumnWidth,
+                width: DataGrid._indexColumnWidth,
                 child: Text("#"),
               ),
             ],
-            ...columns.map((c) => _columnHeader(context, c)),
+            Expanded(
+              child: Scrollbar(
+                //key: UniqueKey(),
+                scrollbarOrientation: ScrollbarOrientation.top,
+                controller: horizontalHeader,
+                child: SingleChildScrollView(
+                  key: UniqueKey(),
+                  scrollDirection: Axis.horizontal,
+                  controller: horizontalHeader,
+                  child: Row(
+                    children: [
+                      ...widget.columns.map((c) => _columnHeader(context, c)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            //...widget.columns.map((c) => _columnHeader(context, c)),
           ],
         ),
       ),
@@ -84,7 +141,10 @@ class DataGrid extends StatelessWidget {
   }
 
   Widget _columnHeader(BuildContext context, DataGridColumnSetting column) {
-    Widget header = Text(column.name, textAlign: TextAlign.center,);
+    Widget header = Text(
+      column.name,
+      textAlign: TextAlign.center,
+    );
     if (column.tooltip != null) {
       header = Tooltip(message: column.tooltip, child: header);
     }
@@ -93,21 +153,31 @@ class DataGrid extends StatelessWidget {
 
   Widget _rows(BuildContext context) {
     List<Widget> _rows = [];
-    for (int i = 0; i < rows.length; i++) {
-      DataGridRow r = rows[i];
+    for (int i = 0; i < widget.rows.length; i++) {
+      DataGridRow r = widget.rows[i];
       Widget row = TapContainer(
         onTap: r.onTap,
         padding:
             EdgeInsets.symmetric(horizontal: context.constants.smallSpacing),
         child: Row(
           children: [
-            if (showIndex) ...[
+            if (widget.showIndex) ...[
               SizedBox(
-                width: _indexColumnWidth,
+                width: DataGrid._indexColumnWidth,
                 child: Text((i + 1).toString()),
               ),
             ],
-            ..._rowCells(r),
+            Expanded(
+              child: SingleChildScrollView(
+                key: UniqueKey(),
+                scrollDirection: Axis.horizontal,
+                primary: false,
+                controller: horizontalControllers[i],
+                child: Row(
+                  children: _rowCells(r),
+                ),
+              ),
+            ),
           ],
         ),
       );
@@ -124,7 +194,7 @@ class DataGrid extends StatelessWidget {
     List<Widget> cells = [];
     for (int i = 0; i < row.cells.length; i++) {
       cells.add(SizedBox(
-        width: columns[i].width,
+        width: widget.columns[i].width,
         child: row.cells[i],
       ));
     }

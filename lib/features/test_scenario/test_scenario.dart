@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
-import 'package:permission_analyzer_gui/data/data.dart';
+import 'package:permission_analyzer_gui/data/repositories/repositories.dart';
 import 'package:permission_analyzer_gui/data/models/models.dart' as models;
 import 'package:permission_analyzer_gui/features/features.dart';
 
@@ -18,24 +18,38 @@ class TestScenario extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PageComponentFactory.scaffold(
-      context,
-      appBar: PageComponentFactory.appBar(context,
-          title: context.strings.testScenario,
-          actions: [
-            PageComponentFactory.navigationIconButton(
-              context,
-              const SettingsPage(),
-            )
-          ]),
-      body: BlocProvider(
-        create: (context) => TestScenarioCubit(
-          testScenarioRepository: Modular.get<ITestScenarioRepository>(),
-          sessionCubit: context.session,
-          settingsCubit: context.settings,
-          testScenario: scenario,
-        ),
-        child: _buildContent(context),
+    return BlocProvider(
+      create: (context) => TestScenarioCubit(
+        testScenarioRepository: Modular.get<ITestScenarioRepository>(),
+        sessionCubit: context.session,
+        settingsCubit: context.settings,
+        testScenario: scenario,
+      ),
+      child: PageComponentFactory.scaffold(
+        context,
+        appBar: PageComponentFactory.appBar(context,
+            title: context.strings.testScenario,
+            actions: [
+              BlocBuilder<TestScenarioCubit, TestScenarioState>(
+                buildWhen: (oldState, state) =>
+                    oldState.hasAnalysis != state.hasAnalysis,
+                builder: (context, state) {
+                  return PageComponentFactory.navigationIconButton(
+                    context,
+                    state.hasAnalysis
+                        ? () => Analysis(scenario.analysis!)
+                        : null,
+                    context.icons.analysis,
+                  );
+                },
+              ),
+              PageComponentFactory.navigationIconButton(
+                context,
+                () => const SettingsPage(),
+                context.icons.settings,
+              ),
+            ]),
+        body: _buildContent(context),
       ),
     );
   }

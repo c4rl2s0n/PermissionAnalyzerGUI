@@ -13,7 +13,8 @@ class BrowseListView<T> extends StatelessWidget {
 
   final ScrollController scrollController;
 
-  final Widget Function(BuildContext context, T entry, List<T>? all) buildListTile;
+  final Widget Function(BuildContext context, T entry, List<T>? all)
+      buildListTile;
   final double? listTileHeight;
   final bool autofocusSearchbar;
   final List<T> data;

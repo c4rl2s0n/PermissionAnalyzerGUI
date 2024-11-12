@@ -20,6 +20,7 @@ class TestScenario {
     this.recordScreen = true,
     this.captureTraffic = true,
     this.testConstellations = const [],
+    this.analysis,
   });
 
   Id id = Isar.autoIncrement;
@@ -43,4 +44,6 @@ class TestScenario {
   bool captureTraffic;
 
   List<TestConstellation> testConstellations;
+
+  Analysis? analysis;
 }

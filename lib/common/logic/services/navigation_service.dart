@@ -1,13 +1,12 @@
-
 import 'package:flutter/material.dart';
 
 /// Wrapper for some navigation functionality
 ///
 /// DO NOT reuse this, always create a new NavigationService as the context might have changed!!
-class NavigationService{
+class NavigationService {
   const NavigationService(this.context);
   final BuildContext context;
-  
+
   void pop<T>([T? result]) {
     Navigator.of(context).pop(result);
   }
@@ -24,7 +23,8 @@ class NavigationService{
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(
         builder: (ctx) => destination,
-      ), (_) => false,
+      ),
+      (_) => false,
     );
   }
 

@@ -1,4 +1,1 @@
-
-class PermissionAnalyzer{
-
-}
+class PermissionAnalyzer {}

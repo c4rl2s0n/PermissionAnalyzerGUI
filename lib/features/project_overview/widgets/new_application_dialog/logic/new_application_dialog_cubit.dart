@@ -17,21 +17,24 @@ class NewApplicationDialogCubit extends Cubit<NewApplicationDialogState> {
     String fileDirectory = join(_settingsCubit.state.workingDirectory, id);
     emit(state.copyWith(applicationId: id, fileDirectory: fileDirectory));
   }
+
   void selectName(String name) {
     emit(state.copyWith(name: name));
   }
 
-  Future cleanup()async{
+  Future cleanup() async {
     // clear files
-    String outputDirectory = join(_settingsCubit.state.workingDirectory, state.applicationId);
+    String outputDirectory =
+        join(_settingsCubit.state.workingDirectory, state.applicationId);
 
     Directory outDir = Directory(outputDirectory);
     if (await outDir.exists()) await outDir.delete(recursive: true);
   }
-  
+
   Future<String?> extractAppIcon() async {
     String appId = state.applicationId;
-    String outputDirectory = join(_settingsCubit.state.workingDirectory, state.applicationId);
+    String outputDirectory =
+        join(_settingsCubit.state.workingDirectory, state.applicationId);
 
     SystemProcess ps = SystemProcess();
     Adb adb = Adb(
@@ -88,17 +91,17 @@ class NewApplicationDialogCubit extends Cubit<NewApplicationDialogState> {
     }
   }
 
-  Future<String?> _findIcon(String path)async{
+  Future<String?> _findIcon(String path) async {
     // cp ./myapp/res/mipmap-xxxhdpi-v4/ic_launcher.png ./app_icon.png
-    FileSystemEntity icon = File(join(path,"res/mipmap-xxxhdpi-v4/ic_launcher.png"));
-    if(await icon.exists()) return icon.path;
+    FileSystemEntity icon =
+        File(join(path, "res/mipmap-xxxhdpi-v4/ic_launcher.png"));
+    if (await icon.exists()) return icon.path;
     try {
       icon = await Directory(path)
           .list(recursive: true)
           .firstWhere((f) => _isIcon(f));
       return icon.path;
-    }
-    catch (_){
+    } catch (_) {
       return null;
     }
   }
@@ -134,7 +137,8 @@ class NewApplicationDialogState extends Equatable {
       );
 
   @override
-  List<Object?> get props => [applicationId, name, fileDirectory, iconPath, iconFound, searching];
+  List<Object?> get props =>
+      [applicationId, name, fileDirectory, iconPath, iconFound, searching];
 
   NewApplicationDialogState copyWith({
     String? applicationId,

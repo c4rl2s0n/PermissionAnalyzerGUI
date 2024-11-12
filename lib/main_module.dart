@@ -14,11 +14,11 @@ class MainModule extends Module {
 
   @override
   List<Module> get imports => [
-    IsarDataRepositoryModule(
-      applicationDocumentDirectory,
-      databaseFilename,
-    ),
-  ];
+        IsarDataRepositoryModule(
+          applicationDocumentDirectory,
+          databaseFilename,
+        ),
+      ];
 
   @override
   void binds(Injector i) {

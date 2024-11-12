@@ -7,10 +7,11 @@ enum PermissionState {
   revoked,
   test,
 }
-extension PermissionStateExtension on PermissionState{
-  PermissionState get next => PermissionState.values[
-    (PermissionState.values.indexOf(this) + 1) %
-        PermissionState.values.length];
+
+extension PermissionStateExtension on PermissionState {
+  PermissionState get next =>
+      PermissionState.values[(PermissionState.values.indexOf(this) + 1) %
+          PermissionState.values.length];
 }
 
 @embedded

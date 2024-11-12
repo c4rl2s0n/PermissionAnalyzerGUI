@@ -12,7 +12,8 @@ class TestConstellationsOverview extends StatelessWidget {
     return InfoContainer(
       title: "Test Constellations",
       child: BlocBuilder<TestScenarioCubit, TestScenarioState>(
-        buildWhen: (oldState, state) => oldState.permissions != state.permissions ||
+        buildWhen: (oldState, state) =>
+            oldState.permissions != state.permissions ||
             oldState.testConstellations != state.testConstellations,
         builder: (context, state) => DataGrid(
           columns: _columns(state),
@@ -33,7 +34,7 @@ class TestConstellationsOverview extends StatelessWidget {
                   .map((p) => p.substring(0, 1))
                   .join(),
               tooltip: p.permission,
-      width: 55,
+              width: 55,
             ))
         .toList();
   }

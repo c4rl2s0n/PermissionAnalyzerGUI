@@ -13,23 +13,30 @@ const TestRunSchema = Schema(
   name: r'TestRun',
   id: -4042852072460897997,
   properties: {
-    r'hasData': PropertySchema(
+    r'connections': PropertySchema(
       id: 0,
+      name: r'connections',
+      type: IsarType.objectList,
+      target: r'TrafficConnection',
+    ),
+    r'hasData': PropertySchema(
+      id: 1,
       name: r'hasData',
       type: IsarType.bool,
     ),
-    r'pcapJson': PropertySchema(
-      id: 1,
-      name: r'pcapJson',
-      type: IsarType.string,
+    r'packets': PropertySchema(
+      id: 2,
+      name: r'packets',
+      type: IsarType.objectList,
+      target: r'NetworkPacket',
     ),
     r'pcapPath': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'pcapPath',
       type: IsarType.string,
     ),
     r'screenRecordPath': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'screenRecordPath',
       type: IsarType.string,
     )
@@ -47,9 +54,31 @@ int _testRunEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
-    final value = object.pcapJson;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
+    final list = object.connections;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        final offsets = allOffsets[TrafficConnection]!;
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount +=
+              TrafficConnectionSchema.estimateSize(value, offsets, allOffsets);
+        }
+      }
+    }
+  }
+  {
+    final list = object.packets;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        final offsets = allOffsets[NetworkPacket]!;
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount +=
+              NetworkPacketSchema.estimateSize(value, offsets, allOffsets);
+        }
+      }
     }
   }
   {
@@ -73,10 +102,21 @@ void _testRunSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeBool(offsets[0], object.hasData);
-  writer.writeString(offsets[1], object.pcapJson);
-  writer.writeString(offsets[2], object.pcapPath);
-  writer.writeString(offsets[3], object.screenRecordPath);
+  writer.writeObjectList<TrafficConnection>(
+    offsets[0],
+    allOffsets,
+    TrafficConnectionSchema.serialize,
+    object.connections,
+  );
+  writer.writeBool(offsets[1], object.hasData);
+  writer.writeObjectList<NetworkPacket>(
+    offsets[2],
+    allOffsets,
+    NetworkPacketSchema.serialize,
+    object.packets,
+  );
+  writer.writeString(offsets[3], object.pcapPath);
+  writer.writeString(offsets[4], object.screenRecordPath);
 }
 
 TestRun _testRunDeserialize(
@@ -86,9 +126,20 @@ TestRun _testRunDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = TestRun(
-    pcapJson: reader.readStringOrNull(offsets[1]),
-    pcapPath: reader.readStringOrNull(offsets[2]),
-    screenRecordPath: reader.readStringOrNull(offsets[3]),
+    connections: reader.readObjectList<TrafficConnection>(
+      offsets[0],
+      TrafficConnectionSchema.deserialize,
+      allOffsets,
+      TrafficConnection(),
+    ),
+    packets: reader.readObjectList<NetworkPacket>(
+      offsets[2],
+      NetworkPacketSchema.deserialize,
+      allOffsets,
+      NetworkPacket(),
+    ),
+    pcapPath: reader.readStringOrNull(offsets[3]),
+    screenRecordPath: reader.readStringOrNull(offsets[4]),
   );
   return object;
 }
@@ -101,12 +152,24 @@ P _testRunDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readBool(offset)) as P;
+      return (reader.readObjectList<TrafficConnection>(
+        offset,
+        TrafficConnectionSchema.deserialize,
+        allOffsets,
+        TrafficConnection(),
+      )) as P;
     case 1:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 2:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readObjectList<NetworkPacket>(
+        offset,
+        NetworkPacketSchema.deserialize,
+        allOffsets,
+        NetworkPacket(),
+      )) as P;
     case 3:
+      return (reader.readStringOrNull(offset)) as P;
+    case 4:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -115,6 +178,110 @@ P _testRunDeserializeProp<P>(
 
 extension TestRunQueryFilter
     on QueryBuilder<TestRun, TestRun, QFilterCondition> {
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> connectionsIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'connections',
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> connectionsIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'connections',
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition>
+      connectionsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'connections',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> connectionsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'connections',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition>
+      connectionsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'connections',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition>
+      connectionsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'connections',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition>
+      connectionsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'connections',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition>
+      connectionsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'connections',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
   QueryBuilder<TestRun, TestRun, QAfterFilterCondition> hasDataEqualTo(
       bool value) {
     return QueryBuilder.apply(this, (query) {
@@ -125,149 +292,104 @@ extension TestRunQueryFilter
     });
   }
 
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> pcapJsonIsNull() {
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> packetsIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'pcapJson',
+        property: r'packets',
       ));
     });
   }
 
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> pcapJsonIsNotNull() {
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> packetsIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'pcapJson',
+        property: r'packets',
       ));
     });
   }
 
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> pcapJsonEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> packetsLengthEqualTo(
+      int length) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'pcapJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.listLength(
+        r'packets',
+        length,
+        true,
+        length,
+        true,
+      );
     });
   }
 
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> pcapJsonGreaterThan(
-    String? value, {
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> packetsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'packets',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> packetsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'packets',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> packetsLengthLessThan(
+    int length, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'pcapJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.listLength(
+        r'packets',
+        0,
+        true,
+        length,
+        include,
+      );
     });
   }
 
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> pcapJsonLessThan(
-    String? value, {
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition>
+      packetsLengthGreaterThan(
+    int length, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'pcapJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.listLength(
+        r'packets',
+        length,
+        include,
+        999999,
+        true,
+      );
     });
   }
 
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> pcapJsonBetween(
-    String? lower,
-    String? upper, {
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> packetsLengthBetween(
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'pcapJson',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> pcapJsonStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'pcapJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> pcapJsonEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'pcapJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> pcapJsonContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'pcapJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> pcapJsonMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'pcapJson',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> pcapJsonIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'pcapJson',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> pcapJsonIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'pcapJson',
-        value: '',
-      ));
+      return query.listLength(
+        r'packets',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 
@@ -572,4 +694,18 @@ extension TestRunQueryFilter
 }
 
 extension TestRunQueryObject
-    on QueryBuilder<TestRun, TestRun, QFilterCondition> {}
+    on QueryBuilder<TestRun, TestRun, QFilterCondition> {
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> connectionsElement(
+      FilterQuery<TrafficConnection> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'connections');
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> packetsElement(
+      FilterQuery<NetworkPacket> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'packets');
+    });
+  }
+}

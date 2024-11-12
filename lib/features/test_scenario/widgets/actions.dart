@@ -11,18 +11,18 @@ class TestScenarioActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
       buildWhen: (oldState, state) =>
-      oldState.hasTests != state.hasTests ||
+          oldState.hasTests != state.hasTests ||
           oldState.canRun != state.canRun,
-      builder: (context, state) =>
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              _deleteScenarioButton(),
-              _recordButton(),
-              _createConstellationsButton(),
-              _runButton(),
-            ],
-          ),
+      builder: (context, state) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          _deleteScenarioButton(),
+          _resetScenarioButton(),
+          _recordButton(),
+          _createConstellationsButton(),
+          _runButton(),
+        ],
+      ),
     );
   }
 
@@ -35,32 +35,53 @@ class TestScenarioActions extends StatelessWidget {
             icon: Icon(context.icons.remove),
             color: context.colors.negative,
             onTap: () async {
-              if (await ConfirmationDialog.ask(context, title: "Are you sure?",
-                  content: "Do you want to delete the scenario '${state
-                      .name}'?") && context.mounted) {
+              if (await ConfirmationDialog.ask(context,
+                      title: "Are you sure?",
+                      content:
+                          "Do you want to delete the scenario '${state.name}'?") &&
+                  context.mounted) {
                 context.navigator.pop();
                 await context.testScenarioCubit.delete();
               }
-            }
-        );
+            });
+      },
+    );
+  }
+
+  Widget _resetScenarioButton() {
+    return BlocBuilder<TestScenarioCubit, TestScenarioState>(
+      buildWhen: (oldState, state) => oldState.name != state.name,
+      builder: (context, state) {
+        return IconTextButton(
+            text: "Reset Scenario",
+            icon: Icon(context.icons.reset),
+            color: context.colors.negative,
+            onTap: () async {
+              if (await ConfirmationDialog.ask(context,
+                      title: "Are you sure?",
+                      content:
+                          "Do you want to reset the scenario '${state.name}'?") &&
+                  context.mounted) {
+                await context.testScenarioCubit.reset();
+              }
+            });
       },
     );
   }
 
   Widget _recordButton() {
-    return
-      BlocBuilder<TestScenarioCubit, TestScenarioState>(
-        buildWhen: (oldState, state) => oldState.hasTests != state.hasTests,
-        builder: (context, state) {
-          return IconTextButton(
-            onTap: state.hasTests
-                ? null
-                : () => context.testScenarioCubit.recordScenario(),
-            text: "Record Scenario",
-            icon: Icon(context.icons.record),
-          );
-        },
-      );
+    return BlocBuilder<TestScenarioCubit, TestScenarioState>(
+      buildWhen: (oldState, state) => oldState.hasTests != state.hasTests,
+      builder: (context, state) {
+        return IconTextButton(
+          onTap: state.hasTests
+              ? null
+              : () => context.testScenarioCubit.recordScenario(),
+          text: "Record Scenario",
+          icon: Icon(context.icons.record),
+        );
+      },
+    );
   }
 
   Widget _createConstellationsButton() {
@@ -83,9 +104,8 @@ class TestScenarioActions extends StatelessWidget {
       buildWhen: (oldState, state) => oldState.canRun != state.canRun,
       builder: (context, state) {
         return IconTextButton(
-          onTap: state.canRun
-              ? () => context.testScenarioCubit.runTests()
-              : null,
+          onTap:
+              state.canRun ? () => context.testScenarioCubit.runTests() : null,
           text: "Run Tests",
           icon: Icon(context.icons.run),
         );

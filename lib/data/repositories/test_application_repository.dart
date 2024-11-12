@@ -9,6 +9,7 @@ class TestApplicationRepository extends ITestApplicationRepository {
   List<TestApplication> getAll() {
     return _isar.testApplications.where().findAllSync();
   }
+
   @override
   Stream<List<TestApplication>> watchAll() {
     return _isar.testApplications.where().watch();

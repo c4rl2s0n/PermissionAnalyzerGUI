@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import 'simple_setting.dart';
@@ -21,7 +20,7 @@ class MultiActionSetting extends StatelessWidget {
       description: description,
       action: Row(
         mainAxisAlignment: MainAxisAlignment.end,
-        children: actions??[],
+        children: actions ?? [],
       ),
     );
   }

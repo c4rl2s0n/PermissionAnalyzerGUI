@@ -63,8 +63,8 @@ ThemeData getTheme(bool dark) {
           borderSide: BorderSide(color: colors.onBackground)),
     ),
     menuStyle: MenuStyle(
-        backgroundColor: WidgetStateProperty.resolveWith((state){
-          if(state.any((s)=>s == WidgetState.hovered))return colors.surface;
+        backgroundColor: WidgetStateProperty.resolveWith((state) {
+          if (state.any((s) => s == WidgetState.hovered)) return colors.surface;
           return colors.secondary;
         }), //All<Color>(colors.surface),
         shape: WidgetStatePropertyAll(RoundedRectangleBorder(
@@ -87,7 +87,6 @@ ThemeData getTheme(bool dark) {
     buttonTheme: buttonTheme,
     dialogTheme: dialogTheme,
     dropdownMenuTheme: dropdownMenuTheme,
-
     scrollbarTheme: scrollbarTheme,
     useMaterial3: true,
   );

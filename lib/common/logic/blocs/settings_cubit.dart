@@ -4,8 +4,7 @@ import 'package:permission_analyzer_gui/common/keys.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
 class SettingsCubit extends Cubit<SettingsState> {
-  SettingsCubit(this._settingsRepository)
-      : super(const SettingsState()){
+  SettingsCubit(this._settingsRepository) : super(const SettingsState()) {
     settings = _settingsRepository.getSettings();
     emit(SettingsState.fromSettings(settings));
   }
@@ -27,31 +26,37 @@ class SettingsCubit extends Cubit<SettingsState> {
     emit(state.copyWith(language: language));
     saveSettings();
   }
+
   void setAdbPath(String path) {
     settings.adbPath = path;
     emit(state.copyWith(adbPath: path));
     saveSettings();
   }
+
   void setTsharkPath(String path) {
     settings.tsharkPath = path;
     emit(state.copyWith(tsharkPath: path));
     saveSettings();
   }
+
   void setRecorderPath(String path) {
     settings.recorderPath = path;
     emit(state.copyWith(recorderPath: path));
     saveSettings();
   }
+
   void setRecorderDestinationPath(String path) {
     settings.recorderDestinationPath = path;
     emit(state.copyWith(recorderDestinationPath: path));
     saveSettings();
   }
+
   void setInputRecordDestinationPath(String path) {
     settings.inputRecordDestinationPath = path;
     emit(state.copyWith(recorderDestinationPath: path));
     saveSettings();
   }
+
   void setWorkingDirectory(String path) {
     settings.workingDirectory = path;
     emit(state.copyWith(workingDirectory: path));
@@ -78,8 +83,10 @@ class SettingsState extends Equatable {
           adbPath: settings.adbPath ?? "",
           tsharkPath: settings.tsharkPath ?? "",
           recorderPath: settings.recorderPath ?? "",
-          recorderDestinationPath: settings.recorderDestinationPath ?? defaultRecorderDestinationPath,
-          inputRecordDestinationPath: settings.inputRecordDestinationPath ?? defaultInputRecordDestinationPath,
+          recorderDestinationPath: settings.recorderDestinationPath ??
+              defaultRecorderDestinationPath,
+          inputRecordDestinationPath: settings.inputRecordDestinationPath ??
+              defaultInputRecordDestinationPath,
         );
 
   final bool isDarkMode;
@@ -100,7 +107,7 @@ class SettingsState extends Equatable {
         tsharkPath,
         recorderPath,
         recorderDestinationPath,
-    inputRecordDestinationPath,
+        inputRecordDestinationPath,
       ];
 
   SettingsState copyWith({
@@ -120,8 +127,10 @@ class SettingsState extends Equatable {
       adbPath: adbPath ?? this.adbPath,
       tsharkPath: tsharkPath ?? this.tsharkPath,
       recorderPath: recorderPath ?? this.recorderPath,
-      recorderDestinationPath: recorderDestinationPath ?? this.recorderDestinationPath,
-      inputRecordDestinationPath: inputRecordDestinationPath ?? this.inputRecordDestinationPath,
+      recorderDestinationPath:
+          recorderDestinationPath ?? this.recorderDestinationPath,
+      inputRecordDestinationPath:
+          inputRecordDestinationPath ?? this.inputRecordDestinationPath,
     );
   }
 }

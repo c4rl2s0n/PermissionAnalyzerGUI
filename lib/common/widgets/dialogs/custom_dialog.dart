@@ -61,7 +61,8 @@ class CustomDialog<T> extends StatelessWidget {
                     child: content,
                   ),
             if (actions != null) ..._buildActions(context),
-          ].insertBetweenItems(() => Margin.vertical(context.constants.smallSpacing)),
+          ].insertBetweenItems(
+              () => Margin.vertical(context.constants.smallSpacing)),
         );
       }),
     );

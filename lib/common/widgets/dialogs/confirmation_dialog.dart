@@ -18,11 +18,11 @@ class ConfirmationDialog extends StatelessWidget {
       title: title,
       icon: Icon(context.icons.info),
       content: SingleChildScrollView(
-          child: Expanded(
-              child: Text(
-            content,
-            softWrap: true,
-          ))),
+        child: Text(
+          content,
+          softWrap: true,
+        ),
+      ),
       actions: const [
         DeclineButton(),
         ConfirmButton(),
@@ -32,10 +32,10 @@ class ConfirmationDialog extends StatelessWidget {
   }
 
   static Future<bool> ask(
-      BuildContext context, {
-        String? title,
-        String? content,
-      }) async {
+    BuildContext context, {
+    String? title,
+    String? content,
+  }) async {
     return await showDialog(
       context: context,
       barrierDismissible: false,

@@ -47,11 +47,13 @@ class DataListTile extends StatelessWidget {
         child: Ink(
           height: height ?? context.constants.listTileHeight,
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(context.constants.roundedCornerRadius),
-              color: backgroundColor,
+            borderRadius:
+                BorderRadius.all(context.constants.roundedCornerRadius),
+            color: backgroundColor,
           ),
           child: InkWell(
-            borderRadius: BorderRadius.all(context.constants.roundedCornerRadius),
+            borderRadius:
+                BorderRadius.all(context.constants.roundedCornerRadius),
             splashColor: context.colors.secondary,
             highlightColor: context.colors.highlight,
             hoverColor: context.colors.onBackground
@@ -112,7 +114,7 @@ class DataListTile extends StatelessWidget {
             height: context.constants.listTileHeight,
             alignment: Alignment.center,
             margin: EdgeInsets.symmetric(
-                horizontal: context.constants.listTileImageMargin,
+              horizontal: context.constants.listTileImageMargin,
             ),
             child: ClipRRect(
               borderRadius: circularImage
@@ -177,7 +179,8 @@ class DataListTile extends StatelessWidget {
           if (infoRow != null) ...[
             DefaultTextStyle(
               style: context.textTheme.labelSmall!.copyWith(
-                color: textColor?.withOpacity(context.constants.subtleColorOpacity) ??
+                color: textColor
+                        ?.withOpacity(context.constants.subtleColorOpacity) ??
                     context.colors.onBackground
                         .withOpacity(context.constants.subtleColorOpacity),
               ),

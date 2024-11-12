@@ -3,13 +3,15 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
 class IsarDataRepositoryModule extends Module {
-  IsarDataRepositoryModule(this.applicationDocumentDirectory, this.databaseFilename);
+  IsarDataRepositoryModule(
+      this.applicationDocumentDirectory, this.databaseFilename);
 
   String applicationDocumentDirectory;
   String databaseFilename;
 
   @override
-  List<Module> get imports => [IsarDataModule(applicationDocumentDirectory, databaseFilename)];
+  List<Module> get imports =>
+      [IsarDataModule(applicationDocumentDirectory, databaseFilename)];
 
   @override
   void binds(Injector i) {}

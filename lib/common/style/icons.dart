@@ -25,8 +25,11 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
     this.reload = Icons.refresh,
     this.record = Icons.fiber_manual_record,
     this.create = Icons.build,
-    this.test = Icons.filter_alt_outlined,
+    this.test = Icons.troubleshoot,
     this.run = Icons.directions_run,
+    this.reset = Icons.undo,
+    this.toggle = Icons.switch_access_shortcut,
+    this.analysis = Icons.monitor_heart_outlined,
   });
 
   final IconData infoPositive;
@@ -54,6 +57,9 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
   final IconData create;
   final IconData test;
   final IconData run;
+  final IconData reset;
+  final IconData toggle;
+  final IconData analysis;
 
   @override
   ThemeExtension<CustomIcons> copyWith({
@@ -82,6 +88,9 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
     IconData? create,
     IconData? test,
     IconData? run,
+    IconData? reset,
+    IconData? toggle,
+    IconData? analysis,
   }) {
     return CustomIcons(
       infoPositive: infoPositive ?? this.infoPositive,
@@ -109,6 +118,9 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
       create: create ?? this.create,
       test: test ?? this.test,
       run: run ?? this.run,
+      reset: reset ?? this.reset,
+      toggle: toggle ?? this.toggle,
+      analysis: analysis ?? this.analysis,
     );
   }
 

@@ -16,6 +16,7 @@ class AndroidInputDevice extends Equatable {
 
   @override
   List<Object?> get props => [name, info, path];
+
   AndroidInputDevice copyWith({
     String? name,
     String? info,

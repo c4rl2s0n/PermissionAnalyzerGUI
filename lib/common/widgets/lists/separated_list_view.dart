@@ -23,7 +23,9 @@ class SeparatedListView<T> extends StatelessWidget {
       controller: controller,
       shrinkWrap: true,
       primary: controller != null ? false : primary,
-      itemExtent: listTileHeight != null ? listTileHeight! + context.constants.dividerHeight : null,
+      itemExtent: listTileHeight != null
+          ? listTileHeight! + context.constants.dividerHeight
+          : null,
       itemCount: data.length,
       itemBuilder: (BuildContext context, int index) {
         return Column(

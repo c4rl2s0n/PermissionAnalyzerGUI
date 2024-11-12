@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-
 class SystemProcess {
   SystemProcess({
     this.workingDirectory,
@@ -78,8 +77,9 @@ extension ProcessResultText on ProcessResult {
 
 /// run response helper.
 extension ProcessText on Process {
-  Stream<String> _streamLines (Stream<List<int>> raw) => raw.transform(utf8.decoder);
-  
+  Stream<String> _streamLines(Stream<List<int>> raw) =>
+      raw.transform(utf8.decoder);
+
   Future<String> get outText async => (await outLines.toList()).join("\n");
   Future<String> get errText async => (await errLines.toList()).join("\n");
 

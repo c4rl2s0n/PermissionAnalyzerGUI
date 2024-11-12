@@ -14,12 +14,13 @@ class SettingsGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(title, style: context.textTheme.headlineSmall),
-      Margin.vertical(context.constants.largeSpacing),
-      ...settings.insertBetweenItems(() => Margin.vertical(context.constants.spacing)),
-    ],
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: context.textTheme.headlineSmall),
+        Margin.vertical(context.constants.largeSpacing),
+        ...settings.insertBetweenItems(
+            () => Margin.vertical(context.constants.spacing)),
+      ],
     );
   }
 }

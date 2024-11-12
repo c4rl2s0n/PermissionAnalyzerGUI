@@ -6,6 +6,8 @@ import 'package:path/path.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
+part 'test_scenario_executor.dart';
+
 class TestScenarioCubit extends Cubit<TestScenarioState> {
   TestScenarioCubit({
     required this.sessionCubit,
@@ -52,6 +54,8 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     return _tsharkService!;
   }
 
+  void _emit(TestScenarioState state) => emit(state);
+
   Future _initialize() async {
     //emit(state.copyWith(loading: true));
     if (_session.adbDevice.isEmpty) return;
@@ -63,9 +67,22 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     //emit(state.copyWith(loading: false));
   }
 
+  Future reset() async {
+    testScenario.userInputRecord = "";
+    testScenario.testConstellations = [];
+    testScenario.analysis = null;
+
+    resetAllPermissionStates();
+    await _clearFiles();
+    _emit(TestScenarioState.fromScenario(testScenario));
+  }
+
   Future delete() async {
     testScenarioRepository.delete(testScenario.id);
 
+    await _clearFiles();
+  }
+  Future _clearFiles()async{
     Directory fileDir = Directory(state.fileDirectory);
     if (await fileDir.exists()) {
       await fileDir.delete(recursive: true);
@@ -109,12 +126,15 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     _storeScenario();
   }
 
-  void togglePermissionState(String permission) {
+  void _togglePermissionState(String permission) {
     testScenario.permissions = testScenario.permissions
         .map((p) => p.permission == permission
             ? PermissionSetting(permission: permission, state: p.state.next)
             : p)
         .toList();
+  }
+
+  void _updatePermissionState() {
     // reset the testConstellations when permissions were changed
     testScenario.testConstellations = [];
     emit(state.copyWith(
@@ -122,6 +142,26 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
       testConstellations: List.of(testScenario.testConstellations),
     ));
     _storeScenario();
+  }
+
+  void togglePermissionState(String permission) {
+    _togglePermissionState(permission);
+    _updatePermissionState();
+  }
+
+  void toggleAllPermissionStates() {
+    for (var permission in testScenario.permissions) {
+      _togglePermissionState(permission.permission);
+    }
+    _updatePermissionState();
+  }
+
+  void resetAllPermissionStates() {
+    testScenario.permissions = testScenario.permissions
+        .map((p) => PermissionSetting(
+            permission: p.permission, state: PermissionState.revoked))
+        .toList();
+    _updatePermissionState();
   }
 
   void toggleRecordScreen() {
@@ -152,66 +192,6 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   Future setNetworkInterface(TsharkNetworkInterface interface) async {
     testScenario.networkInterface = interface;
     emit(state.copyWith(networkInterface: interface));
-    _storeScenario();
-  }
-
-  Future recordScenario() async {
-    emit(state.copyWith(
-      loading: true,
-      userInputRecord: "",
-      loadingInfo: "Recording the test scenario",
-    ));
-
-    // ensure adb is in root mode
-    await _adb.root();
-
-    // revoke all permissions
-    emit(state.copyWith(loadingInfo: "Revoking permissions"));
-    for (var permission in testScenario.permissions) {
-      await _adb.setPermission(
-        applicationId: testScenario.applicationId,
-        permission: permission.permission,
-        granted: false,
-      );
-    }
-
-    // restart the application
-    emit(state.copyWith(loadingInfo: "Restart application"));
-    await _adb.stopApp(state.applicationId);
-    await _adb.startApp(state.applicationId);
-
-    await sleepSec(_startAppDelay);
-
-    // record the input events
-    emit(state.copyWith(loadingInfo: "Recording user input..."));
-    Process getEvents = await _adb.getEvents(
-      devicePath: state.deviceInput.path,
-      duration: state.duration,
-    );
-    for (int i = 0; i < state.duration.inSeconds; i++) {
-      emit(
-        state.copyWith(
-          loadingInfo:
-              "Recording user input...\n${state.duration.inSeconds - i} seconds remaining",
-        ),
-      );
-      await sleepSec(1);
-    }
-    await getEvents.exitCode;
-
-    // stop the application
-    emit(state.copyWith(loadingInfo: "Stopping the application"));
-    await _adb.stopApp(state.applicationId);
-
-    // store the collected information (input events)
-    emit(state.copyWith(loadingInfo: "Storing the results"));
-    testScenario.userInputRecord = await getEvents.outText;
-
-    emit(state.copyWith(
-      loading: false,
-      userInputRecord: testScenario.userInputRecord,
-    ));
-
     _storeScenario();
   }
 
@@ -265,154 +245,6 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
       );
     }
   }
-
-  Future _runTest(TestConstellation constellation, String fileDirectory) async {
-    String loadingInfoSuffix =
-        "${constellation.abbreviation} - ${basename(fileDirectory)}";
-    String pcapFilename = "traffic.pcap";
-    // setup working directory to store capture files
-    if (state.recordScreen || state.captureTraffic) {
-      await Directory(fileDirectory).create(recursive: true);
-    }
-    Process? pcapProcess;
-    String? pcapJson;
-
-    // set all permissions according to test constellation
-    emit(state.copyWith(
-        loadingInfo: "$loadingInfoSuffix:\nAdjusting permissions"));
-    await _setPermissions(constellation.permissions);
-
-    emit(state.copyWith(
-        loadingInfo: "$loadingInfoSuffix:\nRestart application"));
-    // restart the application
-    await _adb.stopApp(state.applicationId);
-    await _adb.startApp(state.applicationId);
-
-    // await application to start
-    await sleepSec(_startAppDelay);
-
-    emit(state.copyWith(loadingInfo: "$loadingInfoSuffix:\nRunning the test"));
-    // setup screen recording
-    if (state.recordScreen) {
-      _adb.recordScreen(
-        videoPath: _videoStoragePathOnDevice,
-        duration: state.duration,
-      );
-    }
-
-    // setup network sniffing
-    if (state.captureTraffic) {
-      pcapProcess = await _tshark.capture(
-        pcapPath: join(fileDirectory, pcapFilename),
-        interface: state.networkInterface.name,
-        duration: state.duration,
-      );
-      pcapJson = "";
-      // need to flush streams to avoid getting stuck
-      pcapProcess.outLines.forEach((line) {
-        pcapJson = pcapJson! + line;
-      });
-      pcapProcess.errLines.forEach((_) {});
-    }
-
-    // replay user input
-    Process userInputProcess = await _adb.shellProc([
-      _settings.recorderDestinationPath,
-      state.deviceInput.path,
-      _settings.inputRecordDestinationPath,
-    ]);
-
-    // let test run through
-    await sleep(state.duration);
-    await userInputProcess.exitCode;
-
-    // stop application
-    await _adb.stopApp(state.applicationId);
-
-    emit(state.copyWith(loadingInfo: "$loadingInfoSuffix:\nFinish the test"));
-
-    // Fetch all the generated files and store them in fileDirectory and db
-    TestRun testRun = TestRun();
-    if (state.recordScreen) {
-      // wait a short time for the device to properly store the screen record
-      // TODO: test how long I have to wait here to be sure to get the video
-      await sleepSec(10);
-
-      // get the screenrecord video from the device
-      testRun.screenRecordPath = join(fileDirectory, "screenrecord.mp4");
-      await _adb.pullFile(
-        _videoStoragePathOnDevice,
-        testRun.screenRecordPath!,
-      );
-    }
-    if (state.captureTraffic) {
-      await pcapProcess?.exitCode;
-      testRun.pcapPath = join(fileDirectory, pcapFilename);
-      testRun.pcapJson = pcapJson;
-    }
-
-    if (testRun.hasData) {
-      constellation.tests = [...constellation.tests, testRun];
-    }
-  }
-
-  Future runTests() async {
-    emit(state.copyWith(
-      loading: true,
-      loadingInfo: "Preparing the environment for running the tests",
-    ));
-
-    if (state.name.isEmpty) setName("Unknown_${DateTime.now()}");
-
-    // make sure working directory exists
-    await Directory(_workingDirectory).create(recursive: true);
-
-    // prepare the userinput_record file
-    String uiRecordFilePath = join(_workingDirectory, "record.txt");
-    File uiRecordFile = File(uiRecordFilePath);
-    if (!await uiRecordFile.exists()) await uiRecordFile.create();
-    uiRecordFile.writeAsString(state.userInputRecord);
-
-    // ensure adb is in root mode
-    await _adb.root();
-
-    // push ui-replay binary and record to device
-    await _adb.pushFile(
-        _settings.recorderPath, _settings.recorderDestinationPath);
-    await _adb.pushFile(uiRecordFilePath, _settings.inputRecordDestinationPath);
-
-    emit(state.copyWith(loadingInfo: "Run the tests"));
-    for (var constellation in state.testConstellations) {
-      String fileDirectory =
-          join(_workingDirectory, constellation.abbreviation);
-
-      // write the current permission constellation to a file
-      File permissionsTxt = File(join(fileDirectory, "permissions.txt"));
-      if (!await permissionsTxt.exists()) {
-        await permissionsTxt.create(recursive: true);
-      }
-      String permissionString = constellation.permissions
-          .where((p) => p.state == PermissionState.granted)
-          .map((p) => p.permission)
-          .join("\n");
-      await permissionsTxt.writeAsString(permissionString);
-
-      // TODO: decide, run the same test multiple times, or iterate through all multiple times?
-      // run the Test #numTestRuns times
-      for (int i = 0; i < state.numTestRuns; i++) {
-        await _runTest(
-          constellation,
-          join(fileDirectory, "(${i.toString().padLeft(3, "0")})"),
-        );
-      }
-    }
-
-    emit(state.copyWith(
-      loadingInfo: "Preparing the environment for running the tests",
-    ));
-    _storeScenario();
-    emit(TestScenarioState.fromScenario(testScenario));
-  }
 }
 
 class TestScenarioState extends Equatable {
@@ -434,6 +266,7 @@ class TestScenarioState extends Equatable {
     this.recordScreen = true,
     this.captureTraffic = true,
     this.testConstellations = const [],
+    this.hasAnalysis = false,
   });
   TestScenarioState.fromScenario(TestScenario scenario)
       : this(
@@ -451,6 +284,7 @@ class TestScenarioState extends Equatable {
           recordScreen: scenario.recordScreen,
           captureTraffic: scenario.captureTraffic,
           testConstellations: List.of(scenario.testConstellations),
+          hasAnalysis: scenario.analysis != null,
         );
 
   final bool loading;
@@ -471,6 +305,7 @@ class TestScenarioState extends Equatable {
   final bool recordScreen;
   final bool captureTraffic;
   final List<TestConstellation> testConstellations;
+  final bool hasAnalysis;
   bool get canConfigure => !hasTests;
   bool get canRun => testConstellations.isNotEmpty;
   bool get hasTests => testConstellations.any((c) => c.tests.isNotEmpty);
@@ -494,6 +329,7 @@ class TestScenarioState extends Equatable {
         recordScreen,
         captureTraffic,
         testConstellations,
+        hasAnalysis,
       ];
 
   TestScenarioState copyWith({
@@ -514,6 +350,7 @@ class TestScenarioState extends Equatable {
     bool? recordScreen,
     bool? captureTraffic,
     List<TestConstellation>? testConstellations,
+    bool? hasAnalysis,
   }) {
     return TestScenarioState(
       loading: loading ?? this.loading,
@@ -533,6 +370,7 @@ class TestScenarioState extends Equatable {
       recordScreen: recordScreen ?? this.recordScreen,
       captureTraffic: captureTraffic ?? this.captureTraffic,
       testConstellations: testConstellations ?? this.testConstellations,
+      hasAnalysis: hasAnalysis ?? this.hasAnalysis,
     );
   }
 }

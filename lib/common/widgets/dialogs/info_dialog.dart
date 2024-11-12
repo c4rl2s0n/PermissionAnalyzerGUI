@@ -34,17 +34,18 @@ class InfoDialog extends StatelessWidget {
     Icon? icon,
   }) async {
     return await showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) => InfoDialog(
-        title: title ?? "Did you know this?",
-        content: content ?? "So much information...",
-        icon: icon ??
-            Icon(
-              context.icons.info,
-            ),
-      ),
-    ) ?? false;
+          context: context,
+          barrierDismissible: true,
+          builder: (context) => InfoDialog(
+            title: title ?? "Did you know this?",
+            content: content ?? "So much information...",
+            icon: icon ??
+                Icon(
+                  context.icons.info,
+                ),
+          ),
+        ) ??
+        false;
   }
 
   static Future<bool> showInfo(
