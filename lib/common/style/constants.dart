@@ -8,6 +8,7 @@ class ThemeConstants extends ThemeExtension<ThemeConstants> {
     this.largeSpacing = 16,
     this.spacing = 12,
     this.smallSpacing = 8,
+    this.infoContainerActionButtonPadding = 2,
     this.subtleColorOpacity = 0.7,
     this.strongColorOpacity = 0.3,
     this.statusMarkerSize = 20,
@@ -20,6 +21,7 @@ class ThemeConstants extends ThemeExtension<ThemeConstants> {
   final double largeSpacing;
   final double spacing;
   final double smallSpacing;
+  final double infoContainerActionButtonPadding;
   final double subtleColorOpacity;
   final double strongColorOpacity;
   final double statusMarkerSize;
@@ -34,6 +36,7 @@ class ThemeConstants extends ThemeExtension<ThemeConstants> {
     double? largeSpacing,
     double? spacing,
     double? smallSpacing,
+    double? infoContainerActionButtonPadding,
     double? subtleColorOpacity,
     double? strongColorOpacity,
     double? statusMarkerSize,
@@ -47,6 +50,7 @@ class ThemeConstants extends ThemeExtension<ThemeConstants> {
       largeSpacing: largeSpacing ?? this.largeSpacing,
       spacing: spacing ?? this.spacing,
       smallSpacing: smallSpacing ?? this.smallSpacing,
+      infoContainerActionButtonPadding: infoContainerActionButtonPadding ?? this.infoContainerActionButtonPadding,
       subtleColorOpacity: subtleColorOpacity ?? this.subtleColorOpacity,
       strongColorOpacity: strongColorOpacity ?? this.strongColorOpacity,
       statusMarkerSize: statusMarkerSize ?? this.statusMarkerSize,

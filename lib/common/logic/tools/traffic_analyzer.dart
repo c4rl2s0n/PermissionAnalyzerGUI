@@ -1,9 +1,107 @@
+import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
-import 'tshark.dart';
-
 class TrafficAnalyzer {
-  static List<TrafficConnection> getConnections(List<NetworkPacket> packets) {
+  /// #############
+  /// Get Endpoints
+  /// #############
+
+  static List<TrafficEndpoint> getEndpointsFromGroups(
+    List<TrafficGroup> groups, {
+    bool filtered = true,
+  }) {
+    List<TrafficEndpoint> endpoints = [];
+    for (var group in groups) {
+      // get all connections
+      endpoints.addAll(getEndpointsFromConnections(
+        group.connections,
+        filtered: filtered,
+      ));
+    }
+    return endpoints.distinct;
+  }
+
+  static List<TrafficEndpoint> getEndpointsFromConnections(
+    List<TrafficConnection> connections, {
+    bool filtered = true,
+  }) {
+    List<TrafficEndpoint> endpoints = [];
+    endpoints.addAll(
+      (filtered ? getFilteredConnections(connections) : connections)
+          .where((c) => !endpoints.any((e) => e.name == c.endpoint!.name))
+          .map((c) => c.endpoint!),
+    );
+    return endpoints.distinct;
+  }
+
+  /// ###############
+  /// Get Connections
+  /// ###############
+
+  static List<TrafficConnection> getConnectionsFromTrafficGroups(
+    List<TrafficGroup> groups, {
+    bool filtered = true,
+  }) {
+    Map<String, TrafficConnection> connections = {};
+    for (var group in groups) {
+      // get all connections
+      for (var connection in group.connections) {
+        String key = "${connection.endpoint?.name}_${connection.protocols}";
+        if (!connections.containsKey(key)) {
+          connections[key] = connection.copy();
+        } else {
+          connections[key]!.testRunCount += connection.testRunCount;
+          connections[key]!.inCount += connection.inCount;
+          connections[key]!.outCount += connection.outCount;
+          connections[key]!.inBytes += connection.inBytes;
+          connections[key]!.outBytes += connection.outBytes;
+        }
+      }
+    }
+    return _connectionMapToList(connections, filtered: filtered);
+  }
+
+  static List<TrafficConnection> getConnectionsFromTestRuns(
+    List<TestRun> tests, {
+    bool filtered = true,
+  }) {
+    Map<String, TrafficConnection> connections = {};
+    for (var test in tests) {
+      for (TrafficConnection connection in test.connections ?? []) {
+        if (!connections.containsKey(connection.flow)) {
+          // create copy of connection
+          connections[connection.flow] = connection.copy();
+        } else {
+          // aggregate connection
+          TrafficConnection tc = connections[connection.flow]!;
+          tc.testRunCount++;
+          tc.outCount += connection.outCount;
+          tc.inCount += connection.inCount;
+          tc.outBytes += connection.outBytes;
+          tc.inBytes += connection.inBytes;
+        }
+      }
+    }
+    return _connectionMapToList(connections, filtered: filtered);
+  }
+
+  static List<TrafficConnection> getFilteredConnections(
+    List<TrafficConnection> connections,
+  ) {
+    return connections
+        .where(
+          (c) =>
+              c.endpoint != null &&
+              !c.endpoint!.ip.startsWith("10.0.") &&
+              !c.endpoint!.ip.startsWith("127.0.0.1"),
+        )
+        .toList();
+  }
+
+  static List<TrafficConnection> getConnectionsFromPackets(
+    List<NetworkPacket> packets, {
+    bool filtered = true,
+  }) {
     Map<String, TrafficConnection> connections = {};
     for (var packet in packets) {
       if (!connections.containsKey(packet.dst)) {
@@ -32,8 +130,23 @@ class TrafficAnalyzer {
       connections[packet.src]!.outCount++;
       connections[packet.src]!.outBytes += packet.size;
     }
-    return connections.values.toList();
+    return _connectionMapToList(connections, filtered: filtered);
   }
+
+  static List<TrafficConnection> _connectionMapToList(
+    Map<dynamic, TrafficConnection> connections, {
+    bool filtered = true,
+  }) {
+    List<TrafficConnection> connectionsList = connections.values.toList();
+    if (filtered) {
+      connectionsList = getFilteredConnections(connectionsList);
+    }
+    return connectionsList;
+  }
+
+  /// #################
+  /// Packet Extraction
+  /// #################
 
   static Future<List<NetworkPacket>> extractPackets(
       Tshark tshark, String pcapFilePath) async {
@@ -51,6 +164,7 @@ class TrafficAnalyzer {
         'udp.dstport',
       ],
     );
+    // TODO: udp port not extracted
     if (packetList == null) return [];
     List<NetworkPacket> packets = [];
     for (var entry in packetList) {

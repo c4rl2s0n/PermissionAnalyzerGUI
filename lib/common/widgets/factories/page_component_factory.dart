@@ -6,12 +6,15 @@ class PageComponentFactory {
     BuildContext context, {
     required AppBar appBar,
     required Widget body,
+    bool withPadding = true,
   }) {
     return Scaffold(
       backgroundColor: context.colors.background,
       appBar: appBar,
       body: Padding(
-        padding: EdgeInsets.all(context.constants.spacing),
+        padding: withPadding
+            ? EdgeInsets.all(context.constants.spacing)
+            : EdgeInsets.zero,
         child: body,
       ),
     );

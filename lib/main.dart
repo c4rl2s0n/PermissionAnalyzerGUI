@@ -10,7 +10,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   String documentsDirectory = join(
-    "BackupService",
+    "PermissionAnalyzerGUI",
     (await getApplicationDocumentsDirectory()).path,
   );
   String databaseFilename = "permission_analyzer_db.isar";

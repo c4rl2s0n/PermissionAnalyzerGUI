@@ -30,18 +30,10 @@ class TestScenario extends StatelessWidget {
         appBar: PageComponentFactory.appBar(context,
             title: context.strings.testScenario,
             actions: [
-              BlocBuilder<TestScenarioCubit, TestScenarioState>(
-                buildWhen: (oldState, state) =>
-                    oldState.hasAnalysis != state.hasAnalysis,
-                builder: (context, state) {
-                  return PageComponentFactory.navigationIconButton(
-                    context,
-                    state.hasAnalysis
-                        ? () => Analysis(scenario.analysis!)
-                        : null,
-                    context.icons.analysis,
-                  );
-                },
+              PageComponentFactory.navigationIconButton(
+                context,
+                () => Analysis([scenario]),
+                context.icons.analysis,
               ),
               PageComponentFactory.navigationIconButton(
                 context,

@@ -8,9 +8,9 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
     this.check = Icons.check_circle_outline,
     this.cancel = Icons.cancel_outlined,
     this.editList = Icons.edit_note,
-    this.checkboxEmpty = Icons.check_box_outline_blank,
+    this.checkboxDeselected = Icons.check_box_outline_blank,
     this.checkboxSelected = Icons.check_box,
-    this.checkboxDeselected = Icons.indeterminate_check_box,
+    this.checkboxCustom = Icons.indeterminate_check_box,
     this.listItemIndicator = Icons.circle,
     this.add = Icons.add,
     this.remove = Icons.remove_circle_outline,
@@ -30,6 +30,14 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
     this.reset = Icons.undo,
     this.toggle = Icons.switch_access_shortcut,
     this.analysis = Icons.monitor_heart_outlined,
+    this.graph = Icons.nature_outlined,
+    this.graphSelected = Icons.nature,
+    this.overview = Icons.featured_play_list_outlined,
+    this.overviewSelected = Icons.featured_play_list_rounded,
+    this.show = Icons.visibility_outlined,
+    this.hide = Icons.visibility_off_outlined,
+    this.sortAsc = Icons.arrow_downward,
+    this.sortDesc = Icons.arrow_upward,
   });
 
   final IconData infoPositive;
@@ -38,9 +46,9 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
   final IconData check;
   final IconData cancel;
   final IconData editList;
-  final IconData checkboxEmpty;
-  final IconData checkboxSelected;
   final IconData checkboxDeselected;
+  final IconData checkboxSelected;
+  final IconData checkboxCustom;
   final IconData listItemIndicator;
   final IconData add;
   final IconData remove;
@@ -60,6 +68,14 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
   final IconData reset;
   final IconData toggle;
   final IconData analysis;
+  final IconData graph;
+  final IconData graphSelected;
+  final IconData overview;
+  final IconData overviewSelected;
+  final IconData show;
+  final IconData hide;
+  final IconData sortAsc;
+  final IconData sortDesc;
 
   @override
   ThemeExtension<CustomIcons> copyWith({
@@ -69,9 +85,9 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
     IconData? check,
     IconData? cancel,
     IconData? editList,
-    IconData? checkboxEmpty,
-    IconData? checkboxSelected,
     IconData? checkboxDeselected,
+    IconData? checkboxSelected,
+    IconData? checkboxCustom,
     IconData? listItemIndicator,
     IconData? add,
     IconData? remove,
@@ -91,6 +107,14 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
     IconData? reset,
     IconData? toggle,
     IconData? analysis,
+    IconData? graph,
+    IconData? graphSelected,
+    IconData? overview,
+    IconData? overviewSelected,
+    IconData? show,
+    IconData? hide,
+    IconData? sortAsc,
+    IconData? sortDesc,
   }) {
     return CustomIcons(
       infoPositive: infoPositive ?? this.infoPositive,
@@ -99,9 +123,9 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
       check: check ?? this.check,
       cancel: cancel ?? this.cancel,
       editList: editList ?? this.editList,
-      checkboxEmpty: checkboxEmpty ?? this.checkboxEmpty,
-      checkboxSelected: checkboxSelected ?? this.checkboxSelected,
       checkboxDeselected: checkboxDeselected ?? this.checkboxDeselected,
+      checkboxSelected: checkboxSelected ?? this.checkboxSelected,
+      checkboxCustom: checkboxCustom ?? this.checkboxCustom,
       listItemIndicator: listItemIndicator ?? this.listItemIndicator,
       add: add ?? this.add,
       remove: remove ?? this.remove,
@@ -121,6 +145,14 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
       reset: reset ?? this.reset,
       toggle: toggle ?? this.toggle,
       analysis: analysis ?? this.analysis,
+      graph: graph ?? this.graph,
+      graphSelected: graphSelected ?? this.graphSelected,
+      overview: overview ?? this.overview,
+      overviewSelected: overviewSelected ?? this.overviewSelected,
+      show: show ?? this.show,
+      hide: hide ?? this.hide,
+      sortAsc: sortAsc ?? this.sortAsc,
+      sortDesc: sortDesc ?? this.sortDesc,
     );
   }
 

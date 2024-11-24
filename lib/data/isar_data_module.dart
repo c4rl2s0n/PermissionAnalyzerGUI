@@ -21,6 +21,7 @@ class IsarDataModule extends Module {
         SettingsSchema,
         TestScenarioSchema,
         TestApplicationSchema,
+        NetworkEndpointSchema,
       ],
       directory: applicationDocumentDirectory,
       name: databaseFilename.replaceAll(".isar", ""),

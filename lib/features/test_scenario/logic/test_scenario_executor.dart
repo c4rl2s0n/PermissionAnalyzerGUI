@@ -133,7 +133,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
       testRun.pcapPath = join(fileDirectory, pcapFilename);
       testRun.packets =
           await TrafficAnalyzer.extractPackets(_tshark, testRun.pcapPath!);
-      testRun.connections = TrafficAnalyzer.getConnections(testRun.packets!);
+      testRun.connections = TrafficAnalyzer.getConnectionsFromPackets(testRun.packets!);
     }
     if (state.recordScreen) {
       // wait a short time for the device to properly store the screen record
@@ -218,18 +218,15 @@ extension TestScenarioExecutor on TestScenarioCubit {
       return info;
     }
 
-    testScenario.analysis = Analysis(
-      endpointAnalysis: EndpointAnalysis(
-        trafficGroups: testScenario.testConstellations
-            .map((c) => TrafficGroup(
-                  name: c.abbreviation,
-                  info: constellationInfo(c),
-                  connections: c.trafficConnections,
-                ))
-            .toList(),
-      ),
-    );
-    _emit(state.copyWith(hasAnalysis: true));
+    for (var constellation in testScenario.testConstellations) {
+      constellation.trafficGroup = TrafficGroup(
+        name: constellation.abbreviation,
+        info: constellationInfo(constellation),
+        tags: [tConstellation],
+        tests: List.of(constellation.tests),
+      );
+    }
+    testScenario.testConstellations = List.of(testScenario.testConstellations);
     _storeScenario();
   }
 

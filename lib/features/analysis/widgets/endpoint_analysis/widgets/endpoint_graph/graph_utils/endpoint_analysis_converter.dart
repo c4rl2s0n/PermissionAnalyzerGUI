@@ -1,19 +1,15 @@
-import 'dart:math';
-import 'dart:ui';
-
 import 'package:flutter_graph_view/flutter_graph_view.dart';
-import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_analysis/widgets/endpoint_graph/models/models.dart';
 
 class EndpointAnalysisConverter extends DataConvertor<GraphVertex, GraphEdge> {
   @override
   Edge convertEdge(GraphEdge e, Graph graph) {
     Edge result = Edge();
-    result.ranking = e.dst.count;
-    result.edgeName = "${e.src.name}_${e.dst.endpoint.name}";
+    result.ranking = e.dst.countTotal;
+    result.edgeName = "${e.src.name}_${e.dst.endpoint?.name}";
 
     result.start = graph.keyCache[e.src.name]!;
-    result.end = graph.keyCache[e.dst.endpoint.name]!;
+    result.end = graph.keyCache[e.dst.endpoint?.name]!;
 
     return result;
   }

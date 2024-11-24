@@ -86,13 +86,13 @@ P _permissionSettingDeserializeProp<P>(
 }
 
 const _PermissionSettingstateEnumValueMap = {
-  r'granted': r'granted',
   r'revoked': r'revoked',
+  r'granted': r'granted',
   r'test': r'test',
 };
 const _PermissionSettingstateValueEnumMap = {
-  r'granted': PermissionState.granted,
   r'revoked': PermissionState.revoked,
+  r'granted': PermissionState.granted,
   r'test': PermissionState.test,
 };
 

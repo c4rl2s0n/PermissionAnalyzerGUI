@@ -6,7 +6,8 @@ part 'traffic_connection.g.dart';
 @embedded
 class TrafficConnection {
   TrafficConnection({
-    this.endpoint = const TrafficEndpoint(),
+    this.endpoint,
+    this.testRunCount = 1,
     this.outCount = 0,
     this.inCount = 0,
     this.outBytes = 0,
@@ -14,12 +15,35 @@ class TrafficConnection {
     this.protocols,
   });
 
-  TrafficEndpoint endpoint;
+  TrafficEndpoint? endpoint;
+  int testRunCount;
+
+  String? protocols;
+  String get flow =>
+      "(${endpoint?.ip ?? "???"}, ${endpoint?.port ?? "???"}, $protocols)";
+
   int outCount;
   int inCount;
-  int get count => outCount + inCount;
+  int get countTotal => outCount + inCount;
+  double get outCountAvg => testRunCount == 0 ? 0 : outCount / testRunCount;
+  double get inCountAvg => testRunCount == 0 ? 0 : inCount / testRunCount;
+  double get countAvg => outCountAvg + inCountAvg;
   int outBytes;
   int inBytes;
-  int get bytes => outBytes + inBytes;
-  String? protocols;
+  int get bytesTotal => outBytes + inBytes;
+  double get outBytesAvg => testRunCount == 0 ? 0 : outBytes / testRunCount;
+  double get inBytesAvg => testRunCount == 0 ? 0 : inBytes / testRunCount;
+  double get bytesAvg => outBytesAvg + inBytesAvg;
+
+  TrafficConnection copy() {
+    return TrafficConnection(
+      endpoint: endpoint,
+      testRunCount: testRunCount,
+      protocols: protocols,
+      outCount: outCount,
+      inCount: inCount,
+      outBytes: outBytes,
+      inBytes: inBytes,
+    );
+  }
 }

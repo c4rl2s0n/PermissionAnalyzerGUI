@@ -26,7 +26,7 @@ class TestApplicationCubit extends Cubit<TestApplicationState> {
   void _initialize() {
     scenarioWatcher =
         testScenarioRepository.watchForApplication(state.id).listen(
-              (scenarios) => emit(state.copyWith(scenarios: scenarios)),
+              (scenarios) => emit(state.copyWith(scenarios: List.of(scenarios))),
             );
   }
 

@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_graph_view/flutter_graph_view.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:permission_analyzer_gui/common/keys.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
+import 'package:permission_analyzer_gui/features/analysis/values.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_analysis/logic/endpoint_analysis_cubit.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_analysis/widgets/endpoint_graph/widgets/legend_overlay.dart';
 
@@ -19,83 +21,80 @@ class EndpointGraph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<EndpointAnalysisCubit, EndpointAnalysisState>(
-      buildWhen: (oldState, state) =>
-          oldState.hideCommonEndpoints != state.hideCommonEndpoints,
       builder: _graphWidget,
     );
   }
 
   Widget _graphWidget(BuildContext context, EndpointAnalysisState state) {
-    return FlutterGraphWidget(
-      data: GraphData(_vertices(state), _edges(state)),
-      algorithm: TagCircleLayout(
-        tag: 'group',
-        decorators: [
-          PauseDecorator(),
-          LegendDecorator(handleOverlay: legendOverlayBuilder(), decorators: [
-            TagDecorator(
-              taggedDecorators: {
-                'group': [CircleLayout(decorators: [])],
-                'endpoint': [
-                  RandomLayout(
-                    decorators: [
-                      CoulombDecorator(k: 70, sameTagsFactor: 1),
-                      HookeBorderDecorator(),
-                      HookeDecorator(),
-                      CoulombCenterDecorator(k: 100),
-                      HookeCenterDecorator(k: 0.01),
-                      ForceDecorator(),
-                      ForceMotionDecorator(),
-                      TimeCounterDecorator(),
-                    ],
-                  ),
-                ],
-              },
-            ),
-          ]),
-        ],
+    return Container(
+      clipBehavior: Clip.hardEdge,
+      decoration: const BoxDecoration(shape: BoxShape.rectangle),
+      child: FlutterGraphWidget(
+        data: GraphData(_vertices(state), _edges(state)),
+        algorithm: TagCircleLayout(
+          tag: tGroup,
+          decorators: [
+            PauseDecorator(),
+            LegendDecorator(handleOverlay: legendOverlayBuilder(), decorators: [
+              TagDecorator(
+                taggedDecorators: {
+                  tGroup: [CircleLayout(decorators: [])],
+                  tEndpoint: [
+                    RandomLayout(
+                      decorators: [
+                        CoulombDecorator(k: 70, sameTagsFactor: 1),
+                        HookeBorderDecorator(),
+                        HookeDecorator(),
+                        CoulombCenterDecorator(k: 100),
+                        HookeCenterDecorator(k: 0.01),
+                        ForceDecorator(),
+                        ForceMotionDecorator(),
+                        TimeCounterDecorator(),
+                      ],
+                    ),
+                  ],
+                },
+              ),
+            ]),
+          ],
+        ),
+        convertor: EndpointAnalysisConverter(), // MapConvertor(),
+        options: Options()
+          ..useLegend = false
+          ..enableHit = false
+          ..panelDelay = const Duration(milliseconds: 500)
+          ..graphStyle = (GraphStyle()
+            ..vertexTextStyleGetter = ((_, __) => context.textTheme.labelSmall)
+            // tagColor is prior to tagColorByIndex. use vertex.tags to get color
+            ..tagColor = tagColors
+            ..tagColorByIndex = [])
+          ..edgePanelBuilder = ((edge, viewfinder) =>
+              edgePanelBuilder(context, edge, viewfinder))
+          ..vertexPanelBuilder = ((vertex, viewfinder) =>
+              vertexPanelBuilder(context, vertex, viewfinder))
+          ..edgeShape = CustomEdgeLineShape() // default is EdgeLineShape.
+          ..vertexShape = VertexCircleShape(), // default is VertexCircleShape.
       ),
-      convertor: EndpointAnalysisConverter(), // MapConvertor(),
-      options: Options()
-        ..useLegend = false
-        ..enableHit = false
-        ..panelDelay = const Duration(milliseconds: 500)
-        ..graphStyle = (GraphStyle()
-          ..vertexTextStyleGetter = ((_, __) => context.textTheme.labelSmall)
-          // tagColor is prior to tagColorByIndex. use vertex.tags to get color
-          ..tagColor = {
-            'group': Colors.deepOrange,
-            'endpoint': Colors.indigo,
-            'highlight': Colors.yellow,
-            'common': Colors.pinkAccent,
-          }
-          ..tagColorByIndex = [])
-        ..edgePanelBuilder =
-            ((edge, viewfinder) => edgePanelBuilder(context, edge, viewfinder))
-        ..vertexPanelBuilder = ((vertex, viewfinder) =>
-            vertexPanelBuilder(context, vertex, viewfinder))
-        ..edgeShape = EdgeLineShape() // default is EdgeLineShape.
-        ..vertexShape = VertexCircleShape(), // default is VertexCircleShape.
     );
   }
 
   List<GraphVertex> _vertices(EndpointAnalysisState state) {
     List<GraphVertex> vertexes = [
-      ...state.relevantEndpoints.map((e) => GraphVertex(endpoint: e)),
-      ...state.groups.map((g) => GraphVertex(group: g))
+      ...state.endpoints.map((e) => GraphVertex(endpoint: e, id: e.name)),
+      ...state.visibleTrafficGroups.map((g) => GraphVertex(group: g, id: g.id))
     ];
-    int totalGroups = state.groups.length;
+    int totalGroups = state.visibleGroups.length;
     for (var vertex in vertexes) {
       dynamic data = vertex.data;
       if (data is TrafficEndpoint) {
-        int connections = state.groups
+        int connectedGroups = state.visibleTrafficGroups
             .where(
-                (g) => g.connections.any((gc) => gc.endpoint.name == data.name))
+                (g) => g.connections.any((gc) => gc.endpoint?.name == data.name))
             .length;
-        if (connections == 1) vertex.unique = true;
-        if (connections == totalGroups) vertex.common = true;
-        vertex.size = connections / totalGroups;
-        vertex.connections = connections;
+        if (connectedGroups == 1) vertex.unique = true;
+        if (connectedGroups == totalGroups) vertex.common = true;
+        vertex.size = connectedGroups / totalGroups;
+        vertex.connectedGroups = connectedGroups;
       }
     }
     return vertexes;
@@ -104,13 +103,17 @@ class EndpointGraph extends StatelessWidget {
   List<GraphEdge> _edges(EndpointAnalysisState state) {
     List<GraphEdge> edges = [];
 
-    for (var group in state.groups) {
+    for (var group in state.visibleTrafficGroups) {
       for (var connection in group.connections) {
-        if (!state.relevantEndpoints
-            .any((e) => e.name == connection.endpoint.name)) {
+        if (!state.endpoints
+            .any((e) => e.name == connection.endpoint?.name)) {
           continue;
         }
-        edges.add(GraphEdge(src: group, dst: connection));
+        edges.add(GraphEdge(
+          src: group,
+          dst: connection,
+          common: connection.testRunCount == group.testRuns,
+        ));
       }
     }
     return edges;
@@ -125,8 +128,8 @@ class EndpointGraph extends StatelessWidget {
       edge.position,
       child: _infoPanelContent(
         context,
-        "${edgeData.src.name} -> ${edgeData.dst.endpoint.name}",
-        "IN:\n\t\tPackets: ${edgeData.dst.inCount}\n\t\tBytes: ${edgeData.dst.inBytes}\nOUT:\n\t\tPackets: ${edgeData.dst.outCount}\n\t\tBytes: ${edgeData.dst.outBytes}\nProtocols: ${edgeData.dst.protocols ?? "???"}",
+        "${edgeData.src.name} -> ${edgeData.dst.endpoint?.name ?? "???"}",
+        "IN:\n\t\tPackets: ${edgeData.dst.inCount}\n\t\tBytes: ${edgeData.dst.inBytes}\nOUT:\n\t\tPackets: ${edgeData.dst.outCount}\n\t\tBytes: ${edgeData.dst.outBytes}\nProtocols: ${edgeData.dst.protocols ?? "???"}\nUsed in all tests: ${edgeData.common}",
       ),
     );
   }
@@ -160,18 +163,21 @@ class EndpointGraph extends StatelessWidget {
         Positioned(
           left: c.x + 5 + offsetLeft,
           top: c.y - offsetTop,
-          child: Container(
-            width: 240,
-            padding: EdgeInsets.all(context.constants.smallSpacing),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade900.withAlpha(200),
-              border: Border.all(color: Colors.white70),
-              borderRadius:
-                  BorderRadius.all(context.constants.roundedCornerRadius),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Container(
+              //width: 340,
+              padding: EdgeInsets.all(context.constants.smallSpacing),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade900.withAlpha(200),
+                border: Border.all(color: Colors.white70),
+                borderRadius:
+                    BorderRadius.all(context.constants.roundedCornerRadius),
+              ),
+              child: child,
             ),
-            child: child,
           ),
-        )
+        ),
       ],
     );
   }
@@ -206,7 +212,7 @@ class EndpointGraph extends StatelessWidget {
     return _infoPanelContent(
       context,
       e.name,
-      'IP: ${e.ip}\nPort: ${e.port}\n# Connections: ${v.connections}',
+      'IP: ${e.ip}\nPort: ${e.port}\n${e.hostname != null ? "Hostname: ${e.hostname}\n" : ""}# Connected Groups: ${v.connectedGroups}',
     );
   }
 

@@ -69,7 +69,7 @@ class RecordingOptions extends StatelessWidget {
           Expanded(child: Text(name)),
           Icon(value
               ? context.icons.checkboxSelected
-              : context.icons.checkboxEmpty),
+              : context.icons.checkboxDeselected),
         ],
       ),
     );

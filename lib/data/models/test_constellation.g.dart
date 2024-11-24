@@ -13,23 +13,28 @@ const TestConstellationSchema = Schema(
   name: r'TestConstellation',
   id: -5871104126575400918,
   properties: {
-    r'permissions': PropertySchema(
+    r'abbreviation': PropertySchema(
       id: 0,
+      name: r'abbreviation',
+      type: IsarType.string,
+    ),
+    r'permissions': PropertySchema(
+      id: 1,
       name: r'permissions',
       type: IsarType.objectList,
       target: r'PermissionSetting',
     ),
     r'tests': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'tests',
       type: IsarType.objectList,
       target: r'TestRun',
     ),
-    r'trafficConnections': PropertySchema(
-      id: 2,
-      name: r'trafficConnections',
-      type: IsarType.objectList,
-      target: r'TrafficConnection',
+    r'trafficGroup': PropertySchema(
+      id: 3,
+      name: r'trafficGroup',
+      type: IsarType.object,
+      target: r'TrafficGroup',
     )
   },
   estimateSize: _testConstellationEstimateSize,
@@ -44,6 +49,7 @@ int _testConstellationEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  bytesCount += 3 + object.abbreviation.length * 3;
   bytesCount += 3 + object.permissions.length * 3;
   {
     final offsets = allOffsets[PermissionSetting]!;
@@ -61,13 +67,12 @@ int _testConstellationEstimateSize(
       bytesCount += TestRunSchema.estimateSize(value, offsets, allOffsets);
     }
   }
-  bytesCount += 3 + object.trafficConnections.length * 3;
   {
-    final offsets = allOffsets[TrafficConnection]!;
-    for (var i = 0; i < object.trafficConnections.length; i++) {
-      final value = object.trafficConnections[i];
-      bytesCount +=
-          TrafficConnectionSchema.estimateSize(value, offsets, allOffsets);
+    final value = object.trafficGroup;
+    if (value != null) {
+      bytesCount += 3 +
+          TrafficGroupSchema.estimateSize(
+              value, allOffsets[TrafficGroup]!, allOffsets);
     }
   }
   return bytesCount;
@@ -79,23 +84,24 @@ void _testConstellationSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
+  writer.writeString(offsets[0], object.abbreviation);
   writer.writeObjectList<PermissionSetting>(
-    offsets[0],
+    offsets[1],
     allOffsets,
     PermissionSettingSchema.serialize,
     object.permissions,
   );
   writer.writeObjectList<TestRun>(
-    offsets[1],
+    offsets[2],
     allOffsets,
     TestRunSchema.serialize,
     object.tests,
   );
-  writer.writeObjectList<TrafficConnection>(
-    offsets[2],
+  writer.writeObject<TrafficGroup>(
+    offsets[3],
     allOffsets,
-    TrafficConnectionSchema.serialize,
-    object.trafficConnections,
+    TrafficGroupSchema.serialize,
+    object.trafficGroup,
   );
 }
 
@@ -107,19 +113,24 @@ TestConstellation _testConstellationDeserialize(
 ) {
   final object = TestConstellation(
     permissions: reader.readObjectList<PermissionSetting>(
-          offsets[0],
+          offsets[1],
           PermissionSettingSchema.deserialize,
           allOffsets,
           PermissionSetting(),
         ) ??
         const [],
     tests: reader.readObjectList<TestRun>(
-          offsets[1],
+          offsets[2],
           TestRunSchema.deserialize,
           allOffsets,
           TestRun(),
         ) ??
         const [],
+    trafficGroup: reader.readObjectOrNull<TrafficGroup>(
+      offsets[3],
+      TrafficGroupSchema.deserialize,
+      allOffsets,
+    ),
   );
   return object;
 }
@@ -132,6 +143,8 @@ P _testConstellationDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
+      return (reader.readString(offset)) as P;
+    case 1:
       return (reader.readObjectList<PermissionSetting>(
             offset,
             PermissionSettingSchema.deserialize,
@@ -139,7 +152,7 @@ P _testConstellationDeserializeProp<P>(
             PermissionSetting(),
           ) ??
           const []) as P;
-    case 1:
+    case 2:
       return (reader.readObjectList<TestRun>(
             offset,
             TestRunSchema.deserialize,
@@ -147,14 +160,12 @@ P _testConstellationDeserializeProp<P>(
             TestRun(),
           ) ??
           const []) as P;
-    case 2:
-      return (reader.readObjectList<TrafficConnection>(
-            offset,
-            TrafficConnectionSchema.deserialize,
-            allOffsets,
-            TrafficConnection(),
-          ) ??
-          []) as P;
+    case 3:
+      return (reader.readObjectOrNull<TrafficGroup>(
+        offset,
+        TrafficGroupSchema.deserialize,
+        allOffsets,
+      )) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -162,6 +173,142 @@ P _testConstellationDeserializeProp<P>(
 
 extension TestConstellationQueryFilter
     on QueryBuilder<TestConstellation, TestConstellation, QFilterCondition> {
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      abbreviationEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'abbreviation',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      abbreviationGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'abbreviation',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      abbreviationLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'abbreviation',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      abbreviationBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'abbreviation',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      abbreviationStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'abbreviation',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      abbreviationEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'abbreviation',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      abbreviationContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'abbreviation',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      abbreviationMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'abbreviation',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      abbreviationIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'abbreviation',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      abbreviationIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'abbreviation',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
       permissionsLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
@@ -341,91 +488,20 @@ extension TestConstellationQueryFilter
   }
 
   QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      trafficConnectionsLengthEqualTo(int length) {
+      trafficGroupIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'trafficConnections',
-        length,
-        true,
-        length,
-        true,
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'trafficGroup',
+      ));
     });
   }
 
   QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      trafficConnectionsIsEmpty() {
+      trafficGroupIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'trafficConnections',
-        0,
-        true,
-        0,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      trafficConnectionsIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'trafficConnections',
-        0,
-        false,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      trafficConnectionsLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'trafficConnections',
-        0,
-        true,
-        length,
-        include,
-      );
-    });
-  }
-
-  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      trafficConnectionsLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'trafficConnections',
-        length,
-        include,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      trafficConnectionsLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'trafficConnections',
-        lower,
-        includeLower,
-        upper,
-        includeUpper,
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'trafficGroup',
+      ));
     });
   }
 }
@@ -447,9 +523,9 @@ extension TestConstellationQueryObject
   }
 
   QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      trafficConnectionsElement(FilterQuery<TrafficConnection> q) {
+      trafficGroup(FilterQuery<TrafficGroup> q) {
     return QueryBuilder.apply(this, (query) {
-      return query.object(q, r'trafficConnections');
+      return query.object(q, r'trafficGroup');
     });
   }
 }

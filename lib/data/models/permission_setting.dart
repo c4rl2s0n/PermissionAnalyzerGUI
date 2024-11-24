@@ -3,12 +3,10 @@ import 'package:isar/isar.dart';
 part 'permission_setting.g.dart';
 
 enum PermissionState {
-  granted,
   revoked,
-  test,
-}
+  granted,
+  test;
 
-extension PermissionStateExtension on PermissionState {
   PermissionState get next =>
       PermissionState.values[(PermissionState.values.indexOf(this) + 1) %
           PermissionState.values.length];

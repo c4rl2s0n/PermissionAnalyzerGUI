@@ -36,3 +36,6 @@ Future sleepSec(int seconds) {
 Future sleep(Duration duration) {
   return Future.delayed(duration);
 }
+
+bool isSubtype<S, T>() => <S>[] is List<T>;
+bool isNullableSubtype<S, T>() => <S>[] is List<T> || <S>[] is List<T?>;

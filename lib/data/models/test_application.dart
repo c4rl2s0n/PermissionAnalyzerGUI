@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'package:permission_analyzer_gui/data/data.dart';
 
 part 'test_application.g.dart';
 

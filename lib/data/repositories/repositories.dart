@@ -1,3 +1,6 @@
+export 'interfaces/network_endpoint_repository.dart';
+export 'network_endpoint_repository.dart';
+
 export 'interfaces/settings_repository.dart';
 export 'settings_repository.dart';
 

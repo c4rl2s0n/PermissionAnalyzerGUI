@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:permission_analyzer_gui/data/data.dart';
 
 import '../logic/logic.dart';
 
@@ -19,7 +20,7 @@ class TestScenarioActions extends StatelessWidget {
           _deleteScenarioButton(),
           _resetScenarioButton(),
           _recordButton(),
-          _createConstellationsButton(),
+          _addConstellationsButton(),
           _runButton(),
         ],
       ),
@@ -84,15 +85,26 @@ class TestScenarioActions extends StatelessWidget {
     );
   }
 
-  Widget _createConstellationsButton() {
+  Widget _addConstellationsButton() {
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
       buildWhen: (oldState, state) => oldState.hasTests != state.hasTests,
       builder: (context, state) {
         return IconTextButton(
           onTap: state.hasTests
               ? null
-              : () => context.testScenarioCubit.createConstellations(),
-          text: "Create Constellations",
+              : () async {
+                  int duplicatesCount =
+                      await context.testScenarioCubit.addConstellations();
+                  if (context.mounted && duplicatesCount > 0) {
+                    InfoDialog.showInfo(
+                      context,
+                      title: "Duplicate constellations ignored",
+                      content:
+                          "Ignored $duplicatesCount constellations, that already exist.",
+                    );
+                  }
+                },
+          text: "Add Constellations",
           icon: Icon(context.icons.create),
         );
       },

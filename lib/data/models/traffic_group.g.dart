@@ -19,21 +19,57 @@ const TrafficGroupSchema = Schema(
       type: IsarType.objectList,
       target: r'TrafficConnection',
     ),
-    r'endpoints': PropertySchema(
+    r'endpointCountAvg': PropertySchema(
       id: 1,
+      name: r'endpointCountAvg',
+      type: IsarType.long,
+    ),
+    r'endpointCountMax': PropertySchema(
+      id: 2,
+      name: r'endpointCountMax',
+      type: IsarType.long,
+    ),
+    r'endpointCountMin': PropertySchema(
+      id: 3,
+      name: r'endpointCountMin',
+      type: IsarType.long,
+    ),
+    r'endpoints': PropertySchema(
+      id: 4,
       name: r'endpoints',
       type: IsarType.objectList,
       target: r'TrafficEndpoint',
     ),
+    r'id': PropertySchema(
+      id: 5,
+      name: r'id',
+      type: IsarType.string,
+    ),
     r'info': PropertySchema(
-      id: 2,
+      id: 6,
       name: r'info',
       type: IsarType.string,
     ),
     r'name': PropertySchema(
-      id: 3,
+      id: 7,
       name: r'name',
       type: IsarType.string,
+    ),
+    r'tags': PropertySchema(
+      id: 8,
+      name: r'tags',
+      type: IsarType.stringList,
+    ),
+    r'testRuns': PropertySchema(
+      id: 9,
+      name: r'testRuns',
+      type: IsarType.long,
+    ),
+    r'tests': PropertySchema(
+      id: 10,
+      name: r'tests',
+      type: IsarType.objectList,
+      target: r'TestRun',
     )
   },
   estimateSize: _trafficGroupEstimateSize,
@@ -66,6 +102,7 @@ int _trafficGroupEstimateSize(
           TrafficEndpointSchema.estimateSize(value, offsets, allOffsets);
     }
   }
+  bytesCount += 3 + object.id.length * 3;
   {
     final value = object.info;
     if (value != null) {
@@ -73,6 +110,21 @@ int _trafficGroupEstimateSize(
     }
   }
   bytesCount += 3 + object.name.length * 3;
+  bytesCount += 3 + object.tags.length * 3;
+  {
+    for (var i = 0; i < object.tags.length; i++) {
+      final value = object.tags[i];
+      bytesCount += value.length * 3;
+    }
+  }
+  bytesCount += 3 + object.tests.length * 3;
+  {
+    final offsets = allOffsets[TestRun]!;
+    for (var i = 0; i < object.tests.length; i++) {
+      final value = object.tests[i];
+      bytesCount += TestRunSchema.estimateSize(value, offsets, allOffsets);
+    }
+  }
   return bytesCount;
 }
 
@@ -88,14 +140,26 @@ void _trafficGroupSerialize(
     TrafficConnectionSchema.serialize,
     object.connections,
   );
+  writer.writeLong(offsets[1], object.endpointCountAvg);
+  writer.writeLong(offsets[2], object.endpointCountMax);
+  writer.writeLong(offsets[3], object.endpointCountMin);
   writer.writeObjectList<TrafficEndpoint>(
-    offsets[1],
+    offsets[4],
     allOffsets,
     TrafficEndpointSchema.serialize,
     object.endpoints,
   );
-  writer.writeString(offsets[2], object.info);
-  writer.writeString(offsets[3], object.name);
+  writer.writeString(offsets[5], object.id);
+  writer.writeString(offsets[6], object.info);
+  writer.writeString(offsets[7], object.name);
+  writer.writeStringList(offsets[8], object.tags);
+  writer.writeLong(offsets[9], object.testRuns);
+  writer.writeObjectList<TestRun>(
+    offsets[10],
+    allOffsets,
+    TestRunSchema.serialize,
+    object.tests,
+  );
 }
 
 TrafficGroup _trafficGroupDeserialize(
@@ -105,16 +169,36 @@ TrafficGroup _trafficGroupDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = TrafficGroup(
-    connections: reader.readObjectList<TrafficConnection>(
-          offsets[0],
-          TrafficConnectionSchema.deserialize,
+    id: reader.readStringOrNull(offsets[5]) ?? "",
+    info: reader.readStringOrNull(offsets[6]),
+    name: reader.readStringOrNull(offsets[7]) ?? "",
+    tags: reader.readStringList(offsets[8]) ?? const [],
+    tests: reader.readObjectList<TestRun>(
+          offsets[10],
+          TestRunSchema.deserialize,
           allOffsets,
-          TrafficConnection(),
+          TestRun(),
         ) ??
         const [],
-    info: reader.readStringOrNull(offsets[2]),
-    name: reader.readStringOrNull(offsets[3]) ?? "",
   );
+  object.connections = reader.readObjectList<TrafficConnection>(
+        offsets[0],
+        TrafficConnectionSchema.deserialize,
+        allOffsets,
+        TrafficConnection(),
+      ) ??
+      [];
+  object.endpointCountAvg = reader.readLong(offsets[1]);
+  object.endpointCountMax = reader.readLong(offsets[2]);
+  object.endpointCountMin = reader.readLong(offsets[3]);
+  object.endpoints = reader.readObjectList<TrafficEndpoint>(
+        offsets[4],
+        TrafficEndpointSchema.deserialize,
+        allOffsets,
+        TrafficEndpoint(),
+      ) ??
+      [];
+  object.testRuns = reader.readLong(offsets[9]);
   return object;
 }
 
@@ -132,8 +216,14 @@ P _trafficGroupDeserializeProp<P>(
             allOffsets,
             TrafficConnection(),
           ) ??
-          const []) as P;
+          []) as P;
     case 1:
+      return (reader.readLong(offset)) as P;
+    case 2:
+      return (reader.readLong(offset)) as P;
+    case 3:
+      return (reader.readLong(offset)) as P;
+    case 4:
       return (reader.readObjectList<TrafficEndpoint>(
             offset,
             TrafficEndpointSchema.deserialize,
@@ -141,10 +231,24 @@ P _trafficGroupDeserializeProp<P>(
             TrafficEndpoint(),
           ) ??
           []) as P;
-    case 2:
-      return (reader.readStringOrNull(offset)) as P;
-    case 3:
+    case 5:
       return (reader.readStringOrNull(offset) ?? "") as P;
+    case 6:
+      return (reader.readStringOrNull(offset)) as P;
+    case 7:
+      return (reader.readStringOrNull(offset) ?? "") as P;
+    case 8:
+      return (reader.readStringList(offset) ?? const []) as P;
+    case 9:
+      return (reader.readLong(offset)) as P;
+    case 10:
+      return (reader.readObjectList<TestRun>(
+            offset,
+            TestRunSchema.deserialize,
+            allOffsets,
+            TestRun(),
+          ) ??
+          const []) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -242,6 +346,174 @@ extension TrafficGroupQueryFilter
   }
 
   QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      endpointCountAvgEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'endpointCountAvg',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      endpointCountAvgGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'endpointCountAvg',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      endpointCountAvgLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'endpointCountAvg',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      endpointCountAvgBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'endpointCountAvg',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      endpointCountMaxEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'endpointCountMax',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      endpointCountMaxGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'endpointCountMax',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      endpointCountMaxLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'endpointCountMax',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      endpointCountMaxBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'endpointCountMax',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      endpointCountMinEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'endpointCountMin',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      endpointCountMinGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'endpointCountMin',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      endpointCountMinLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'endpointCountMin',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      endpointCountMinBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'endpointCountMin',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
       endpointsLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
@@ -327,6 +599,137 @@ extension TrafficGroupQueryFilter
         upper,
         includeUpper,
       );
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition> idEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'id',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition> idGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'id',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition> idLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'id',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition> idBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition> idStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'id',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition> idEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'id',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition> idContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'id',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition> idMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'id',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition> idIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'id',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      idIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'id',
+        value: '',
+      ));
     });
   }
 
@@ -614,6 +1017,376 @@ extension TrafficGroupQueryFilter
       ));
     });
   }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'tags',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'tags',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'tags',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'tags',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'tags',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'tags',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'tags',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'tags',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'tags',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'tags',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'tags',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'tags',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'tags',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'tags',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'tags',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      tagsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'tags',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      testRunsEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'testRuns',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      testRunsGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'testRuns',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      testRunsLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'testRuns',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      testRunsBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'testRuns',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      testsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'tests',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      testsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'tests',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      testsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'tests',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      testsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'tests',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      testsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'tests',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition>
+      testsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'tests',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
 }
 
 extension TrafficGroupQueryObject
@@ -629,6 +1402,13 @@ extension TrafficGroupQueryObject
       endpointsElement(FilterQuery<TrafficEndpoint> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'endpoints');
+    });
+  }
+
+  QueryBuilder<TrafficGroup, TrafficGroup, QAfterFilterCondition> testsElement(
+      FilterQuery<TestRun> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'tests');
     });
   }
 }

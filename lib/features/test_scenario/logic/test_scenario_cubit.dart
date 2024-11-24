@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path/path.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:permission_analyzer_gui/common/keys.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
 part 'test_scenario_executor.dart';
@@ -70,7 +71,6 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   Future reset() async {
     testScenario.userInputRecord = "";
     testScenario.testConstellations = [];
-    testScenario.analysis = null;
 
     resetAllPermissionStates();
     await _clearFiles();
@@ -82,7 +82,8 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
 
     await _clearFiles();
   }
-  Future _clearFiles()async{
+
+  Future _clearFiles() async {
     Directory fileDir = Directory(state.fileDirectory);
     if (await fileDir.exists()) {
       await fileDir.delete(recursive: true);
@@ -135,12 +136,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   }
 
   void _updatePermissionState() {
-    // reset the testConstellations when permissions were changed
-    testScenario.testConstellations = [];
-    emit(state.copyWith(
-      permissions: List.of(testScenario.permissions),
-      testConstellations: List.of(testScenario.testConstellations),
-    ));
+    emit(state.copyWith(permissions: List.of(testScenario.permissions)));
     _storeScenario();
   }
 
@@ -212,7 +208,9 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     return constellation;
   }
 
-  Future createConstellations() async {
+  /// add new constellations
+  /// return the number of constellations that already existed
+  Future<int> addConstellations() async {
     // set one constellations with all testing permissions revoked for reference
     List<TestConstellation> constellations = [
       TestConstellation(
@@ -224,13 +222,31 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
                       : PermissionState.revoked))
               .toList())
     ];
-    for (var p in testScenario.permissions) {
-      if (p.state == PermissionState.test) {
-        constellations.add(
-          TestConstellation(permissions: _getPermissionConstellation(p)),
-        );
-      }
+    for (var p in testScenario.permissions
+        .where((p) => p.state == PermissionState.test)) {
+      constellations.add(
+        TestConstellation(permissions: _getPermissionConstellation(p)),
+      );
     }
+    // only add constellations that do not yet exist
+    List<TestConstellation> newConstellations = constellations
+        .where((tc) => !testScenario.testConstellations
+        .any((tstc) => tc.abbreviation == tstc.abbreviation))
+        .toList();
+    testScenario.testConstellations = [
+      ...testScenario.testConstellations,
+      ...newConstellations,
+    ];
+    emit(state.copyWith(testConstellations: testScenario.testConstellations));
+    _storeScenario();
+    // returns the number of constellations that already existed
+    return constellations.length - newConstellations.length;
+  }
+
+  void removeConstellation(TestConstellation tc) {
+    List<TestConstellation> constellations =
+        testScenario.testConstellations.toList();
+    constellations.remove(tc);
     testScenario.testConstellations = constellations;
     emit(state.copyWith(testConstellations: testScenario.testConstellations));
     _storeScenario();
@@ -266,7 +282,6 @@ class TestScenarioState extends Equatable {
     this.recordScreen = true,
     this.captureTraffic = true,
     this.testConstellations = const [],
-    this.hasAnalysis = false,
   });
   TestScenarioState.fromScenario(TestScenario scenario)
       : this(
@@ -284,7 +299,6 @@ class TestScenarioState extends Equatable {
           recordScreen: scenario.recordScreen,
           captureTraffic: scenario.captureTraffic,
           testConstellations: List.of(scenario.testConstellations),
-          hasAnalysis: scenario.analysis != null,
         );
 
   final bool loading;
@@ -305,7 +319,6 @@ class TestScenarioState extends Equatable {
   final bool recordScreen;
   final bool captureTraffic;
   final List<TestConstellation> testConstellations;
-  final bool hasAnalysis;
   bool get canConfigure => !hasTests;
   bool get canRun => testConstellations.isNotEmpty;
   bool get hasTests => testConstellations.any((c) => c.tests.isNotEmpty);
@@ -329,7 +342,7 @@ class TestScenarioState extends Equatable {
         recordScreen,
         captureTraffic,
         testConstellations,
-        hasAnalysis,
+        hasTests,
       ];
 
   TestScenarioState copyWith({
@@ -350,7 +363,6 @@ class TestScenarioState extends Equatable {
     bool? recordScreen,
     bool? captureTraffic,
     List<TestConstellation>? testConstellations,
-    bool? hasAnalysis,
   }) {
     return TestScenarioState(
       loading: loading ?? this.loading,
@@ -370,7 +382,6 @@ class TestScenarioState extends Equatable {
       recordScreen: recordScreen ?? this.recordScreen,
       captureTraffic: captureTraffic ?? this.captureTraffic,
       testConstellations: testConstellations ?? this.testConstellations,
-      hasAnalysis: hasAnalysis ?? this.hasAnalysis,
     );
   }
 }

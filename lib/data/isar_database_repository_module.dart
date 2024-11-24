@@ -21,5 +21,6 @@ class IsarDataRepositoryModule extends Module {
     i.addSingleton<ISettingsRepository>(SettingsRepository.new);
     i.addSingleton<ITestScenarioRepository>(TestScenarioRepository.new);
     i.addSingleton<ITestApplicationRepository>(TestApplicationRepository.new);
+    i.addSingleton<INetworkEndpointRepository>(NetworkEndpointRepository.new);
   }
 }

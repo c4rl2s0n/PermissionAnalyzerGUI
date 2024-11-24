@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'package:permission_analyzer_gui/common/keys.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
 part 'test_scenario.g.dart';
@@ -20,7 +21,6 @@ class TestScenario {
     this.recordScreen = true,
     this.captureTraffic = true,
     this.testConstellations = const [],
-    this.analysis,
   });
 
   Id id = Isar.autoIncrement;
@@ -45,5 +45,4 @@ class TestScenario {
 
   List<TestConstellation> testConstellations;
 
-  Analysis? analysis;
 }

@@ -10,21 +10,20 @@ class TestConstellation {
   TestConstellation({
     this.permissions = const [],
     this.tests = const [],
-  });
+    this.trafficGroup,
+  }) {
+    if (trafficGroup != null) trafficGroup!.data = this;
+  }
 
   List<PermissionSetting> permissions;
   List<TestRun> tests;
+  TrafficGroup? trafficGroup;
 
-  List<TrafficConnection> get trafficConnections {
-    List<TrafficConnection> connections = [];
-    for (var test in tests) {
-      connections.addAll(test.connections ?? []);
-    }
-    return connections;
-  }
 
-  @ignore
   String get abbreviation {
+    if (permissions.every((p) => p.state == PermissionState.granted)) {
+      return "ALL";
+    }
     String abbr = permissions
         .where((c) => c.state == PermissionState.granted)
         .map((c) => permissionToShortcut(c.permission))

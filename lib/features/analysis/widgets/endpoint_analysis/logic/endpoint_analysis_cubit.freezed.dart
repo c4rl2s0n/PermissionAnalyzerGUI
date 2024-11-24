@@ -16,10 +16,15 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$EndpointAnalysisState {
-  bool get hideCommonEndpoints => throw _privateConstructorUsedError;
   List<TrafficEndpoint> get endpoints => throw _privateConstructorUsedError;
   List<TrafficConnection> get connections => throw _privateConstructorUsedError;
-  List<TrafficGroup> get groups => throw _privateConstructorUsedError;
+  List<AnalysisTrafficGroupCubit> get groups =>
+      throw _privateConstructorUsedError;
+  List<AnalysisTrafficGroupCubit> get visibleGroups =>
+      throw _privateConstructorUsedError;
+  List<AnalysisTrafficGroupCubit> get enabledGroups =>
+      throw _privateConstructorUsedError;
+  bool get analyzingEndpoints => throw _privateConstructorUsedError;
 
   /// Create a copy of EndpointAnalysisState
   /// with the given fields replaced by the non-null parameter values.
@@ -35,10 +40,12 @@ abstract class $EndpointAnalysisStateCopyWith<$Res> {
       _$EndpointAnalysisStateCopyWithImpl<$Res, EndpointAnalysisState>;
   @useResult
   $Res call(
-      {bool hideCommonEndpoints,
-      List<TrafficEndpoint> endpoints,
+      {List<TrafficEndpoint> endpoints,
       List<TrafficConnection> connections,
-      List<TrafficGroup> groups});
+      List<AnalysisTrafficGroupCubit> groups,
+      List<AnalysisTrafficGroupCubit> visibleGroups,
+      List<AnalysisTrafficGroupCubit> enabledGroups,
+      bool analyzingEndpoints});
 }
 
 /// @nodoc
@@ -57,16 +64,14 @@ class _$EndpointAnalysisStateCopyWithImpl<$Res,
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? hideCommonEndpoints = null,
     Object? endpoints = null,
     Object? connections = null,
     Object? groups = null,
+    Object? visibleGroups = null,
+    Object? enabledGroups = null,
+    Object? analyzingEndpoints = null,
   }) {
     return _then(_value.copyWith(
-      hideCommonEndpoints: null == hideCommonEndpoints
-          ? _value.hideCommonEndpoints
-          : hideCommonEndpoints // ignore: cast_nullable_to_non_nullable
-              as bool,
       endpoints: null == endpoints
           ? _value.endpoints
           : endpoints // ignore: cast_nullable_to_non_nullable
@@ -78,7 +83,19 @@ class _$EndpointAnalysisStateCopyWithImpl<$Res,
       groups: null == groups
           ? _value.groups
           : groups // ignore: cast_nullable_to_non_nullable
-              as List<TrafficGroup>,
+              as List<AnalysisTrafficGroupCubit>,
+      visibleGroups: null == visibleGroups
+          ? _value.visibleGroups
+          : visibleGroups // ignore: cast_nullable_to_non_nullable
+              as List<AnalysisTrafficGroupCubit>,
+      enabledGroups: null == enabledGroups
+          ? _value.enabledGroups
+          : enabledGroups // ignore: cast_nullable_to_non_nullable
+              as List<AnalysisTrafficGroupCubit>,
+      analyzingEndpoints: null == analyzingEndpoints
+          ? _value.analyzingEndpoints
+          : analyzingEndpoints // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -93,10 +110,12 @@ abstract class _$$EndpointAnalysisStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {bool hideCommonEndpoints,
-      List<TrafficEndpoint> endpoints,
+      {List<TrafficEndpoint> endpoints,
       List<TrafficConnection> connections,
-      List<TrafficGroup> groups});
+      List<AnalysisTrafficGroupCubit> groups,
+      List<AnalysisTrafficGroupCubit> visibleGroups,
+      List<AnalysisTrafficGroupCubit> enabledGroups,
+      bool analyzingEndpoints});
 }
 
 /// @nodoc
@@ -113,16 +132,14 @@ class __$$EndpointAnalysisStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? hideCommonEndpoints = null,
     Object? endpoints = null,
     Object? connections = null,
     Object? groups = null,
+    Object? visibleGroups = null,
+    Object? enabledGroups = null,
+    Object? analyzingEndpoints = null,
   }) {
     return _then(_$EndpointAnalysisStateImpl(
-      hideCommonEndpoints: null == hideCommonEndpoints
-          ? _value.hideCommonEndpoints
-          : hideCommonEndpoints // ignore: cast_nullable_to_non_nullable
-              as bool,
       endpoints: null == endpoints
           ? _value._endpoints
           : endpoints // ignore: cast_nullable_to_non_nullable
@@ -134,7 +151,19 @@ class __$$EndpointAnalysisStateImplCopyWithImpl<$Res>
       groups: null == groups
           ? _value._groups
           : groups // ignore: cast_nullable_to_non_nullable
-              as List<TrafficGroup>,
+              as List<AnalysisTrafficGroupCubit>,
+      visibleGroups: null == visibleGroups
+          ? _value._visibleGroups
+          : visibleGroups // ignore: cast_nullable_to_non_nullable
+              as List<AnalysisTrafficGroupCubit>,
+      enabledGroups: null == enabledGroups
+          ? _value._enabledGroups
+          : enabledGroups // ignore: cast_nullable_to_non_nullable
+              as List<AnalysisTrafficGroupCubit>,
+      analyzingEndpoints: null == analyzingEndpoints
+          ? _value.analyzingEndpoints
+          : analyzingEndpoints // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -143,17 +172,19 @@ class __$$EndpointAnalysisStateImplCopyWithImpl<$Res>
 
 class _$EndpointAnalysisStateImpl extends _EndpointAnalysisState {
   const _$EndpointAnalysisStateImpl(
-      {required this.hideCommonEndpoints,
-      required final List<TrafficEndpoint> endpoints,
+      {required final List<TrafficEndpoint> endpoints,
       required final List<TrafficConnection> connections,
-      required final List<TrafficGroup> groups})
+      required final List<AnalysisTrafficGroupCubit> groups,
+      required final List<AnalysisTrafficGroupCubit> visibleGroups,
+      required final List<AnalysisTrafficGroupCubit> enabledGroups,
+      required this.analyzingEndpoints})
       : _endpoints = endpoints,
         _connections = connections,
         _groups = groups,
+        _visibleGroups = visibleGroups,
+        _enabledGroups = enabledGroups,
         super._();
 
-  @override
-  final bool hideCommonEndpoints;
   final List<TrafficEndpoint> _endpoints;
   @override
   List<TrafficEndpoint> get endpoints {
@@ -170,17 +201,36 @@ class _$EndpointAnalysisStateImpl extends _EndpointAnalysisState {
     return EqualUnmodifiableListView(_connections);
   }
 
-  final List<TrafficGroup> _groups;
+  final List<AnalysisTrafficGroupCubit> _groups;
   @override
-  List<TrafficGroup> get groups {
+  List<AnalysisTrafficGroupCubit> get groups {
     if (_groups is EqualUnmodifiableListView) return _groups;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_groups);
   }
 
+  final List<AnalysisTrafficGroupCubit> _visibleGroups;
+  @override
+  List<AnalysisTrafficGroupCubit> get visibleGroups {
+    if (_visibleGroups is EqualUnmodifiableListView) return _visibleGroups;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_visibleGroups);
+  }
+
+  final List<AnalysisTrafficGroupCubit> _enabledGroups;
+  @override
+  List<AnalysisTrafficGroupCubit> get enabledGroups {
+    if (_enabledGroups is EqualUnmodifiableListView) return _enabledGroups;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_enabledGroups);
+  }
+
+  @override
+  final bool analyzingEndpoints;
+
   @override
   String toString() {
-    return 'EndpointAnalysisState(hideCommonEndpoints: $hideCommonEndpoints, endpoints: $endpoints, connections: $connections, groups: $groups)';
+    return 'EndpointAnalysisState(endpoints: $endpoints, connections: $connections, groups: $groups, visibleGroups: $visibleGroups, enabledGroups: $enabledGroups, analyzingEndpoints: $analyzingEndpoints)';
   }
 
   @override
@@ -188,22 +238,28 @@ class _$EndpointAnalysisStateImpl extends _EndpointAnalysisState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$EndpointAnalysisStateImpl &&
-            (identical(other.hideCommonEndpoints, hideCommonEndpoints) ||
-                other.hideCommonEndpoints == hideCommonEndpoints) &&
             const DeepCollectionEquality()
                 .equals(other._endpoints, _endpoints) &&
             const DeepCollectionEquality()
                 .equals(other._connections, _connections) &&
-            const DeepCollectionEquality().equals(other._groups, _groups));
+            const DeepCollectionEquality().equals(other._groups, _groups) &&
+            const DeepCollectionEquality()
+                .equals(other._visibleGroups, _visibleGroups) &&
+            const DeepCollectionEquality()
+                .equals(other._enabledGroups, _enabledGroups) &&
+            (identical(other.analyzingEndpoints, analyzingEndpoints) ||
+                other.analyzingEndpoints == analyzingEndpoints));
   }
 
   @override
   int get hashCode => Object.hash(
       runtimeType,
-      hideCommonEndpoints,
       const DeepCollectionEquality().hash(_endpoints),
       const DeepCollectionEquality().hash(_connections),
-      const DeepCollectionEquality().hash(_groups));
+      const DeepCollectionEquality().hash(_groups),
+      const DeepCollectionEquality().hash(_visibleGroups),
+      const DeepCollectionEquality().hash(_enabledGroups),
+      analyzingEndpoints);
 
   /// Create a copy of EndpointAnalysisState
   /// with the given fields replaced by the non-null parameter values.
@@ -217,20 +273,26 @@ class _$EndpointAnalysisStateImpl extends _EndpointAnalysisState {
 
 abstract class _EndpointAnalysisState extends EndpointAnalysisState {
   const factory _EndpointAnalysisState(
-      {required final bool hideCommonEndpoints,
-      required final List<TrafficEndpoint> endpoints,
+      {required final List<TrafficEndpoint> endpoints,
       required final List<TrafficConnection> connections,
-      required final List<TrafficGroup> groups}) = _$EndpointAnalysisStateImpl;
+      required final List<AnalysisTrafficGroupCubit> groups,
+      required final List<AnalysisTrafficGroupCubit> visibleGroups,
+      required final List<AnalysisTrafficGroupCubit> enabledGroups,
+      required final bool analyzingEndpoints}) = _$EndpointAnalysisStateImpl;
   const _EndpointAnalysisState._() : super._();
 
-  @override
-  bool get hideCommonEndpoints;
   @override
   List<TrafficEndpoint> get endpoints;
   @override
   List<TrafficConnection> get connections;
   @override
-  List<TrafficGroup> get groups;
+  List<AnalysisTrafficGroupCubit> get groups;
+  @override
+  List<AnalysisTrafficGroupCubit> get visibleGroups;
+  @override
+  List<AnalysisTrafficGroupCubit> get enabledGroups;
+  @override
+  bool get analyzingEndpoints;
 
   /// Create a copy of EndpointAnalysisState
   /// with the given fields replaced by the non-null parameter values.
