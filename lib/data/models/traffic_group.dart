@@ -52,7 +52,7 @@ class TrafficGroup {
     int? countMax;
     int countAvg = 0;
     for (var test in tests) {
-      int count = test.endpoints?.length ?? 0;
+      int count = test.endpoints.length ?? 0;
       countAvg += count;
       if (countMin == null || countMin > count) countMin = count;
       if (countMax == null || countMax < count) countMax = count;

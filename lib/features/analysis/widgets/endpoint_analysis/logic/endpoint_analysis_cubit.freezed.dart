@@ -24,6 +24,7 @@ mixin _$EndpointAnalysisState {
       throw _privateConstructorUsedError;
   List<AnalysisTrafficGroupCubit> get enabledGroups =>
       throw _privateConstructorUsedError;
+  bool get analyzingTraffic => throw _privateConstructorUsedError;
   bool get analyzingEndpoints => throw _privateConstructorUsedError;
 
   /// Create a copy of EndpointAnalysisState
@@ -45,6 +46,7 @@ abstract class $EndpointAnalysisStateCopyWith<$Res> {
       List<AnalysisTrafficGroupCubit> groups,
       List<AnalysisTrafficGroupCubit> visibleGroups,
       List<AnalysisTrafficGroupCubit> enabledGroups,
+      bool analyzingTraffic,
       bool analyzingEndpoints});
 }
 
@@ -69,6 +71,7 @@ class _$EndpointAnalysisStateCopyWithImpl<$Res,
     Object? groups = null,
     Object? visibleGroups = null,
     Object? enabledGroups = null,
+    Object? analyzingTraffic = null,
     Object? analyzingEndpoints = null,
   }) {
     return _then(_value.copyWith(
@@ -92,6 +95,10 @@ class _$EndpointAnalysisStateCopyWithImpl<$Res,
           ? _value.enabledGroups
           : enabledGroups // ignore: cast_nullable_to_non_nullable
               as List<AnalysisTrafficGroupCubit>,
+      analyzingTraffic: null == analyzingTraffic
+          ? _value.analyzingTraffic
+          : analyzingTraffic // ignore: cast_nullable_to_non_nullable
+              as bool,
       analyzingEndpoints: null == analyzingEndpoints
           ? _value.analyzingEndpoints
           : analyzingEndpoints // ignore: cast_nullable_to_non_nullable
@@ -115,6 +122,7 @@ abstract class _$$EndpointAnalysisStateImplCopyWith<$Res>
       List<AnalysisTrafficGroupCubit> groups,
       List<AnalysisTrafficGroupCubit> visibleGroups,
       List<AnalysisTrafficGroupCubit> enabledGroups,
+      bool analyzingTraffic,
       bool analyzingEndpoints});
 }
 
@@ -137,6 +145,7 @@ class __$$EndpointAnalysisStateImplCopyWithImpl<$Res>
     Object? groups = null,
     Object? visibleGroups = null,
     Object? enabledGroups = null,
+    Object? analyzingTraffic = null,
     Object? analyzingEndpoints = null,
   }) {
     return _then(_$EndpointAnalysisStateImpl(
@@ -160,6 +169,10 @@ class __$$EndpointAnalysisStateImplCopyWithImpl<$Res>
           ? _value._enabledGroups
           : enabledGroups // ignore: cast_nullable_to_non_nullable
               as List<AnalysisTrafficGroupCubit>,
+      analyzingTraffic: null == analyzingTraffic
+          ? _value.analyzingTraffic
+          : analyzingTraffic // ignore: cast_nullable_to_non_nullable
+              as bool,
       analyzingEndpoints: null == analyzingEndpoints
           ? _value.analyzingEndpoints
           : analyzingEndpoints // ignore: cast_nullable_to_non_nullable
@@ -177,6 +190,7 @@ class _$EndpointAnalysisStateImpl extends _EndpointAnalysisState {
       required final List<AnalysisTrafficGroupCubit> groups,
       required final List<AnalysisTrafficGroupCubit> visibleGroups,
       required final List<AnalysisTrafficGroupCubit> enabledGroups,
+      required this.analyzingTraffic,
       required this.analyzingEndpoints})
       : _endpoints = endpoints,
         _connections = connections,
@@ -226,11 +240,13 @@ class _$EndpointAnalysisStateImpl extends _EndpointAnalysisState {
   }
 
   @override
+  final bool analyzingTraffic;
+  @override
   final bool analyzingEndpoints;
 
   @override
   String toString() {
-    return 'EndpointAnalysisState(endpoints: $endpoints, connections: $connections, groups: $groups, visibleGroups: $visibleGroups, enabledGroups: $enabledGroups, analyzingEndpoints: $analyzingEndpoints)';
+    return 'EndpointAnalysisState(endpoints: $endpoints, connections: $connections, groups: $groups, visibleGroups: $visibleGroups, enabledGroups: $enabledGroups, analyzingTraffic: $analyzingTraffic, analyzingEndpoints: $analyzingEndpoints)';
   }
 
   @override
@@ -247,6 +263,8 @@ class _$EndpointAnalysisStateImpl extends _EndpointAnalysisState {
                 .equals(other._visibleGroups, _visibleGroups) &&
             const DeepCollectionEquality()
                 .equals(other._enabledGroups, _enabledGroups) &&
+            (identical(other.analyzingTraffic, analyzingTraffic) ||
+                other.analyzingTraffic == analyzingTraffic) &&
             (identical(other.analyzingEndpoints, analyzingEndpoints) ||
                 other.analyzingEndpoints == analyzingEndpoints));
   }
@@ -259,6 +277,7 @@ class _$EndpointAnalysisStateImpl extends _EndpointAnalysisState {
       const DeepCollectionEquality().hash(_groups),
       const DeepCollectionEquality().hash(_visibleGroups),
       const DeepCollectionEquality().hash(_enabledGroups),
+      analyzingTraffic,
       analyzingEndpoints);
 
   /// Create a copy of EndpointAnalysisState
@@ -278,6 +297,7 @@ abstract class _EndpointAnalysisState extends EndpointAnalysisState {
       required final List<AnalysisTrafficGroupCubit> groups,
       required final List<AnalysisTrafficGroupCubit> visibleGroups,
       required final List<AnalysisTrafficGroupCubit> enabledGroups,
+      required final bool analyzingTraffic,
       required final bool analyzingEndpoints}) = _$EndpointAnalysisStateImpl;
   const _EndpointAnalysisState._() : super._();
 
@@ -291,6 +311,8 @@ abstract class _EndpointAnalysisState extends EndpointAnalysisState {
   List<AnalysisTrafficGroupCubit> get visibleGroups;
   @override
   List<AnalysisTrafficGroupCubit> get enabledGroups;
+  @override
+  bool get analyzingTraffic;
   @override
   bool get analyzingEndpoints;
 

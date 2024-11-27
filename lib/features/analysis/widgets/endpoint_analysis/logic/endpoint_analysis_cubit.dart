@@ -3,27 +3,30 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/common/keys.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
-
-import 'package:permission_analyzer_gui/data/models/models.dart';
+import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_analysis/logic/test_run_dto.dart';
 
 import 'analysis_traffic_group_cubit.dart';
 
 part 'endpoint_analysis_cubit.freezed.dart';
 
 class EndpointAnalysisCubit extends Cubit<EndpointAnalysisState> {
-  EndpointAnalysisCubit(this._scenarios, this._testScenarioRepository)
-      : super(EndpointAnalysisState.empty()) {
+  EndpointAnalysisCubit({
+    required this.scenarios,
+    required this.testScenarioRepository,
+    required this.settingsCubit,
+  }) : super(EndpointAnalysisState.empty()) {
     initialize();
   }
 
-  final List<TestScenario> _scenarios;
-  final ITestScenarioRepository _testScenarioRepository;
-  late final List<AnalysisTrafficGroupCubit> analysisTrafficGroups;
+  final SettingsCubit settingsCubit;
+  final List<TestScenario> scenarios;
+  final ITestScenarioRepository testScenarioRepository;
+  late List<AnalysisTrafficGroupCubit> analysisTrafficGroups;
 
   void initialize() {
     Map<String, TrafficGroup> applications = {};
     analysisTrafficGroups = [];
-    for (var scenario in _scenarios) {
+    for (var scenario in scenarios) {
       // collect applications
       if (!applications.containsKey(scenario.applicationId)) {
         applications[scenario.applicationId] = TrafficGroup(
@@ -38,7 +41,7 @@ class EndpointAnalysisCubit extends Cubit<EndpointAnalysisState> {
     analysisTrafficGroups.addAll(applications.values.map(
       (a) => AnalysisTrafficGroupCubit(
         group: a,
-        children: _scenarios
+        children: scenarios
             .where((s) => a.info?.contains(s.applicationId) ?? false)
             .map((scenario) => AnalysisTrafficGroupCubit(
                 group: _testScenarioToTrafficGroup(scenario),
@@ -64,6 +67,32 @@ class EndpointAnalysisCubit extends Cubit<EndpointAnalysisState> {
       enabledGroups: enabledGroups,
       groups: analysisTrafficGroups,
     ));
+  }
+
+  Future rerunAnalysis() async {
+    emit(state.copyWith(analyzingTraffic: true));
+    for (var scenario in scenarios) {
+      for (var constellation in scenario.testConstellations) {
+        for (var test in constellation.tests) {
+          if (test.pcapPath == null) continue;
+          test.packets = await TrafficAnalyzer.extractPackets(
+              Tshark(settingsCubit), test.pcapPath!);
+          test.connections =
+              TrafficAnalyzer.getConnectionsFromPackets(test.packets!);
+          if (test.startTimeInMs == 0) {
+            test.startTimeInMs = test.packets?.firstOrNull?.timeInMs ?? 0;
+          }
+          if (test.durationInMs == 0) {
+            test.durationInMs = (test.packets?.lastOrNull?.timeInMs ?? 0) -
+                (test.packets?.firstOrNull?.timeInMs ?? 0);
+          }
+        }
+        constellation.trafficGroup = constellation.getTrafficGroup();
+      }
+      testScenarioRepository.update(scenario);
+    }
+    emit(state.copyWith(analyzingTraffic: false));
+    initialize();
   }
 
   void reloadTrafficGroups() {
@@ -99,7 +128,7 @@ class EndpointAnalysisCubit extends Cubit<EndpointAnalysisState> {
         if (endpoint.hostname != null) updatedEndpoints[endpoint.ip] = endpoint;
       }
     }
-    if(updatedEndpoints.isNotEmpty) {
+    if (updatedEndpoints.isNotEmpty) {
       _updateScenarioEndpoints(updatedEndpoints);
       updateState();
     }
@@ -107,8 +136,8 @@ class EndpointAnalysisCubit extends Cubit<EndpointAnalysisState> {
   }
 
   void _updateScenarioEndpoints(Map<String, TrafficEndpoint> updatedEndpoints) {
-    for (var scenario in _scenarios) {
-      _testScenarioRepository.updateEndpoints(scenario, updatedEndpoints);
+    for (var scenario in scenarios) {
+      testScenarioRepository.updateEndpoints(scenario, updatedEndpoints);
     }
   }
 
@@ -155,6 +184,7 @@ class EndpointAnalysisState with _$EndpointAnalysisState {
     required List<AnalysisTrafficGroupCubit> groups,
     required List<AnalysisTrafficGroupCubit> visibleGroups,
     required List<AnalysisTrafficGroupCubit> enabledGroups,
+    required bool analyzingTraffic,
     required bool analyzingEndpoints,
   }) = _EndpointAnalysisState;
 
@@ -164,9 +194,37 @@ class EndpointAnalysisState with _$EndpointAnalysisState {
         groups: [],
         visibleGroups: [],
         enabledGroups: [],
+        analyzingTraffic: false,
         analyzingEndpoints: false,
       );
 
   List<TrafficGroup> get visibleTrafficGroups =>
       visibleGroups.map((g) => g.group).toList();
+  List<NetworkPacket> get networkPackets => enabledGroups.fold(
+      <NetworkPacket>[],
+      (packets, group) => [
+            ...packets,
+            ...group.group.tests.fold(
+              [],
+              (trPackets, test) => [...trPackets, ...(test.packets ?? [])],
+            ),
+          ]);
+  List<TestRunDto> get tests {
+    List<TestRunDto> tests = [];
+    for (var g in enabledGroups.where((g) => g.group.data is TestScenario)) {
+      TestScenario scenario = g.group.data as TestScenario;
+      for (var constellation in scenario.testConstellations) {
+        int index = 0;
+        for (var test in constellation.tests) {
+          tests.add(TestRunDto(
+            scenario: scenario,
+            constellation: constellation,
+            test: test,
+            index: index++,
+          ));
+        }
+      }
+    }
+    return tests;
+  }
 }

@@ -84,13 +84,24 @@ const TrafficConnectionSchema = Schema(
       name: r'outCountAvg',
       type: IsarType.double,
     ),
-    r'protocols': PropertySchema(
+    r'packets': PropertySchema(
       id: 14,
+      name: r'packets',
+      type: IsarType.objectList,
+      target: r'NetworkPacket',
+    ),
+    r'protocols': PropertySchema(
+      id: 15,
       name: r'protocols',
       type: IsarType.string,
     ),
+    r'protocolsString': PropertySchema(
+      id: 16,
+      name: r'protocolsString',
+      type: IsarType.string,
+    ),
     r'testRunCount': PropertySchema(
-      id: 15,
+      id: 17,
       name: r'testRunCount',
       type: IsarType.long,
     )
@@ -116,12 +127,22 @@ int _trafficConnectionEstimateSize(
     }
   }
   bytesCount += 3 + object.flow.length * 3;
+  bytesCount += 3 + object.packets.length * 3;
+  {
+    final offsets = allOffsets[NetworkPacket]!;
+    for (var i = 0; i < object.packets.length; i++) {
+      final value = object.packets[i];
+      bytesCount +=
+          NetworkPacketSchema.estimateSize(value, offsets, allOffsets);
+    }
+  }
   {
     final value = object.protocols;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.protocolsString.length * 3;
   return bytesCount;
 }
 
@@ -150,8 +171,15 @@ void _trafficConnectionSerialize(
   writer.writeDouble(offsets[11], object.outBytesAvg);
   writer.writeLong(offsets[12], object.outCount);
   writer.writeDouble(offsets[13], object.outCountAvg);
-  writer.writeString(offsets[14], object.protocols);
-  writer.writeLong(offsets[15], object.testRunCount);
+  writer.writeObjectList<NetworkPacket>(
+    offsets[14],
+    allOffsets,
+    NetworkPacketSchema.serialize,
+    object.packets,
+  );
+  writer.writeString(offsets[15], object.protocols);
+  writer.writeString(offsets[16], object.protocolsString);
+  writer.writeLong(offsets[17], object.testRunCount);
 }
 
 TrafficConnection _trafficConnectionDeserialize(
@@ -161,6 +189,10 @@ TrafficConnection _trafficConnectionDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = TrafficConnection(
+    bytesAvg: reader.readDoubleOrNull(offsets[0]) ?? 0,
+    bytesTotal: reader.readLongOrNull(offsets[1]) ?? 0,
+    countAvg: reader.readDoubleOrNull(offsets[2]) ?? 0,
+    countTotal: reader.readLongOrNull(offsets[3]) ?? 0,
     endpoint: reader.readObjectOrNull<TrafficEndpoint>(
       offsets[4],
       TrafficEndpointSchema.deserialize,
@@ -170,8 +202,15 @@ TrafficConnection _trafficConnectionDeserialize(
     inCount: reader.readLongOrNull(offsets[8]) ?? 0,
     outBytes: reader.readLongOrNull(offsets[10]) ?? 0,
     outCount: reader.readLongOrNull(offsets[12]) ?? 0,
-    protocols: reader.readStringOrNull(offsets[14]),
-    testRunCount: reader.readLongOrNull(offsets[15]) ?? 1,
+    packets: reader.readObjectList<NetworkPacket>(
+          offsets[14],
+          NetworkPacketSchema.deserialize,
+          allOffsets,
+          NetworkPacket(),
+        ) ??
+        const [],
+    protocols: reader.readStringOrNull(offsets[15]),
+    testRunCount: reader.readLongOrNull(offsets[17]) ?? 1,
   );
   return object;
 }
@@ -184,13 +223,13 @@ P _trafficConnectionDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readDoubleOrNull(offset) ?? 0) as P;
     case 1:
-      return (reader.readLong(offset)) as P;
+      return (reader.readLongOrNull(offset) ?? 0) as P;
     case 2:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readDoubleOrNull(offset) ?? 0) as P;
     case 3:
-      return (reader.readLong(offset)) as P;
+      return (reader.readLongOrNull(offset) ?? 0) as P;
     case 4:
       return (reader.readObjectOrNull<TrafficEndpoint>(
         offset,
@@ -216,8 +255,18 @@ P _trafficConnectionDeserializeProp<P>(
     case 13:
       return (reader.readDouble(offset)) as P;
     case 14:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readObjectList<NetworkPacket>(
+            offset,
+            NetworkPacketSchema.deserialize,
+            allOffsets,
+            NetworkPacket(),
+          ) ??
+          const []) as P;
     case 15:
+      return (reader.readStringOrNull(offset)) as P;
+    case 16:
+      return (reader.readString(offset)) as P;
+    case 17:
       return (reader.readLongOrNull(offset) ?? 1) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1113,6 +1162,95 @@ extension TrafficConnectionQueryFilter
   }
 
   QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      packetsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'packets',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      packetsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'packets',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      packetsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'packets',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      packetsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'packets',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      packetsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'packets',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      packetsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'packets',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
       protocolsIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -1267,6 +1405,142 @@ extension TrafficConnectionQueryFilter
   }
 
   QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      protocolsStringEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'protocolsString',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      protocolsStringGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'protocolsString',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      protocolsStringLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'protocolsString',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      protocolsStringBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'protocolsString',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      protocolsStringStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'protocolsString',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      protocolsStringEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'protocolsString',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      protocolsStringContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'protocolsString',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      protocolsStringMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'protocolsString',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      protocolsStringIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'protocolsString',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      protocolsStringIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'protocolsString',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
       testRunCountEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1329,6 +1603,13 @@ extension TrafficConnectionQueryObject
       endpoint(FilterQuery<TrafficEndpoint> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'endpoint');
+    });
+  }
+
+  QueryBuilder<TrafficConnection, TrafficConnection, QAfterFilterCondition>
+      packetsElement(FilterQuery<NetworkPacket> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'packets');
     });
   }
 }

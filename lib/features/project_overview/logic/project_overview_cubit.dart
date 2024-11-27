@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
 class ProjectOverviewCubit extends Cubit<ProjectOverviewState> {
-  ProjectOverviewCubit(this._testApplicationRepository)
+  ProjectOverviewCubit(this._testApplicationRepository, this._testScenarioRepository)
       : super(
           ProjectOverviewState(
               applications: _testApplicationRepository.getAll()),
@@ -27,6 +28,7 @@ class ProjectOverviewCubit extends Cubit<ProjectOverviewState> {
   }
 
   final ITestApplicationRepository _testApplicationRepository;
+  final ITestScenarioRepository _testScenarioRepository;
 
   void createApplication(TestApplication application) {
     _testApplicationRepository.update(application);
@@ -35,6 +37,15 @@ class ProjectOverviewCubit extends Cubit<ProjectOverviewState> {
         applications: _testApplicationRepository.getAll(),
       ),
     );
+  }
+
+  Future delete(TestApplication application) async {
+    _testScenarioRepository.deleteForApplication(application.id);
+    _testApplicationRepository.delete(application.id);
+    Directory fileDir = Directory(application.fileDirectory);
+    if (await fileDir.exists()) {
+      await fileDir.delete(recursive: true);
+    }
   }
 }
 

@@ -114,6 +114,7 @@ class ScenarioDetails extends StatelessWidget {
         return BlocBuilder<TestScenarioCubit, TestScenarioState>(
           buildWhen: (oldState, state) =>
               oldState.deviceInput != state.deviceInput ||
+              oldState.canConfigure != state.canConfigure ||
               oldState.hasInputRecord != state.hasInputRecord,
           builder: (context, state) {
             return Row(
@@ -122,7 +123,7 @@ class ScenarioDetails extends StatelessWidget {
                 DropdownMenu<AndroidInputDevice>(
                   key: const Key("InputDeviceSelection"),
                   width: dropDownWidth,
-                  enabled: !state.hasInputRecord,
+                  enabled: !state.hasInputRecord && state.canConfigure,
                   label: const Text("Input Device"),
                   onSelected: (i) => i == null
                       ? null
@@ -163,12 +164,12 @@ class ScenarioDetails extends StatelessWidget {
         return BlocBuilder<TestScenarioCubit, TestScenarioState>(
           buildWhen: (oldState, state) =>
               oldState.networkInterface != state.networkInterface ||
-              oldState.hasTests != state.hasTests,
+              oldState.canConfigure != state.canConfigure,
           builder: (context, state) {
             return DropdownMenu<TsharkNetworkInterface>(
               key: const Key("NetworkInterfaceSelection"),
               width: dropDownWidth,
-              enabled: !state.hasTests,
+              enabled: state.canConfigure,
               label: const Text("Network Interface"),
               onSelected: (i) => i == null
                   ? null
@@ -196,7 +197,7 @@ class ScenarioDetails extends StatelessWidget {
       if (seconds == null) return "Please enter a valid number";
       if (seconds <= 0) return "Please enter a positive number";
       if (seconds > 180) {
-        return "The maximum duration for screen recording is 180 seconds";
+        //return "The maximum duration for screen recording is 180 seconds";
       }
       return null;
     }
@@ -204,11 +205,13 @@ class ScenarioDetails extends StatelessWidget {
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
       buildWhen: (oldState, state) =>
           oldState.duration != state.duration ||
-          oldState.hasInputRecord != state.hasInputRecord,
+          oldState.recordScreen != state.recordScreen ||
+          oldState.hasInputRecord != state.hasInputRecord ||
+          oldState.canConfigure != state.canConfigure,
       builder: (context, state) => SizedBox(
         width: textFieldWidth,
         child: SimpleTextField(
-          enabled: !state.hasInputRecord,
+          enabled: !state.hasInputRecord && state.canConfigure,
           initialValue: state.duration.inSeconds.toString(),
           validate: validateDuration,
           onChanged: (s) => context.testScenarioCubit.setDuration(int.parse(s)),
@@ -228,10 +231,13 @@ class ScenarioDetails extends StatelessWidget {
     }
 
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
-      buildWhen: (oldState, state) => oldState.numTestRuns != state.numTestRuns,
+      buildWhen: (oldState, state) =>
+          oldState.numTestRuns != state.numTestRuns ||
+          oldState.canConfigure != state.canConfigure,
       builder: (context, state) => SizedBox(
         width: textFieldWidth,
         child: SimpleTextField(
+          enabled: state.canConfigure,
           initialValue: state.numTestRuns.toString(),
           validate: validateNumTestRuns,
           onChanged: (s) =>

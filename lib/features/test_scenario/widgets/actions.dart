@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
-import 'package:permission_analyzer_gui/data/data.dart';
 
 import '../logic/logic.dart';
 
@@ -10,20 +9,15 @@ class TestScenarioActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<TestScenarioCubit, TestScenarioState>(
-      buildWhen: (oldState, state) =>
-          oldState.hasTests != state.hasTests ||
-          oldState.canRun != state.canRun,
-      builder: (context, state) => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          _deleteScenarioButton(),
-          _resetScenarioButton(),
-          _recordButton(),
-          _addConstellationsButton(),
-          _runButton(),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        _deleteScenarioButton(),
+        _resetScenarioButton(),
+        _recordButton(),
+        _addConstellationsButton(),
+        _runButton(),
+      ],
     );
   }
 

@@ -1,7 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:permission_analyzer_gui/app_root.dart';
-import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
 part 'analysis_traffic_group_cubit.freezed.dart';

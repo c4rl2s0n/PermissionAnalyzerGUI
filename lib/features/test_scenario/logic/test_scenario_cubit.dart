@@ -4,7 +4,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path/path.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
-import 'package:permission_analyzer_gui/common/keys.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
 part 'test_scenario_executor.dart';
@@ -110,8 +109,14 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   }
 
   void setDuration(int seconds) {
+    // emit twice to ensure ui is updated
     testScenario.durationInSeconds = seconds;
     emit(state.copyWith(duration: testScenario.duration));
+    if(state.recordScreen && seconds > 180){
+      seconds = 180;
+      testScenario.durationInSeconds = seconds;
+      emit(state.copyWith(duration: testScenario.duration));
+    }
     _storeScenario();
   }
 
@@ -163,6 +168,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   void toggleRecordScreen() {
     testScenario.recordScreen = !testScenario.recordScreen;
     emit(state.copyWith(recordScreen: testScenario.recordScreen));
+    setDuration(testScenario.durationInSeconds);
     _storeScenario();
   }
 
@@ -320,7 +326,7 @@ class TestScenarioState extends Equatable {
   final bool captureTraffic;
   final List<TestConstellation> testConstellations;
   bool get canConfigure => !hasTests;
-  bool get canRun => testConstellations.isNotEmpty;
+  bool get canRun => testConstellations.isNotEmpty && !hasTests;
   bool get hasTests => testConstellations.any((c) => c.tests.isNotEmpty);
 
   @override

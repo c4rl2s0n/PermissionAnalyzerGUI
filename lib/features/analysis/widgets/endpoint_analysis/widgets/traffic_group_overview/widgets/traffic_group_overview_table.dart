@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
-import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_analysis/logic/logic.dart';
 
 class TrafficGroupOverviewTable extends StatelessWidget {
@@ -21,45 +20,46 @@ class TrafficGroupOverviewTable extends StatelessWidget {
     });
   }
 
-  List<DataGridColumnSetting<AnalysisTrafficGroupCubit, Object?>> _columns(
+
+  List<DataGridColumn<AnalysisTrafficGroupCubit, Object?>> _columns(
     BuildContext context,
     EndpointAnalysisState state,
   ) {
     return [
-      DataGridColumnSetting<AnalysisTrafficGroupCubit, String>(
+      DataGridColumn<AnalysisTrafficGroupCubit, String>(
         name: "Name",
         width: 100,
         getValue: (g) => g.name,
       ),
-      DataGridColumnSetting<AnalysisTrafficGroupCubit, String?>(
+      DataGridColumn<AnalysisTrafficGroupCubit, String?>(
         name: "Parent",
         width: 100,
         getValue: (g) => g.parent?.name,
       ),
-      DataGridColumnSetting<AnalysisTrafficGroupCubit, String>(
+      DataGridColumn<AnalysisTrafficGroupCubit, String>(
         name: "Type",
         width: 100,
         getValue: (g) => g.tags.join(", "),
       ),
-      DataGridColumnSetting<AnalysisTrafficGroupCubit, int>(
+      DataGridColumn<AnalysisTrafficGroupCubit, int>(
         name: "# Tests",
         width: 90,
         getValue: (g) => g.testRuns,
         defaultCellTextAlign: TextAlign.center,
       ),
-      DataGridColumnSetting<AnalysisTrafficGroupCubit, int>(
+      DataGridColumn<AnalysisTrafficGroupCubit, int>(
         name: "min # Endpoints",
         width: 150,
         getValue: (g) => g.endpointCountMin,
         defaultCellTextAlign: TextAlign.center,
       ),
-      DataGridColumnSetting<AnalysisTrafficGroupCubit, int>(
+      DataGridColumn<AnalysisTrafficGroupCubit, int>(
         name: "max # Endpoints",
         width: 150,
         getValue: (g) => g.endpointCountMax,
         defaultCellTextAlign: TextAlign.center,
       ),
-      DataGridColumnSetting<AnalysisTrafficGroupCubit, int>(
+      DataGridColumn<AnalysisTrafficGroupCubit, int>(
         name: "avg # Endpoints",
         width: 150,
         getValue: (g) => g.endpointCountAvg,

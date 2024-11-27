@@ -35,8 +35,10 @@ class ProjectOverview extends StatelessWidget {
 
   Widget _buildContent(BuildContext context) {
     return BlocProvider<ProjectOverviewCubit>(
-        create: (context) =>
-            ProjectOverviewCubit(Modular.get<ITestApplicationRepository>()),
+        create: (context) => ProjectOverviewCubit(
+              Modular.get<ITestApplicationRepository>(),
+              Modular.get<ITestScenarioRepository>(),
+            ),
         child: Builder(builder: (context) {
           return Column(
             children: [
@@ -58,22 +60,39 @@ class ProjectOverview extends StatelessWidget {
   }
 
   Widget _newApplicationButton() {
-    return BlocBuilder<ProjectOverviewCubit, ProjectOverviewState>(
+    return BlocBuilder<SettingsCubit, SettingsState>(
       buildWhen: (oldState, state) =>
-          oldState.applications != state.applications,
-      builder: (context, state) => IconTextButton(
-          text: "New Application",
-          icon: Icon(context.icons.add),
-          onTap: () async {
-            model.TestApplication? newApplication =
-                await NewApplicationDialog.newApplication(
-              context,
-              state.applications,
-            );
-            if (context.mounted && newApplication != null) {
-              context.projectOverviewCubit.createApplication(newApplication);
-            }
-          }),
+          oldState.workingDirectory != state.workingDirectory ||
+          oldState.adbPath != state.adbPath ||
+          oldState.tsharkPath != state.tsharkPath ||
+          oldState.recorderPath != state.recorderPath,
+      builder: (context, settings) {
+        bool canCreateApplication = settings.recorderPath.isNotEmpty &&
+            settings.workingDirectory.isNotEmpty &&
+            settings.adbPath.isNotEmpty &&
+            settings.tsharkPath.isNotEmpty;
+        return BlocBuilder<ProjectOverviewCubit, ProjectOverviewState>(
+          buildWhen: (oldState, state) =>
+              oldState.applications != state.applications,
+          builder: (context, state) => IconTextButton(
+            text: "New Application",
+            icon: Icon(context.icons.add),
+            onTap: canCreateApplication
+                ? () async {
+                    model.TestApplication? newApplication =
+                        await NewApplicationDialog.newApplication(
+                      context,
+                      state.applications,
+                    );
+                    if (context.mounted && newApplication != null) {
+                      context.projectOverviewCubit
+                          .createApplication(newApplication);
+                    }
+                  }
+                : null,
+          ),
+        );
+      },
     );
   }
 

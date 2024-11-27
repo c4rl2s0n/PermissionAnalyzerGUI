@@ -5,6 +5,5 @@ import '{{name.snakeCase()}}_cubit.dart';
 
 
 extension Ctx{{name.pascalCase()}}Cubit on BuildContext {
-{{name.pascalCase()}}Cubit get {{name.lowerCase()}}Cubit =>
-read<{{name.pascalCase()}}Cubit>();
+  {{name.pascalCase()}}Cubit get {{name.lowerCase()}}Cubit => read<{{name.pascalCase()}}Cubit>();
 }

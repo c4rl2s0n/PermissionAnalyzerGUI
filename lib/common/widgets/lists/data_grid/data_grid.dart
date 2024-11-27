@@ -1,108 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 
-class DataGridColumnSetting<T, V extends Object?> {
-  DataGridColumnSetting({
-    required this.name,
-    this.getCell,
-    this.getValue,
-    this.compare,
-    this.tooltip,
-    this.headerAlign = TextAlign.left,
-    this.defaultCellTextAlign = TextAlign.left,
-    this.width = 50,
-  }) : assert(getCell != null || getValue != null) {
-    _initDefaultCell();
-    _initDefaultComparison();
-  }
-  // displayed text of column header
-  final String name;
-  // tooltip text of column header
-  final String? tooltip;
-  // column width
-  final double width;
-  // text alignment of column header
-  final TextAlign headerAlign;
-  // text alignment if no getCell function is provided
-  final TextAlign defaultCellTextAlign;
-  // custom cell creator
-  Widget Function(T)? getCell;
-  // get the represented value of the data entry
-  final V Function(T)? getValue;
-  // compare two values of the data list
-  int Function(Object?, Object?)? compare;
-  // sort direction (null = no sorting, true = ascending, false = descending)
-  bool? sortAsc;
-  bool get canSort => getValue != null && compare != null;
+part 'data_grid_column.dart';
 
-  // if not provided, getCell creates a Text widget with value.toString
-  void _initDefaultCell() {
-    if (getCell != null) return;
-    assert(getValue != null);
-    getCell = (e) => Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Text(
-            getValue!(e).toString(),
-            textAlign: defaultCellTextAlign,
-          ),
-    );
-  }
-
-  // setup comparison for default types
-  void _initDefaultComparison() {
-    if (compare != null) return;
-    int? compareNulls(Object? a, Object? b) => a == null
-        ? 1
-        : b == null
-            ? -1
-            : null;
-    if (isNullableSubtype<V, num>()) {
-      compare = (Object? a, Object? b) =>
-          compareNulls(a, b) ?? (a as num).compareTo((b as num));
-    } else if (isNullableSubtype<V, String>()) {
-      compare = (Object? a, Object? b) =>
-          compareNulls(a, b) ??
-          (a as String).toLowerCase().compareTo((b as String).toLowerCase());
-    } else if (isNullableSubtype<V, bool>()) {
-      compare = (Object? a, Object? b) {
-        if (a == null || b == null) return compareNulls(a, b)!;
-        bool x = (a as bool);
-        bool y = (b as bool);
-        if (x && !y) return 1;
-        if (!x && y) return -1;
-        return 0;
-      };
-    } else if (isNullableSubtype<V, DateTime>()) {
-      compare = (Object? a, Object? b) =>
-          compareNulls(a, b) ?? (a as DateTime).compareTo((b as DateTime));
-    }
-  }
-}
-
-class DataGridActionColumnSetting<T> {
-  DataGridActionColumnSetting({
-    this.width = 50,
-    required this.actions,
-  });
-  final double width;
-  final List<Widget Function(T)> actions;
-}
+// TODO: try to use ListView.builder!
 
 class DataGrid<T> extends StatefulWidget {
   const DataGrid({
     required this.columns,
     required this.data,
     this.onDataTap,
+    this.onDataSelected,
+    this.initialSelectedEntry,
     this.rowActions,
     this.showIndex = true,
     this.provideHorizontalScrollbarSpace = true,
     super.key,
-  });
+  }) : assert(onDataTap == null || onDataSelected == null);
 
-  final List<DataGridColumnSetting<T, Object?>> columns;
-  final DataGridActionColumnSetting<T>? rowActions;
+  final List<DataGridColumn<T, Object?>> columns;
+  final DataGridActionColumn<T>? rowActions;
   final List<T> data;
   final Function(T)? onDataTap;
+  final Function(T?, int?)? onDataSelected;
+  final T? initialSelectedEntry;
 
   final bool showIndex;
   final bool provideHorizontalScrollbarSpace;
@@ -115,10 +36,11 @@ class DataGrid<T> extends StatefulWidget {
 
 class _DataGridTestState<T> extends State<DataGrid<T>> {
   late List<T> data;
-  List<DataGridColumnSetting<T, Object?>> columns = [];
+  List<DataGridColumn<T, Object?>> columns = [];
   final ScrollController vertical = ScrollController();
   final ScrollController horizontalHeader = ScrollController();
   late List<ScrollController> horizontalControllers;
+  T? selectedItem;
   bool _isAutoScrolling = false;
 
   void syncScrollControllers(
@@ -133,12 +55,15 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
     _isAutoScrolling = false;
   }
 
-  void _sort(DataGridColumnSetting<T, Object?> column, {bool toggleSort=true,}) {
+  void _sort(
+    DataGridColumn<T, Object?> column, {
+    bool toggleSort = true,
+  }) {
     if (!column.canSort) return;
-    if(toggleSort) {
+    if (toggleSort) {
       _toggleSort(column);
     }
-    if(column.sortAsc == null) return;
+    if (column.sortAsc == null) return;
 
     // sort the list asc/desc
     int compare(Object? a, Object? b) =>
@@ -148,7 +73,8 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
     // update state
     setState(() {});
   }
-  void _toggleSort(DataGridColumnSetting<T, Object?> column){
+
+  void _toggleSort(DataGridColumn<T, Object?> column) {
     // get the desired sort direction of the current column
     bool sortAsc = !(column.sortAsc ?? false);
     // reset all sortings
@@ -159,10 +85,22 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
     column.sortAsc = sortAsc;
   }
 
+  void _selectItem(T? entry) {
+    if(widget.onDataSelected == null) return;
+    setState(() {
+      selectedItem = entry;
+    });
+    widget.onDataSelected!(
+      entry,
+      entry != null ? widget.data.indexOf(entry) : null,
+    );
+  }
+
   @override
   void didUpdateWidget(covariant DataGrid<T> oldGrid) {
     setupDataColumns();
     setupScrollControllers();
+    _selectItem(widget.initialSelectedEntry);
     super.didUpdateWidget(oldGrid);
   }
 
@@ -173,8 +111,9 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
     var sortedColumn = columns.where((c) => c.sortAsc != null).firstOrNull;
     columns = List.of(widget.columns);
     if (sortedColumn != null) {
-      var newSortedColumn = columns.where((c) => c.name == sortedColumn.name).firstOrNull;
-      if(newSortedColumn != null) {
+      var newSortedColumn =
+          columns.where((c) => c.name == sortedColumn.name).firstOrNull;
+      if (newSortedColumn != null) {
         newSortedColumn.sortAsc = sortedColumn.sortAsc;
         _sort(newSortedColumn, toggleSort: false);
       }
@@ -197,32 +136,37 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
   void initState() {
     setupDataColumns();
     setupScrollControllers();
-
+    _selectItem(widget.initialSelectedEntry);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        _columnHeaders(context),
-        ScrollConfiguration(
-          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-          child: Expanded(
-            child: Scrollbar(
-              controller: vertical,
-              scrollbarOrientation: ScrollbarOrientation.right,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
+    return GestureDetector(
+      onSecondaryTap:
+          widget.onDataSelected != null ? () => _selectItem(null) : null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          _columnHeaders(context),
+          ScrollConfiguration(
+            behavior:
+                ScrollConfiguration.of(context).copyWith(scrollbars: false),
+            child: Expanded(
+              child: Scrollbar(
                 controller: vertical,
-                child: _rows(context),
+                scrollbarOrientation: ScrollbarOrientation.right,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  controller: vertical,
+                  child: _rows(context),
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -285,7 +229,7 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
 
   Widget _columnHeader(
     BuildContext context,
-    DataGridColumnSetting<T, Object?> column,
+    DataGridColumn<T, Object?> column,
   ) {
     double width = column.width;
     if (column.sortAsc != null) {
@@ -330,8 +274,14 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
     for (int i = 0; i < data.length; i++) {
       T entry = data[i];
       Widget row = TapContainer(
-        onTap: widget.onDataTap != null ? () => widget.onDataTap!(entry) : null,
-        backgroundColor: context.colors.onBackground.withOpacity(0.1),
+        onTap: widget.onDataTap != null
+            ? () => widget.onDataTap!(entry)
+            : widget.onDataSelected != null
+                ? () => _selectItem(entry)
+                : null,
+        backgroundColor: entry == selectedItem
+                ? context.colors.highlight.withOpacity(0.3)
+                : context.colors.onBackground.withOpacity(0.1),
         padding:
             EdgeInsets.symmetric(horizontal: context.constants.smallSpacing),
         child: Row(

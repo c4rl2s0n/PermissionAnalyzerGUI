@@ -19,32 +19,42 @@ const TestRunSchema = Schema(
       type: IsarType.objectList,
       target: r'TrafficConnection',
     ),
-    r'endpoints': PropertySchema(
+    r'durationInMs': PropertySchema(
       id: 1,
+      name: r'durationInMs',
+      type: IsarType.long,
+    ),
+    r'endpoints': PropertySchema(
+      id: 2,
       name: r'endpoints',
       type: IsarType.objectList,
       target: r'TrafficEndpoint',
     ),
     r'hasData': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'hasData',
       type: IsarType.bool,
     ),
     r'packets': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'packets',
       type: IsarType.objectList,
       target: r'NetworkPacket',
     ),
     r'pcapPath': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'pcapPath',
       type: IsarType.string,
     ),
     r'screenRecordPath': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'screenRecordPath',
       type: IsarType.string,
+    ),
+    r'startTimeInMs': PropertySchema(
+      id: 7,
+      name: r'startTimeInMs',
+      type: IsarType.long,
     )
   },
   estimateSize: _testRunEstimateSize,
@@ -118,21 +128,23 @@ void _testRunSerialize(
     TrafficConnectionSchema.serialize,
     object.connections,
   );
+  writer.writeLong(offsets[1], object.durationInMs);
   writer.writeObjectList<TrafficEndpoint>(
-    offsets[1],
+    offsets[2],
     allOffsets,
     TrafficEndpointSchema.serialize,
     object.endpoints,
   );
-  writer.writeBool(offsets[2], object.hasData);
+  writer.writeBool(offsets[3], object.hasData);
   writer.writeObjectList<NetworkPacket>(
-    offsets[3],
+    offsets[4],
     allOffsets,
     NetworkPacketSchema.serialize,
     object.packets,
   );
-  writer.writeString(offsets[4], object.pcapPath);
-  writer.writeString(offsets[5], object.screenRecordPath);
+  writer.writeString(offsets[5], object.pcapPath);
+  writer.writeString(offsets[6], object.screenRecordPath);
+  writer.writeLong(offsets[7], object.startTimeInMs);
 }
 
 TestRun _testRunDeserialize(
@@ -149,17 +161,19 @@ TestRun _testRunDeserialize(
           TrafficConnection(),
         ) ??
         const [],
+    durationInMs: reader.readLongOrNull(offsets[1]) ?? 0,
     packets: reader.readObjectList<NetworkPacket>(
-      offsets[3],
+      offsets[4],
       NetworkPacketSchema.deserialize,
       allOffsets,
       NetworkPacket(),
     ),
-    pcapPath: reader.readStringOrNull(offsets[4]),
-    screenRecordPath: reader.readStringOrNull(offsets[5]),
+    pcapPath: reader.readStringOrNull(offsets[5]),
+    screenRecordPath: reader.readStringOrNull(offsets[6]),
+    startTimeInMs: reader.readLongOrNull(offsets[7]) ?? 0,
   );
   object.endpoints = reader.readObjectList<TrafficEndpoint>(
-        offsets[1],
+        offsets[2],
         TrafficEndpointSchema.deserialize,
         allOffsets,
         TrafficEndpoint(),
@@ -184,6 +198,8 @@ P _testRunDeserializeProp<P>(
           ) ??
           const []) as P;
     case 1:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 2:
       return (reader.readObjectList<TrafficEndpoint>(
             offset,
             TrafficEndpointSchema.deserialize,
@@ -191,19 +207,21 @@ P _testRunDeserializeProp<P>(
             TrafficEndpoint(),
           ) ??
           []) as P;
-    case 2:
-      return (reader.readBool(offset)) as P;
     case 3:
+      return (reader.readBool(offset)) as P;
+    case 4:
       return (reader.readObjectList<NetworkPacket>(
         offset,
         NetworkPacketSchema.deserialize,
         allOffsets,
         NetworkPacket(),
       )) as P;
-    case 4:
-      return (reader.readStringOrNull(offset)) as P;
     case 5:
       return (reader.readStringOrNull(offset)) as P;
+    case 6:
+      return (reader.readStringOrNull(offset)) as P;
+    case 7:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -296,6 +314,59 @@ extension TestRunQueryFilter
         upper,
         includeUpper,
       );
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> durationInMsEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'durationInMs',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> durationInMsGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'durationInMs',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> durationInMsLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'durationInMs',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> durationInMsBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'durationInMs',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
@@ -790,6 +861,60 @@ extension TestRunQueryFilter
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'screenRecordPath',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> startTimeInMsEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'startTimeInMs',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition>
+      startTimeInMsGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'startTimeInMs',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> startTimeInMsLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'startTimeInMs',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> startTimeInMsBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'startTimeInMs',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
       ));
     });
   }

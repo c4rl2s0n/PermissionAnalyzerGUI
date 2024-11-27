@@ -30,14 +30,16 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
     this.reset = Icons.undo,
     this.toggle = Icons.switch_access_shortcut,
     this.analysis = Icons.monitor_heart_outlined,
-    this.graph = Icons.nature_outlined,
-    this.graphSelected = Icons.nature,
+    this.graph = Icons.hub_outlined,
     this.overview = Icons.featured_play_list_outlined,
-    this.overviewSelected = Icons.featured_play_list_rounded,
+    this.connections = Icons.cable_outlined,
     this.show = Icons.visibility_outlined,
     this.hide = Icons.visibility_off_outlined,
     this.sortAsc = Icons.arrow_downward,
     this.sortDesc = Icons.arrow_upward,
+    this.connectionOut = Icons.arrow_forward,
+    this.connectionIn = Icons.arrow_back,
+    this.tests = Icons.science_outlined,
   });
 
   final IconData infoPositive;
@@ -69,92 +71,20 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
   final IconData toggle;
   final IconData analysis;
   final IconData graph;
-  final IconData graphSelected;
   final IconData overview;
-  final IconData overviewSelected;
+  final IconData connections;
   final IconData show;
   final IconData hide;
   final IconData sortAsc;
   final IconData sortDesc;
+  final IconData connectionOut;
+  final IconData connectionIn;
+  final IconData tests;
 
   @override
-  ThemeExtension<CustomIcons> copyWith({
-    IconData? infoPositive,
-    IconData? infoNegative,
-    IconData? save,
-    IconData? check,
-    IconData? cancel,
-    IconData? editList,
-    IconData? checkboxDeselected,
-    IconData? checkboxSelected,
-    IconData? checkboxCustom,
-    IconData? listItemIndicator,
-    IconData? add,
-    IconData? remove,
-    IconData? question,
-    IconData? info,
-    IconData? settings,
-    IconData? search,
-    IconData? error,
-    IconData? warning,
-    IconData? pickFile,
-    IconData? pickDirectory,
-    IconData? reload,
-    IconData? record,
-    IconData? create,
-    IconData? test,
-    IconData? run,
-    IconData? reset,
-    IconData? toggle,
-    IconData? analysis,
-    IconData? graph,
-    IconData? graphSelected,
-    IconData? overview,
-    IconData? overviewSelected,
-    IconData? show,
-    IconData? hide,
-    IconData? sortAsc,
-    IconData? sortDesc,
-  }) {
-    return CustomIcons(
-      infoPositive: infoPositive ?? this.infoPositive,
-      infoNegative: infoNegative ?? this.infoNegative,
-      save: save ?? this.save,
-      check: check ?? this.check,
-      cancel: cancel ?? this.cancel,
-      editList: editList ?? this.editList,
-      checkboxDeselected: checkboxDeselected ?? this.checkboxDeselected,
-      checkboxSelected: checkboxSelected ?? this.checkboxSelected,
-      checkboxCustom: checkboxCustom ?? this.checkboxCustom,
-      listItemIndicator: listItemIndicator ?? this.listItemIndicator,
-      add: add ?? this.add,
-      remove: remove ?? this.remove,
-      question: question ?? this.question,
-      info: info ?? this.info,
-      settings: settings ?? this.settings,
-      search: search ?? this.search,
-      error: error ?? this.error,
-      warning: warning ?? this.warning,
-      pickFile: pickFile ?? this.pickFile,
-      pickDirectory: pickDirectory ?? this.pickDirectory,
-      reload: reload ?? this.reload,
-      record: record ?? this.record,
-      create: create ?? this.create,
-      test: test ?? this.test,
-      run: run ?? this.run,
-      reset: reset ?? this.reset,
-      toggle: toggle ?? this.toggle,
-      analysis: analysis ?? this.analysis,
-      graph: graph ?? this.graph,
-      graphSelected: graphSelected ?? this.graphSelected,
-      overview: overview ?? this.overview,
-      overviewSelected: overviewSelected ?? this.overviewSelected,
-      show: show ?? this.show,
-      hide: hide ?? this.hide,
-      sortAsc: sortAsc ?? this.sortAsc,
-      sortDesc: sortDesc ?? this.sortDesc,
-    );
-  }
+  ThemeExtension<CustomIcons> copyWith() => this;
+
+
 
   @override
   ThemeExtension<CustomIcons> lerp(

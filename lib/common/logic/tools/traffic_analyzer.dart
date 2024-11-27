@@ -51,10 +51,7 @@ class TrafficAnalyzer {
           connections[key] = connection.copy();
         } else {
           connections[key]!.testRunCount += connection.testRunCount;
-          connections[key]!.inCount += connection.inCount;
-          connections[key]!.outCount += connection.outCount;
-          connections[key]!.inBytes += connection.inBytes;
-          connections[key]!.outBytes += connection.outBytes;
+          connections[key]!.packets.addAll(connection.packets);
         }
       }
     }
@@ -74,11 +71,8 @@ class TrafficAnalyzer {
         } else {
           // aggregate connection
           TrafficConnection tc = connections[connection.flow]!;
+          tc.packets.addAll(test.packets ?? []);
           tc.testRunCount++;
-          tc.outCount += connection.outCount;
-          tc.inCount += connection.inCount;
-          tc.outBytes += connection.outBytes;
-          tc.inBytes += connection.inBytes;
         }
       }
     }
@@ -110,6 +104,7 @@ class TrafficAnalyzer {
             ip: packet.ipDst,
             port: packet.portDst,
           ),
+          packets: [],
           protocols: packet.protocols,
         );
       }
@@ -119,14 +114,18 @@ class TrafficAnalyzer {
             ip: packet.ipSrc,
             port: packet.portSrc,
           ),
+          packets: [],
           protocols: packet.protocols,
         );
       }
+
       // incoming packets
+      connections[packet.dst]!.packets.add(packet);
       connections[packet.dst]!.inCount++;
       connections[packet.dst]!.inBytes += packet.size;
 
       // outgoing packets
+      connections[packet.src]!.packets.add(packet);
       connections[packet.src]!.outCount++;
       connections[packet.src]!.outBytes += packet.size;
     }
@@ -140,6 +139,9 @@ class TrafficAnalyzer {
     List<TrafficConnection> connectionsList = connections.values.toList();
     if (filtered) {
       connectionsList = getFilteredConnections(connectionsList);
+    }
+    for(var connection in connectionsList){
+      connection.countPackets();
     }
     return connectionsList;
   }
@@ -214,7 +216,7 @@ class TrafficAnalyzer {
   static int _getTimestampFromPacket(String timeEpoch) {
     List<String> parts = timeEpoch.split('.');
     String seconds = parts[0];
-    String millis = parts[1].substring(0, 4);
+    String millis = parts[1].substring(0, 3);
     return int.parse("$seconds$millis");
   }
 }

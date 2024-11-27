@@ -5,8 +5,8 @@ import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/features/analysis/values.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_analysis/logic/logic.dart';
 
-class EndpointGroupSelector extends StatelessWidget {
-  const EndpointGroupSelector({super.key});
+class TrafficGroupSelector extends StatelessWidget {
+  const TrafficGroupSelector({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,15 +20,21 @@ class EndpointGroupSelector extends StatelessWidget {
               onTap: () => context.endpointAnalysisCubit.reloadTrafficGroups(),
               padding: 2,
             ),
-            child: TreeView.simple(
-              showRootNode: false,
-              shrinkWrap: true,
-              indentation: const Indentation(style: IndentStyle.squareJoint),
-              expansionIndicatorBuilder: _extensionIndicator,
-              onTreeReady: (controller) =>
-                  controller.expandAllChildren(controller.tree),
-              builder: _buildTreeNode,
-              tree: _generateTree(state.groups),
+            child: Column(
+              children: [
+                Expanded(
+                  child: TreeView.simple(
+                    showRootNode: false,
+                    shrinkWrap: true,
+                    indentation: const Indentation(style: IndentStyle.squareJoint),
+                    expansionIndicatorBuilder: _extensionIndicator,
+                    onTreeReady: (controller) =>
+                        controller.expandAllChildren(controller.tree),
+                    builder: _buildTreeNode,
+                    tree: _generateTree(state.groups),
+                  ),
+                ),
+              ],
             ));
       },
     );

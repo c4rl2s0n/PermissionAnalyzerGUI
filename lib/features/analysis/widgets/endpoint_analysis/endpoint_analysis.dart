@@ -5,6 +5,7 @@ import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/data/models/models.dart' as models;
 import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_analysis/logic/endpoint_analysis_cubit.dart';
+import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_analysis/widgets/test_run_analysis/test_run_analysis.dart';
 
 import 'widgets/widgets.dart';
 
@@ -23,14 +24,21 @@ class EndpointAnalysis extends StatefulWidget {
 class _EndpointAnalysisState extends State<EndpointAnalysis> {
   List<_NavigationRailEntry> navigationEntries = [];
   int selectedIndex = 0;
-  Widget view(BuildContext context) =>
-      navigationEntries[selectedIndex].getView(context);
+  Widget view(BuildContext context) {
+    _NavigationRailEntry ne = navigationEntries[selectedIndex];
+    Widget view = ne.getView(context);
+    return ne.noPadding
+        ? view
+        : Padding(
+            padding: EdgeInsets.all(context.constants.spacing),
+            child: view,
+          );
+  }
 
   NavigationRailDestination _getNavigationRailDestination(
     BuildContext context, {
     required String label,
     required IconData icon,
-    required IconData selectedIcon,
   }) {
     Color iconColor = context.colors.onPrimary;
     return NavigationRailDestination(
@@ -38,7 +46,7 @@ class _EndpointAnalysisState extends State<EndpointAnalysis> {
         icon,
         color: iconColor,
       ),
-      selectedIcon: Icon(selectedIcon),
+      selectedIcon: Icon(icon),
       label: Text(label),
     );
   }
@@ -47,22 +55,37 @@ class _EndpointAnalysisState extends State<EndpointAnalysis> {
     if (navigationEntries.isNotEmpty) return;
     navigationEntries = [
       _NavigationRailEntry(
-        _getNavigationRailDestination(
+        destination: _getNavigationRailDestination(
           context,
-          label: "Overview",
+          label: "Groups",
           icon: context.icons.overview,
-          selectedIcon: context.icons.overviewSelected,
         ),
-        (c) => const EndpointOverview(),
+        getView: (c) => const TrafficGroupOverview(),
       ),
       _NavigationRailEntry(
-        _getNavigationRailDestination(
+        destination: _getNavigationRailDestination(
+          context,
+          label: "Connections",
+          icon: context.icons.connections,
+        ),
+        getView: (c) => const ConnectionOverview(),
+      ),
+      _NavigationRailEntry(
+        destination: _getNavigationRailDestination(
           context,
           label: "Graph",
           icon: context.icons.graph,
-          selectedIcon: context.icons.graphSelected,
         ),
-        (c) => const EndpointGraph(),
+        getView: (c) => const EndpointGraph(),
+        noPadding: true,
+      ),
+      _NavigationRailEntry(
+        destination: _getNavigationRailDestination(
+          context,
+          label: "Tests",
+          icon: context.icons.tests,
+        ),
+        getView: (c) => const TestRunAnalysis(),
       ),
     ];
   }
@@ -72,8 +95,9 @@ class _EndpointAnalysisState extends State<EndpointAnalysis> {
     initNavigationEntries(context);
     return BlocProvider(
       create: (context) => EndpointAnalysisCubit(
-        widget.scenarios,
-        Modular.get<ITestScenarioRepository>(),
+        scenarios: widget.scenarios,
+        testScenarioRepository: Modular.get<ITestScenarioRepository>(),
+        settingsCubit: context.settings,
       ),
       child: Builder(builder: (context) {
         return Row(
@@ -101,7 +125,12 @@ class _EndpointAnalysisState extends State<EndpointAnalysis> {
 }
 
 class _NavigationRailEntry {
-  _NavigationRailEntry(this.destination, this.getView);
+  _NavigationRailEntry({
+    required this.destination,
+    required this.getView,
+    this.noPadding = false,
+  });
   NavigationRailDestination destination;
   Widget Function(BuildContext) getView;
+  bool noPadding;
 }

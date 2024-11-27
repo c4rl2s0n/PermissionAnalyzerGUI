@@ -50,6 +50,12 @@ class _SimpleTextFieldState extends State<SimpleTextField> {
   }
 
   @override
+  void didUpdateWidget(covariant SimpleTextField oldTextField) {
+    super.didUpdateWidget(oldTextField);
+    controller.text = widget.initialValue;
+  }
+
+  @override
   void initState() {
     controller = TextEditingController(text: widget.initialValue);
     obscured = widget.isPassword;

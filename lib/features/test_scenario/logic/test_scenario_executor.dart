@@ -85,6 +85,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
 
     // await application to start
     await sleepSec(_startAppDelay);
+    int testStart = DateTime.now().millisecondsSinceEpoch;
 
     _emit(state.copyWith(loadingInfo: "$loadingInfoSuffix:\nRunning the test"));
     // setup screen recording
@@ -119,13 +120,17 @@ extension TestScenarioExecutor on TestScenarioCubit {
     await userInputProcess.exitCode;
     DateTime testRunEndTime = DateTime.timestamp();
 
+    int durationInMs = DateTime.now().millisecondsSinceEpoch - testStart;
     // stop application
     await _adb.stopApp(state.applicationId);
 
     _emit(state.copyWith(loadingInfo: "$loadingInfoSuffix:\nFinish the test"));
 
     // Fetch all the generated files and store them in fileDirectory and db
-    TestRun testRun = TestRun();
+    TestRun testRun = TestRun(
+      startTimeInMs: testStart,
+      durationInMs: durationInMs,
+    );
 
     if (state.captureTraffic) {
       await pcapProcess?.exitCode;
@@ -133,7 +138,8 @@ extension TestScenarioExecutor on TestScenarioCubit {
       testRun.pcapPath = join(fileDirectory, pcapFilename);
       testRun.packets =
           await TrafficAnalyzer.extractPackets(_tshark, testRun.pcapPath!);
-      testRun.connections = TrafficAnalyzer.getConnectionsFromPackets(testRun.packets!);
+      testRun.connections =
+          TrafficAnalyzer.getConnectionsFromPackets(testRun.packets!);
     }
     if (state.recordScreen) {
       // wait a short time for the device to properly store the screen record
@@ -209,22 +215,8 @@ extension TestScenarioExecutor on TestScenarioCubit {
   }
 
   void _updateAnalysis() {
-    String constellationInfo(TestConstellation c) {
-      String info = 'Permissions:\n';
-      info += c.permissions
-          .where((p) => p.state == PermissionState.granted)
-          .map((p) => p.permission)
-          .join("\t\t\n");
-      return info;
-    }
-
     for (var constellation in testScenario.testConstellations) {
-      constellation.trafficGroup = TrafficGroup(
-        name: constellation.abbreviation,
-        info: constellationInfo(constellation),
-        tags: [tConstellation],
-        tests: List.of(constellation.tests),
-      );
+      constellation.trafficGroup = constellation.getTrafficGroup();
     }
     testScenario.testConstellations = List.of(testScenario.testConstellations);
     _storeScenario();

@@ -132,7 +132,7 @@ class _RadarChartSample1State extends State<RadarChartSample1> {
                 .values
                 .toList(),
           ),
-          Container(
+          SizedBox(
             width: 300,
             height: 300,
             child: RadarChart(

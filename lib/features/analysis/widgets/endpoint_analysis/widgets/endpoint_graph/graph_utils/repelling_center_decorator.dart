@@ -12,17 +12,5 @@ class RepellingCenterDecorator extends GraphAlgorithm {
     var radius = max(center.dy, 100) * .8;
     v?.position = Vector2(center.dx + radius * 0.5, center.dy + radius*0.5);
   }
-  @override
-  void compute(Vertex v, Graph graph) {
-    super.compute(v, graph);
-    //v.position = Vector2(center.dx, center.dy);
-    //onGraphLoad(graph);
-  }
 
-  @override
-  void onLoad(Vertex v) {
-    super.onLoad(v);
-    //v.position = Vector2(center.dx, center.dy);
-    //onGraphLoad(graph);
-  }
 }

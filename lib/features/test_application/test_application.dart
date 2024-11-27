@@ -115,7 +115,7 @@ class TestApplication extends StatelessWidget {
             title: "Scenarios",
             child: DataGrid<model.TestScenario>(
               columns: [
-                DataGridColumnSetting<model.TestScenario, String>(
+                DataGridColumn<model.TestScenario, String>(
                   name: "Name",
                   width: 100,
                   getCell: (ts) => Text(ts.name),

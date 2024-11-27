@@ -27,15 +27,15 @@ class TestConstellationsOverview extends StatelessWidget {
     );
   }
 
-  List<DataGridColumnSetting<TestConstellation, dynamic>> _columns(
+  List<DataGridColumn<TestConstellation, dynamic>> _columns(
     BuildContext context,
     TestScenarioState state,
   ) {
-    List<DataGridColumnSetting<TestConstellation, Object?>> columns = [];
+    List<DataGridColumn<TestConstellation, Object?>> columns = [];
     for (int i = 0; i < state.permissions.length; i++) {
       String permission = state.permissions[i].permission;
       String shortcut =permissionToShortcut(permission);
-      columns.add(DataGridColumnSetting<TestConstellation, bool>(
+      columns.add(DataGridColumn<TestConstellation, bool>(
         name: shortcut,
         tooltip: permission,
         width: (shortcut.length+1)*12,
@@ -47,11 +47,11 @@ class TestConstellationsOverview extends StatelessWidget {
     return columns;
   }
 
-  DataGridActionColumnSetting<TestConstellation> _rowActions(
+  DataGridActionColumn<TestConstellation> _rowActions(
     BuildContext context,
     TestScenarioState state,
   ) {
-    return DataGridActionColumnSetting(actions: [
+    return DataGridActionColumn<TestConstellation>(actions: [
       (tc) => IconButton(
             icon: Icon(context.icons.remove, color: context.colors.negative),
             onPressed: () => context.testScenarioCubit.removeConstellation(tc),

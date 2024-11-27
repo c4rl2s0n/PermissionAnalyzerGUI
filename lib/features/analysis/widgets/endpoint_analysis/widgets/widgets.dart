@@ -1,2 +1,3 @@
+export 'connection_overview/connection_overview.dart';
 export 'endpoint_graph/endpoint_graph.dart';
-export 'endpoint_overview/endpoint_overview.dart';
+export 'traffic_group_overview/traffic_group_overview.dart';

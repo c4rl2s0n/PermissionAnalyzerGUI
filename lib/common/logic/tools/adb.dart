@@ -148,6 +148,19 @@ class Adb {
     var dump = (await shell(["dumpsys", "package", applicaitonId])).outText;
     List<String> permissions = [];
     List<String> permissionDump =
+        dump.split("runtime permissions:")[1].split("\n");
+    for (var line in permissionDump) {
+      if (line.isEmpty) continue;
+      if (!line.contains(":") || !line.contains("granted")) break;
+      permissions.add(line.split(":")[0].trim());
+    }
+    permissions.sort();
+    return permissions;
+  }
+  Future<List<String>> getApplicationPermissions_old(String applicaitonId) async {
+    var dump = (await shell(["dumpsys", "package", applicaitonId])).outText;
+    List<String> permissions = [];
+    List<String> permissionDump =
         dump.split("requested permissions:")[1].split("\n");
     for (var line in permissionDump) {
       if (line.isEmpty) continue;
