@@ -118,7 +118,7 @@ class TrafficGroupSelector extends StatelessWidget {
   ) {
     if (children.isEmpty) return node;
     node.addAll(children.map((c) {
-      String key = "${keyPrefix}_${c.group.name}";
+      String key = "${keyPrefix}_${c.group.name}".replaceAll(INode.PATH_SEPARATOR, "_");
       return _addChildren(
         TreeNode(key: key, data: c),
         key,

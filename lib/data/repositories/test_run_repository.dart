@@ -29,6 +29,12 @@ class TestRunRepository extends ITestRunRepository {
     }
   }
   @override
+  void updateForScenario(TestScenario scenario) {
+    for (var constellation in scenario.testConstellations) {
+      constellation.testIds = updateAll(constellation.tests);
+    }
+  }
+  @override
   void deleteForScenario(TestScenario scenario) {
     for (var constellation in scenario.testConstellations) {
       deleteAll(constellation.testIds);

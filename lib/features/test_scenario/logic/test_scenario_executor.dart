@@ -158,7 +158,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
     }
 
     if (testRun.hasData) {
-      constellation.tests = [...constellation.tests??[], testRun];
+      constellation.tests = <TestRun>[...constellation.tests, testRun];
     }
     _storeScenario();
   }
@@ -202,7 +202,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
         await _runTest(
           constellation,
           join(fileDirectory,
-              "(${constellation.testIds.length.toString().padLeft(3, "0")})"),
+              "(${constellation.tests.length.toString().padLeft(3, "0")})"),
         );
       }
     }

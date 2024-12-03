@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_analysis/widgets/test_run_analysis/logic/logic.dart';
-import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_analysis/widgets/test_run_analysis/logic/logic.dart';
 
 class TestRunTrafficOverviewTable extends StatelessWidget {
   const TestRunTrafficOverviewTable({
@@ -24,6 +23,8 @@ class TestRunTrafficOverviewTable extends StatelessWidget {
           title: "Connection Packets (${packets.length})",
           child: DataGrid<NetworkPacket>(
             columns: _columns(context),
+            indexColumnWidth: 48,
+            rowHeight: 35,
             initialSelectedEntry: state.selectedPacket,
             onDataSelected: (packet, _) => context.testRunAnalysisCubit.selectPacket(packet),
             data: packets,

@@ -23,7 +23,6 @@ class TestApplication extends StatelessWidget {
             application,
             Modular.get<ITestApplicationRepository>(),
             Modular.get<ITestScenarioRepository>(),
-            Modular.get<ITestRunRepository>(),
           ),
       child: PageComponentFactory.scaffold(
         context,

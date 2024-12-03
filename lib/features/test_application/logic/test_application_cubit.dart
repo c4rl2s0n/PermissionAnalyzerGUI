@@ -11,7 +11,6 @@ class TestApplicationCubit extends Cubit<TestApplicationState> {
     this.application,
     this.testApplicationRepository,
     this.testScenarioRepository,
-    this.testRunRepository,
   ) : super(
           TestApplicationState(
             name: application.name,
@@ -28,7 +27,7 @@ class TestApplicationCubit extends Cubit<TestApplicationState> {
     scenarioWatcher =
         testScenarioRepository.watchForApplication(state.id).listen(
       (scenarios) {
-        scenarios.forEach(testRunRepository.loadForScenario);
+        testScenarioRepository.loadTests(scenarios);
         emit(state.copyWith(scenarios: List.of(scenarios)));
       },
     );
@@ -44,7 +43,6 @@ class TestApplicationCubit extends Cubit<TestApplicationState> {
   TestApplication application;
   ITestApplicationRepository testApplicationRepository;
   ITestScenarioRepository testScenarioRepository;
-  ITestRunRepository testRunRepository;
 
   Future<TestScenario> newScenario() async {
     String fileDirectory = await _getScenarioFileDirectory();

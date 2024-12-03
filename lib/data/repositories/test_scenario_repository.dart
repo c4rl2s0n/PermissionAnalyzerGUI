@@ -2,12 +2,18 @@ import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:isar/isar.dart';
 
 class TestScenarioRepository extends ITestScenarioRepository {
-  TestScenarioRepository(this._isar, this._testRunRepository);
-  final Isar _isar;
-  final ITestRunRepository _testRunRepository;
+  TestScenarioRepository(this._isar){
+    _testRunRepository = TestRunRepository(_isar);
+  }
 
-  void _loadTests(List<TestScenario> scenarios) {
+  final Isar _isar;
+  late final ITestRunRepository _testRunRepository;
+
+  void loadTests(List<TestScenario> scenarios) {
     scenarios.forEach(_testRunRepository.loadForScenario);
+  }
+  void _updateTests(List<TestScenario> scenarios) {
+    scenarios.forEach(_testRunRepository.updateForScenario);
   }
 
   void _deleteTests(List<TestScenario> scenarios) {
@@ -17,7 +23,7 @@ class TestScenarioRepository extends ITestScenarioRepository {
   @override
   List<TestScenario> getAll() {
     List<TestScenario> scenarios = _isar.testScenarios.where().findAllSync();
-    _loadTests(scenarios);
+    loadTests(scenarios);
     return scenarios;
   }
 
@@ -27,7 +33,7 @@ class TestScenarioRepository extends ITestScenarioRepository {
         .where()
         .applicationIdEqualTo(applicationId)
         .findAllSync();
-    _loadTests(scenarios);
+    loadTests(scenarios);
     return scenarios;
   }
 
@@ -62,7 +68,7 @@ class TestScenarioRepository extends ITestScenarioRepository {
 
   @override
   void update(TestScenario testScenario) {
-    // TODO: update tests repo. Do not use TestRunRepo anywhere but here in this repo!
+    _updateTests([testScenario]);
     _isar.writeTxnSync(() => _isar.testScenarios.putSync(testScenario));
   }
 

@@ -5,5 +5,6 @@ abstract class ITestRunRepository {
   void deleteAll(List<int> testIds);
   List<int> updateAll(List<TestRun> tests);
   void loadForScenario(TestScenario scenario);
+  void updateForScenario(TestScenario scenario);
   void deleteForScenario(TestScenario scenario);
 }

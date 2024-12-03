@@ -15,6 +15,8 @@ class DataGrid<T> extends StatefulWidget {
     this.rowActions,
     this.showIndex = true,
     this.provideHorizontalScrollbarSpace = true,
+    this.rowHeight,
+    this.indexColumnWidth = 42,
     super.key,
   }) : assert(onDataTap == null || onDataSelected == null);
 
@@ -27,7 +29,8 @@ class DataGrid<T> extends StatefulWidget {
 
   final bool showIndex;
   final bool provideHorizontalScrollbarSpace;
-  static const double _indexColumnWidth = 30;
+  final double? rowHeight;
+  final double indexColumnWidth;
   static const double _sortIconSize = 17;
 
   @override
@@ -157,10 +160,12 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
               child: Scrollbar(
                 controller: vertical,
                 scrollbarOrientation: ScrollbarOrientation.right,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
+                child: ListView.builder(
                   controller: vertical,
-                  child: _rows(context),
+                  scrollDirection: Axis.vertical,
+                  itemCount: data.length,
+                  itemExtent: widget.rowHeight,
+                  itemBuilder: _buildRow,
                 ),
               ),
             ),
@@ -192,9 +197,9 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
                 padding: widget.provideHorizontalScrollbarSpace
                     ? EdgeInsets.only(top: topPaddingValue)
                     : EdgeInsets.zero,
-                child: const SizedBox(
-                  width: DataGrid._indexColumnWidth,
-                  child: Text("#"),
+                child: SizedBox(
+                  width: widget.indexColumnWidth,
+                  child: const Text("#"),
                 ),
               ),
             ],
@@ -269,62 +274,56 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
     return SizedBox(width: width, child: header);
   }
 
-  Widget _rows(BuildContext context) {
-    List<Widget> rows = [];
-    for (int i = 0; i < data.length; i++) {
-      T entry = data[i];
-      Widget row = TapContainer(
-        onTap: widget.onDataTap != null
-            ? () => widget.onDataTap!(entry)
-            : widget.onDataSelected != null
-                ? () => _selectItem(entry)
-                : null,
-        backgroundColor: entry == selectedItem
-                ? context.colors.highlight.withOpacity(0.3)
-                : context.colors.onBackground.withOpacity(0.1),
-        padding:
-            EdgeInsets.symmetric(horizontal: context.constants.smallSpacing),
-        child: Row(
-          children: [
-            // index-header
-            if (widget.showIndex) ...[
-              SizedBox(
-                width: DataGrid._indexColumnWidth,
-                child: Text((i + 1).toString()),
-              ),
-            ],
-            // data columns
-            if (data.isNotEmpty) ...[
-              Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  primary: false,
-                  controller: horizontalControllers[i],
-                  child: Row(children: _rowCells(entry)),
+  Widget _buildRow(BuildContext context, int index) {
+      T entry = data[index];
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: context.constants.smallSpacing/2),
+        child: TapContainer(
+          onTap: widget.onDataTap != null
+              ? () => widget.onDataTap!(entry)
+              : widget.onDataSelected != null
+                  ? () => _selectItem(entry)
+                  : null,
+          backgroundColor: entry == selectedItem
+                  ? context.colors.highlight.withOpacity(0.3)
+                  : context.colors.onBackground.withOpacity(0.1),
+          padding:
+              EdgeInsets.symmetric(horizontal: context.constants.smallSpacing),
+          child: Row(
+            children: [
+              // index-header
+              if (widget.showIndex) ...[
+                SizedBox(
+                  width: widget.indexColumnWidth,
+                  child: Text((index + 1).toString()),
                 ),
-              ),
-            ],
-            // trailing column with actions
-            if (widget.rowActions != null) ...[
-              SizedBox(
-                width: widget.rowActions!.width,
-                child: Row(
-                  children: widget.rowActions!.actions
-                      .map((aw) => aw(entry))
-                      .toList(),
+              ],
+              // data columns
+              if (data.isNotEmpty) ...[
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    primary: false,
+                    controller: horizontalControllers[index],
+                    child: Row(children: _rowCells(entry)),
+                  ),
                 ),
-              ),
-            ]
-          ],
+              ],
+              // trailing column with actions
+              if (widget.rowActions != null) ...[
+                SizedBox(
+                  width: widget.rowActions!.width,
+                  child: Row(
+                    children: widget.rowActions!.actions
+                        .map((aw) => aw(entry))
+                        .toList(),
+                  ),
+                ),
+              ]
+            ],
+          ),
         ),
       );
-      rows.add(row);
-    }
-    return Column(
-      children: rows.insertBetweenItems(
-        () => Margin.vertical(context.constants.smallSpacing),
-      ),
-    );
   }
 
   List<Widget> _rowCells(T entry) {
