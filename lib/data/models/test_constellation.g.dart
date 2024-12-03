@@ -24,17 +24,10 @@ const TestConstellationSchema = Schema(
       type: IsarType.objectList,
       target: r'PermissionSetting',
     ),
-    r'tests': PropertySchema(
+    r'testIds': PropertySchema(
       id: 2,
-      name: r'tests',
-      type: IsarType.objectList,
-      target: r'TestRun',
-    ),
-    r'trafficGroup': PropertySchema(
-      id: 3,
-      name: r'trafficGroup',
-      type: IsarType.object,
-      target: r'TrafficGroup',
+      name: r'testIds',
+      type: IsarType.longList,
     )
   },
   estimateSize: _testConstellationEstimateSize,
@@ -59,22 +52,7 @@ int _testConstellationEstimateSize(
           PermissionSettingSchema.estimateSize(value, offsets, allOffsets);
     }
   }
-  bytesCount += 3 + object.tests.length * 3;
-  {
-    final offsets = allOffsets[TestRun]!;
-    for (var i = 0; i < object.tests.length; i++) {
-      final value = object.tests[i];
-      bytesCount += TestRunSchema.estimateSize(value, offsets, allOffsets);
-    }
-  }
-  {
-    final value = object.trafficGroup;
-    if (value != null) {
-      bytesCount += 3 +
-          TrafficGroupSchema.estimateSize(
-              value, allOffsets[TrafficGroup]!, allOffsets);
-    }
-  }
+  bytesCount += 3 + object.testIds.length * 8;
   return bytesCount;
 }
 
@@ -91,18 +69,7 @@ void _testConstellationSerialize(
     PermissionSettingSchema.serialize,
     object.permissions,
   );
-  writer.writeObjectList<TestRun>(
-    offsets[2],
-    allOffsets,
-    TestRunSchema.serialize,
-    object.tests,
-  );
-  writer.writeObject<TrafficGroup>(
-    offsets[3],
-    allOffsets,
-    TrafficGroupSchema.serialize,
-    object.trafficGroup,
-  );
+  writer.writeLongList(offsets[2], object.testIds);
 }
 
 TestConstellation _testConstellationDeserialize(
@@ -119,18 +86,7 @@ TestConstellation _testConstellationDeserialize(
           PermissionSetting(),
         ) ??
         const [],
-    tests: reader.readObjectList<TestRun>(
-          offsets[2],
-          TestRunSchema.deserialize,
-          allOffsets,
-          TestRun(),
-        ) ??
-        const [],
-    trafficGroup: reader.readObjectOrNull<TrafficGroup>(
-      offsets[3],
-      TrafficGroupSchema.deserialize,
-      allOffsets,
-    ),
+    testIds: reader.readLongList(offsets[2]) ?? const [],
   );
   return object;
 }
@@ -153,19 +109,7 @@ P _testConstellationDeserializeProp<P>(
           ) ??
           const []) as P;
     case 2:
-      return (reader.readObjectList<TestRun>(
-            offset,
-            TestRunSchema.deserialize,
-            allOffsets,
-            TestRun(),
-          ) ??
-          const []) as P;
-    case 3:
-      return (reader.readObjectOrNull<TrafficGroup>(
-        offset,
-        TrafficGroupSchema.deserialize,
-        allOffsets,
-      )) as P;
+      return (reader.readLongList(offset) ?? const []) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -399,10 +343,66 @@ extension TestConstellationQueryFilter
   }
 
   QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      testsLengthEqualTo(int length) {
+      testIdsElementEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'testIds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      testIdsElementGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'testIds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      testIdsElementLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'testIds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      testIdsElementBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'testIds',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      testIdsLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'tests',
+        r'testIds',
         length,
         true,
         length,
@@ -412,10 +412,10 @@ extension TestConstellationQueryFilter
   }
 
   QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      testsIsEmpty() {
+      testIdsIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'tests',
+        r'testIds',
         0,
         true,
         0,
@@ -425,10 +425,10 @@ extension TestConstellationQueryFilter
   }
 
   QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      testsIsNotEmpty() {
+      testIdsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'tests',
+        r'testIds',
         0,
         false,
         999999,
@@ -438,13 +438,13 @@ extension TestConstellationQueryFilter
   }
 
   QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      testsLengthLessThan(
+      testIdsLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'tests',
+        r'testIds',
         0,
         true,
         length,
@@ -454,13 +454,13 @@ extension TestConstellationQueryFilter
   }
 
   QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      testsLengthGreaterThan(
+      testIdsLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'tests',
+        r'testIds',
         length,
         include,
         999999,
@@ -470,7 +470,7 @@ extension TestConstellationQueryFilter
   }
 
   QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      testsLengthBetween(
+      testIdsLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -478,30 +478,12 @@ extension TestConstellationQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'tests',
+        r'testIds',
         lower,
         includeLower,
         upper,
         includeUpper,
       );
-    });
-  }
-
-  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      trafficGroupIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'trafficGroup',
-      ));
-    });
-  }
-
-  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      trafficGroupIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'trafficGroup',
-      ));
     });
   }
 }
@@ -512,20 +494,6 @@ extension TestConstellationQueryObject
       permissionsElement(FilterQuery<PermissionSetting> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'permissions');
-    });
-  }
-
-  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      testsElement(FilterQuery<TestRun> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.object(q, r'tests');
-    });
-  }
-
-  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
-      trafficGroup(FilterQuery<TrafficGroup> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.object(q, r'trafficGroup');
     });
   }
 }

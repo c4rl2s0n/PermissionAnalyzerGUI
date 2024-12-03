@@ -20,6 +20,7 @@ class IsarDataModule extends Module {
       [
         SettingsSchema,
         TestScenarioSchema,
+        TestRunSchema,
         TestApplicationSchema,
         NetworkEndpointSchema,
       ],

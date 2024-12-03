@@ -24,3 +24,8 @@ Then, replace all occurrences of permission_analyzer_gui with your project_name 
 
 To recompile the localization package, use 'flutter gen-l10n' from the command line.
 To recompile the database models, user 'dart run build_runner build' from the command line.
+
+
+# TODO:
+* Time-sensitive analysis
+* Only show entries from the same level in analysis (different applications or same level within an application)

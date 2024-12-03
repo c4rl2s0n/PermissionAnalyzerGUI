@@ -9,21 +9,27 @@ part 'test_constellation.g.dart';
 class TestConstellation {
   TestConstellation({
     this.permissions = const [],
-    this.tests = const [],
-    this.trafficGroup,
-  }) {
-    if (trafficGroup != null) trafficGroup!.data = this;
-  }
+    this.testIds = const [],
+  });
 
   List<PermissionSetting> permissions;
-  List<TestRun> tests;
+  List<int> testIds;
+  List<TestRun>? _tests;
+  @ignore
+  List<TestRun> get tests => _tests ?? [];
+  set tests(value) {
+    _tests = value;
+    trafficGroup = getTrafficGroup();
+  }
+  @ignore
   TrafficGroup? trafficGroup;
 
   TrafficGroup getTrafficGroup() => TrafficGroup(
     name: abbreviation,
+    data: this,
     info: _constellationInfo(),
     tags: [tConstellation],
-    tests: List.of(tests),
+    tests: List.of(tests ?? []),
   );
   String _constellationInfo() {
     String info = 'Permissions:\n';

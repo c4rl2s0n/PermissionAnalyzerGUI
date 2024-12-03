@@ -117,12 +117,7 @@ const TestScenarioSchema = CollectionSchema(
     r'AndroidInputDevice': AndroidInputDeviceSchema,
     r'TsharkNetworkInterface': TsharkNetworkInterfaceSchema,
     r'PermissionSetting': PermissionSettingSchema,
-    r'TestConstellation': TestConstellationSchema,
-    r'TestRun': TestRunSchema,
-    r'NetworkPacket': NetworkPacketSchema,
-    r'TrafficEndpoint': TrafficEndpointSchema,
-    r'TrafficConnection': TrafficConnectionSchema,
-    r'TrafficGroup': TrafficGroupSchema
+    r'TestConstellation': TestConstellationSchema
   },
   getId: _testScenarioGetId,
   getLinks: _testScenarioGetLinks,

@@ -3,9 +3,7 @@ import 'package:permission_analyzer_gui/common/common.dart';
 
 import 'models.dart';
 
-part 'traffic_group.g.dart';
 
-@embedded
 class TrafficGroup {
   TrafficGroup({
     this.name = "",

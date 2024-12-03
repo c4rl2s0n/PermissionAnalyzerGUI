@@ -3,13 +3,17 @@
 part of 'test_run.dart';
 
 // **************************************************************************
-// IsarEmbeddedGenerator
+// IsarCollectionGenerator
 // **************************************************************************
 
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-const TestRunSchema = Schema(
+extension GetTestRunCollection on Isar {
+  IsarCollection<TestRun> get testRuns => this.collection();
+}
+
+const TestRunSchema = CollectionSchema(
   name: r'TestRun',
   id: -4042852072460897997,
   properties: {
@@ -61,6 +65,18 @@ const TestRunSchema = Schema(
   serialize: _testRunSerialize,
   deserialize: _testRunDeserialize,
   deserializeProp: _testRunDeserializeProp,
+  idName: r'id',
+  indexes: {},
+  links: {},
+  embeddedSchemas: {
+    r'NetworkPacket': NetworkPacketSchema,
+    r'TrafficEndpoint': TrafficEndpointSchema,
+    r'TrafficConnection': TrafficConnectionSchema
+  },
+  getId: _testRunGetId,
+  getLinks: _testRunGetLinks,
+  attach: _testRunAttach,
+  version: '3.1.8',
 );
 
 int _testRunEstimateSize(
@@ -179,6 +195,7 @@ TestRun _testRunDeserialize(
         TrafficEndpoint(),
       ) ??
       [];
+  object.id = id;
   return object;
 }
 
@@ -224,6 +241,93 @@ P _testRunDeserializeProp<P>(
       return (reader.readLongOrNull(offset) ?? 0) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+Id _testRunGetId(TestRun object) {
+  return object.id;
+}
+
+List<IsarLinkBase<dynamic>> _testRunGetLinks(TestRun object) {
+  return [];
+}
+
+void _testRunAttach(IsarCollection<dynamic> col, Id id, TestRun object) {
+  object.id = id;
+}
+
+extension TestRunQueryWhereSort on QueryBuilder<TestRun, TestRun, QWhere> {
+  QueryBuilder<TestRun, TestRun, QAfterWhere> anyId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(const IdWhereClause.any());
+    });
+  }
+}
+
+extension TestRunQueryWhere on QueryBuilder<TestRun, TestRun, QWhereClause> {
+  QueryBuilder<TestRun, TestRun, QAfterWhereClause> idEqualTo(Id id) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IdWhereClause.between(
+        lower: id,
+        upper: id,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterWhereClause> idNotEqualTo(Id id) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
+            )
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
+            )
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
+            );
+      }
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterWhereClause> idGreaterThan(Id id,
+      {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IdWhereClause.greaterThan(lower: id, includeLower: include),
+      );
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterWhereClause> idLessThan(Id id,
+      {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IdWhereClause.lessThan(upper: id, includeUpper: include),
+      );
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterWhereClause> idBetween(
+    Id lowerId,
+    Id upperId, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IdWhereClause.between(
+        lower: lowerId,
+        includeLower: includeLower,
+        upper: upperId,
+        includeUpper: includeUpper,
+      ));
+    });
   }
 }
 
@@ -461,6 +565,58 @@ extension TestRunQueryFilter
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'hasData',
         value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> idEqualTo(Id value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'id',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> idGreaterThan(
+    Id value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> idLessThan(
+    Id value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> idBetween(
+    Id lower,
+    Id upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
       ));
     });
   }
@@ -940,6 +1096,242 @@ extension TestRunQueryObject
       FilterQuery<NetworkPacket> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'packets');
+    });
+  }
+}
+
+extension TestRunQueryLinks
+    on QueryBuilder<TestRun, TestRun, QFilterCondition> {}
+
+extension TestRunQuerySortBy on QueryBuilder<TestRun, TestRun, QSortBy> {
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByDurationInMs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'durationInMs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByDurationInMsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'durationInMs', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByHasData() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasData', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByHasDataDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasData', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByPcapPath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pcapPath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByPcapPathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pcapPath', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByScreenRecordPath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'screenRecordPath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByScreenRecordPathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'screenRecordPath', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByStartTimeInMs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startTimeInMs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByStartTimeInMsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startTimeInMs', Sort.desc);
+    });
+  }
+}
+
+extension TestRunQuerySortThenBy
+    on QueryBuilder<TestRun, TestRun, QSortThenBy> {
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByDurationInMs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'durationInMs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByDurationInMsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'durationInMs', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByHasData() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasData', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByHasDataDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasData', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenById() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'id', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByPcapPath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pcapPath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByPcapPathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pcapPath', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByScreenRecordPath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'screenRecordPath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByScreenRecordPathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'screenRecordPath', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByStartTimeInMs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startTimeInMs', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByStartTimeInMsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startTimeInMs', Sort.desc);
+    });
+  }
+}
+
+extension TestRunQueryWhereDistinct
+    on QueryBuilder<TestRun, TestRun, QDistinct> {
+  QueryBuilder<TestRun, TestRun, QDistinct> distinctByDurationInMs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'durationInMs');
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QDistinct> distinctByHasData() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'hasData');
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QDistinct> distinctByPcapPath(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'pcapPath', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QDistinct> distinctByScreenRecordPath(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'screenRecordPath',
+          caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QDistinct> distinctByStartTimeInMs() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'startTimeInMs');
+    });
+  }
+}
+
+extension TestRunQueryProperty
+    on QueryBuilder<TestRun, TestRun, QQueryProperty> {
+  QueryBuilder<TestRun, int, QQueryOperations> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<TestRun, List<TrafficConnection>, QQueryOperations>
+      connectionsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'connections');
+    });
+  }
+
+  QueryBuilder<TestRun, int, QQueryOperations> durationInMsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'durationInMs');
+    });
+  }
+
+  QueryBuilder<TestRun, List<TrafficEndpoint>, QQueryOperations>
+      endpointsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'endpoints');
+    });
+  }
+
+  QueryBuilder<TestRun, bool, QQueryOperations> hasDataProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'hasData');
+    });
+  }
+
+  QueryBuilder<TestRun, List<NetworkPacket>?, QQueryOperations>
+      packetsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'packets');
+    });
+  }
+
+  QueryBuilder<TestRun, String?, QQueryOperations> pcapPathProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'pcapPath');
+    });
+  }
+
+  QueryBuilder<TestRun, String?, QQueryOperations> screenRecordPathProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'screenRecordPath');
+    });
+  }
+
+  QueryBuilder<TestRun, int, QQueryOperations> startTimeInMsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'startTimeInMs');
     });
   }
 }

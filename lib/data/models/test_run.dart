@@ -5,7 +5,7 @@ import 'package:permission_analyzer_gui/data/data.dart';
 
 part 'test_run.g.dart';
 
-@embedded
+@collection
 class TestRun {
   TestRun({
     this.screenRecordPath,
@@ -17,6 +17,8 @@ class TestRun {
   }){
     this.connections = connections;
   }
+
+  Id id = Isar.autoIncrement;
 
   String? screenRecordPath;
   String? pcapPath;

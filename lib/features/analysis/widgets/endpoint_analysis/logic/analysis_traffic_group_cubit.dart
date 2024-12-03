@@ -29,6 +29,9 @@ class AnalysisTrafficGroupCubit extends Cubit<AnalysisTrafficGroupState> {
     initializeParents();
   }
 
+  // TODO: Add event handling for toggleShow; showing only entries on the same level (and within same 'subtree' in case node is not root)
+  // TODO: aggregate endpoints and connections! store by second (mabye just store the graphIds or sth to reduce memory usage)
+
   TrafficGroup group;
   String get name => state.group.name;
   String? get info => state.group.info;
@@ -89,7 +92,10 @@ class AnalysisTrafficGroupCubit extends Cubit<AnalysisTrafficGroupState> {
 
   // show group in analysis
   void toggleShow() {
-    emit(state.copyWith(show: !state.show));
+    setShow(!state.show);
+  }
+  void setShow(bool show){
+    emit(state.copyWith(show: show));
   }
   void setShowChildren(bool show){
     for(var child in state.children){

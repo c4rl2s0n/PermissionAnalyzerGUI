@@ -15,6 +15,7 @@ class IsarDataIsolateRepositoryModule extends Module {
   @override
   void binds(Injector i) {
     i.addSingleton<ISettingsRepository>(SettingsRepository.new);
+    i.addSingleton<ITestRunRepository>(TestRunRepository.new);
     i.addSingleton<ITestScenarioRepository>(TestScenarioRepository.new);
     i.addSingleton<ITestApplicationRepository>(TestApplicationRepository.new);
     i.addSingleton<INetworkEndpointRepository>(NetworkEndpointRepository.new);

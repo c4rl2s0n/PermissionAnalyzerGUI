@@ -327,7 +327,7 @@ class TestScenarioState extends Equatable {
   final List<TestConstellation> testConstellations;
   bool get canConfigure => !hasTests;
   bool get canRun => testConstellations.isNotEmpty && !hasTests;
-  bool get hasTests => testConstellations.any((c) => c.tests.isNotEmpty);
+  bool get hasTests => testConstellations.any((c) => c.testIds.isNotEmpty);
 
   @override
   List<Object?> get props => [
