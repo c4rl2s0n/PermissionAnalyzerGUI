@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 
@@ -39,3 +40,13 @@ Future sleep(Duration duration) {
 
 bool isSubtype<S, T>() => <S>[] is List<T>;
 bool isNullableSubtype<S, T>() => <S>[] is List<T> || <S>[] is List<T?>;
+
+int compareHostnames(String a, String b){
+  var aParts = a.split(".").reversed.toList();
+  var bParts = b.split(".").reversed.toList();
+  for (int i = 0; i < min(aParts.length, bParts.length); i++) {
+    int cmp = aParts[i].compareTo(bParts[i]);
+    if (cmp != 0) return cmp;
+  }
+  return a.length.compareTo(b.length);
+}

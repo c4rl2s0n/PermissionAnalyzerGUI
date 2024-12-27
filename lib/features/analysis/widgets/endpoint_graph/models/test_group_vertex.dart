@@ -1,0 +1,25 @@
+
+import 'package:permission_analyzer_gui/common/keys.dart';
+import 'package:permission_analyzer_gui/features/analysis/models/models.dart';
+
+import 'models.dart';
+
+class TestGroupVertex extends GraphVertex {
+  TestGroupVertex({required super.id, required this.group});
+
+  TrafficGroup group;
+
+  @override
+  List<String> get tags => [
+    ...group.tags,
+    tGroup,
+    if (unique) tUnique,
+    if (common) tCommon,
+  ];
+
+  @override
+  get data => group;
+
+  @override
+  String get name => group.name;
+}

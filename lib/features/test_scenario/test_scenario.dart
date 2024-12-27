@@ -21,6 +21,7 @@ class TestScenario extends StatelessWidget {
     return BlocProvider(
       create: (context) => TestScenarioCubit(
         testScenarioRepository: Modular.get<ITestScenarioRepository>(),
+        networkEndpointRepository: Modular.get<INetworkEndpointRepository>(),
         sessionCubit: context.session,
         settingsCubit: context.settings,
         testScenario: scenario,

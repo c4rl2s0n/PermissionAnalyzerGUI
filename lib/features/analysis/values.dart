@@ -3,6 +3,7 @@ import 'package:permission_analyzer_gui/common/keys.dart';
 
 Map<String, Color> tagColors = {
   tConstellation: const Color(0xE5E1540A),
+  tTest: const Color(0xE5B20AE1),
   tScenario: const Color(0xE5FFBC13),
   tApplication: const Color(0xE597D718),
   tGroup: Colors.blue,

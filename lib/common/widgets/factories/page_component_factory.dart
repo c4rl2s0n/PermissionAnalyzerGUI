@@ -8,14 +8,17 @@ class PageComponentFactory {
     required Widget body,
     bool withPadding = true,
   }) {
-    return Scaffold(
-      backgroundColor: context.colors.background,
-      appBar: appBar,
-      body: Padding(
-        padding: withPadding
-            ? EdgeInsets.all(context.constants.spacing)
-            : EdgeInsets.zero,
-        child: body,
+    return SelectionArea(
+      child: Scaffold(
+        backgroundColor: context.colors.background,
+        appBar: appBar,
+        body: Padding(
+            padding: withPadding
+                ? EdgeInsets.all(context.constants.spacing)
+                : EdgeInsets.zero,
+            child: body,
+          
+        ),
       ),
     );
   }

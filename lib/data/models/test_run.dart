@@ -8,17 +8,17 @@ part 'test_run.g.dart';
 @collection
 class TestRun {
   TestRun({
+    this.index = 0,
     this.screenRecordPath,
     this.pcapPath,
     this.startTimeInMs = 0,
     this.durationInMs = 0,
     this.packets = const [],
-    List<TrafficConnection> connections = const [],
-  }){
-    this.connections = connections;
-  }
+    this.connections = const [],
+  });
 
   Id id = Isar.autoIncrement;
+  int index;
 
   String? screenRecordPath;
   String? pcapPath;
@@ -29,12 +29,9 @@ class TestRun {
       screenRecordPath != null && screenRecordPath!.isNotEmpty ||
       pcapPath != null && pcapPath!.isNotEmpty;
 
-  List<NetworkPacket>? packets;
-  late List<TrafficConnection> _connections;
-  List<TrafficConnection> get connections => _connections;
-  set connections(value) {
-    _connections = value;
-    endpoints = TrafficAnalyzer.getEndpointsFromConnections(connections);
-  }
-  late List<TrafficEndpoint> endpoints;
+  List<NetworkPacket> packets;
+  List<NetworkConnection> connections;
+
+  @ignore
+  List<NetworkEndpoint>? endpoints;
 }

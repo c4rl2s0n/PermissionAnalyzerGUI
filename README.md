@@ -28,4 +28,10 @@ To recompile the database models, user 'dart run build_runner build' from the co
 
 # TODO:
 * Time-sensitive analysis
+  * live view with current connection highlights and screen recordings in second window
 * Only show entries from the same level in analysis (different applications or same level within an application)
+* do not set show=true for all groups by default!
+* add option for grouped connections/endpoints
+* allow to change number of testRuns for created scenario, only perform the missing tests. Do not change recording/duration/...
+* add Firewall filters to constellation settings
+* (secondary...) rename constellations(?)

@@ -37,10 +37,13 @@ class SessionCubit extends Cubit<SessionState> {
     if (!_hasAdb) return;
     Adb adb = Adb(_settingsCubit);
     List<String> devices = await adb.devices();
-    emit(state.copyWith(
-      adbDevices: devices,
-      adbDevice: state.adbDevice.isEmpty ? devices.firstOrNull : null,
-    ));
+    emit(state.copyWith(adbDevices: devices));
+    if(state.adbDevice.isEmpty){
+      String? device = devices.firstOrNull;
+      if(device != null) {
+        setAdbDevice(device);
+      }
+    }
   }
 
   Future loadAdbDeviceEventInputs() async {

@@ -13,6 +13,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     required this.sessionCubit,
     required this.settingsCubit,
     required this.testScenarioRepository,
+    required this.networkEndpointRepository,
     required this.testScenario,
   }) : super(TestScenarioState.fromScenario(testScenario)) {
     _initialize();
@@ -21,6 +22,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   final TestScenario testScenario;
 
   final ITestScenarioRepository testScenarioRepository;
+  final INetworkEndpointRepository networkEndpointRepository;
   final SessionCubit sessionCubit;
   SessionState get _session => sessionCubit.state;
   final SettingsCubit settingsCubit;
@@ -83,7 +85,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   }
 
   Future _clearFiles() async {
-    Directory fileDir = Directory(state.fileDirectory);
+    Directory fileDir = Directory(_workingDirectory); //state.fileDirectory);
     if (await fileDir.exists()) {
       await fileDir.delete(recursive: true);
     }

@@ -18,14 +18,19 @@ const TestConstellationSchema = Schema(
       name: r'abbreviation',
       type: IsarType.string,
     ),
-    r'permissions': PropertySchema(
+    r'info': PropertySchema(
       id: 1,
+      name: r'info',
+      type: IsarType.string,
+    ),
+    r'permissions': PropertySchema(
+      id: 2,
       name: r'permissions',
       type: IsarType.objectList,
       target: r'PermissionSetting',
     ),
     r'testIds': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'testIds',
       type: IsarType.longList,
     )
@@ -43,6 +48,7 @@ int _testConstellationEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.abbreviation.length * 3;
+  bytesCount += 3 + object.info.length * 3;
   bytesCount += 3 + object.permissions.length * 3;
   {
     final offsets = allOffsets[PermissionSetting]!;
@@ -63,13 +69,14 @@ void _testConstellationSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.abbreviation);
+  writer.writeString(offsets[1], object.info);
   writer.writeObjectList<PermissionSetting>(
-    offsets[1],
+    offsets[2],
     allOffsets,
     PermissionSettingSchema.serialize,
     object.permissions,
   );
-  writer.writeLongList(offsets[2], object.testIds);
+  writer.writeLongList(offsets[3], object.testIds);
 }
 
 TestConstellation _testConstellationDeserialize(
@@ -80,13 +87,13 @@ TestConstellation _testConstellationDeserialize(
 ) {
   final object = TestConstellation(
     permissions: reader.readObjectList<PermissionSetting>(
-          offsets[1],
+          offsets[2],
           PermissionSettingSchema.deserialize,
           allOffsets,
           PermissionSetting(),
         ) ??
         const [],
-    testIds: reader.readLongList(offsets[2]) ?? const [],
+    testIds: reader.readLongList(offsets[3]) ?? const [],
   );
   return object;
 }
@@ -101,6 +108,8 @@ P _testConstellationDeserializeProp<P>(
     case 0:
       return (reader.readString(offset)) as P;
     case 1:
+      return (reader.readString(offset)) as P;
+    case 2:
       return (reader.readObjectList<PermissionSetting>(
             offset,
             PermissionSettingSchema.deserialize,
@@ -108,7 +117,7 @@ P _testConstellationDeserializeProp<P>(
             PermissionSetting(),
           ) ??
           const []) as P;
-    case 2:
+    case 3:
       return (reader.readLongList(offset) ?? const []) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -248,6 +257,142 @@ extension TestConstellationQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'abbreviation',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      infoEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'info',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      infoGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'info',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      infoLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'info',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      infoBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'info',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      infoStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'info',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      infoEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'info',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      infoContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'info',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      infoMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'info',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      infoIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'info',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TestConstellation, TestConstellation, QAfterFilterCondition>
+      infoIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'info',
         value: '',
       ));
     });

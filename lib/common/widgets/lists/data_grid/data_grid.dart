@@ -3,7 +3,6 @@ import 'package:permission_analyzer_gui/common/common.dart';
 
 part 'data_grid_column.dart';
 
-// TODO: try to use ListView.builder!
 
 class DataGrid<T> extends StatefulWidget {
   const DataGrid({
@@ -42,14 +41,16 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
   List<DataGridColumn<T, Object?>> columns = [];
   final ScrollController vertical = ScrollController();
   final ScrollController horizontalHeader = ScrollController();
+  double horizontalScrollOffset = 0;
   late List<ScrollController> horizontalControllers;
   T? selectedItem;
   bool _isAutoScrolling = false;
 
   void syncScrollControllers(
       ScrollController source, List<ScrollController> targets) {
-    if (_isAutoScrolling) return;
+    if (source.offset == horizontalScrollOffset || _isAutoScrolling) return;
     _isAutoScrolling = true;
+    horizontalScrollOffset = source.offset;
     for (var target in targets) {
       if (target.hasClients && target != source) {
         target.jumpTo(source.offset);
@@ -126,7 +127,16 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
   void setupScrollControllers() {
     // TODO: do I need to remove listeners?
     // synchronize horizontal scrolling
-    horizontalControllers = data.map((_) => ScrollController()).toList();
+    horizontalControllers = [];
+    for(int i=0;i<data.length;i++){
+      horizontalControllers.add(ScrollController(onAttach: (pos){
+        // when a new ScrollPosition is attached, create PostFrameCallback to perform initial Scroll once Widget is created
+        ScrollController sc = horizontalControllers[i];
+        if(sc.hasClients && horizontalScrollOffset != 0) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => pos.jumpTo(horizontalScrollOffset));
+        }
+      }));
+    }
     horizontalHeader.addListener(
         () => syncScrollControllers(horizontalHeader, horizontalControllers));
     for (var controller in horizontalControllers) {
@@ -276,6 +286,7 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
 
   Widget _buildRow(BuildContext context, int index) {
       T entry = data[index];
+      ScrollController scrollController = horizontalControllers[index];
       return Padding(
         padding: EdgeInsets.symmetric(vertical: context.constants.smallSpacing/2),
         child: TapContainer(
@@ -304,7 +315,7 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     primary: false,
-                    controller: horizontalControllers[index],
+                    controller: scrollController,
                     child: Row(children: _rowCells(entry)),
                   ),
                 ),

@@ -21,23 +21,22 @@ const TestRunSchema = CollectionSchema(
       id: 0,
       name: r'connections',
       type: IsarType.objectList,
-      target: r'TrafficConnection',
+      target: r'NetworkConnection',
     ),
     r'durationInMs': PropertySchema(
       id: 1,
       name: r'durationInMs',
       type: IsarType.long,
     ),
-    r'endpoints': PropertySchema(
-      id: 2,
-      name: r'endpoints',
-      type: IsarType.objectList,
-      target: r'TrafficEndpoint',
-    ),
     r'hasData': PropertySchema(
-      id: 3,
+      id: 2,
       name: r'hasData',
       type: IsarType.bool,
+    ),
+    r'index': PropertySchema(
+      id: 3,
+      name: r'index',
+      type: IsarType.long,
     ),
     r'packets': PropertySchema(
       id: 4,
@@ -70,8 +69,7 @@ const TestRunSchema = CollectionSchema(
   links: {},
   embeddedSchemas: {
     r'NetworkPacket': NetworkPacketSchema,
-    r'TrafficEndpoint': TrafficEndpointSchema,
-    r'TrafficConnection': TrafficConnectionSchema
+    r'NetworkConnection': NetworkConnectionSchema
   },
   getId: _testRunGetId,
   getLinks: _testRunGetLinks,
@@ -87,34 +85,20 @@ int _testRunEstimateSize(
   var bytesCount = offsets.last;
   bytesCount += 3 + object.connections.length * 3;
   {
-    final offsets = allOffsets[TrafficConnection]!;
+    final offsets = allOffsets[NetworkConnection]!;
     for (var i = 0; i < object.connections.length; i++) {
       final value = object.connections[i];
       bytesCount +=
-          TrafficConnectionSchema.estimateSize(value, offsets, allOffsets);
+          NetworkConnectionSchema.estimateSize(value, offsets, allOffsets);
     }
   }
-  bytesCount += 3 + object.endpoints.length * 3;
+  bytesCount += 3 + object.packets.length * 3;
   {
-    final offsets = allOffsets[TrafficEndpoint]!;
-    for (var i = 0; i < object.endpoints.length; i++) {
-      final value = object.endpoints[i];
+    final offsets = allOffsets[NetworkPacket]!;
+    for (var i = 0; i < object.packets.length; i++) {
+      final value = object.packets[i];
       bytesCount +=
-          TrafficEndpointSchema.estimateSize(value, offsets, allOffsets);
-    }
-  }
-  {
-    final list = object.packets;
-    if (list != null) {
-      bytesCount += 3 + list.length * 3;
-      {
-        final offsets = allOffsets[NetworkPacket]!;
-        for (var i = 0; i < list.length; i++) {
-          final value = list[i];
-          bytesCount +=
-              NetworkPacketSchema.estimateSize(value, offsets, allOffsets);
-        }
-      }
+          NetworkPacketSchema.estimateSize(value, offsets, allOffsets);
     }
   }
   {
@@ -138,20 +122,15 @@ void _testRunSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeObjectList<TrafficConnection>(
+  writer.writeObjectList<NetworkConnection>(
     offsets[0],
     allOffsets,
-    TrafficConnectionSchema.serialize,
+    NetworkConnectionSchema.serialize,
     object.connections,
   );
   writer.writeLong(offsets[1], object.durationInMs);
-  writer.writeObjectList<TrafficEndpoint>(
-    offsets[2],
-    allOffsets,
-    TrafficEndpointSchema.serialize,
-    object.endpoints,
-  );
-  writer.writeBool(offsets[3], object.hasData);
+  writer.writeBool(offsets[2], object.hasData);
+  writer.writeLong(offsets[3], object.index);
   writer.writeObjectList<NetworkPacket>(
     offsets[4],
     allOffsets,
@@ -170,31 +149,26 @@ TestRun _testRunDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = TestRun(
-    connections: reader.readObjectList<TrafficConnection>(
+    connections: reader.readObjectList<NetworkConnection>(
           offsets[0],
-          TrafficConnectionSchema.deserialize,
+          NetworkConnectionSchema.deserialize,
           allOffsets,
-          TrafficConnection(),
+          NetworkConnection(),
         ) ??
         const [],
     durationInMs: reader.readLongOrNull(offsets[1]) ?? 0,
+    index: reader.readLongOrNull(offsets[3]) ?? 0,
     packets: reader.readObjectList<NetworkPacket>(
-      offsets[4],
-      NetworkPacketSchema.deserialize,
-      allOffsets,
-      NetworkPacket(),
-    ),
+          offsets[4],
+          NetworkPacketSchema.deserialize,
+          allOffsets,
+          NetworkPacket(),
+        ) ??
+        const [],
     pcapPath: reader.readStringOrNull(offsets[5]),
     screenRecordPath: reader.readStringOrNull(offsets[6]),
     startTimeInMs: reader.readLongOrNull(offsets[7]) ?? 0,
   );
-  object.endpoints = reader.readObjectList<TrafficEndpoint>(
-        offsets[2],
-        TrafficEndpointSchema.deserialize,
-        allOffsets,
-        TrafficEndpoint(),
-      ) ??
-      [];
   object.id = id;
   return object;
 }
@@ -207,32 +181,27 @@ P _testRunDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readObjectList<TrafficConnection>(
+      return (reader.readObjectList<NetworkConnection>(
             offset,
-            TrafficConnectionSchema.deserialize,
+            NetworkConnectionSchema.deserialize,
             allOffsets,
-            TrafficConnection(),
+            NetworkConnection(),
           ) ??
           const []) as P;
     case 1:
       return (reader.readLongOrNull(offset) ?? 0) as P;
     case 2:
-      return (reader.readObjectList<TrafficEndpoint>(
-            offset,
-            TrafficEndpointSchema.deserialize,
-            allOffsets,
-            TrafficEndpoint(),
-          ) ??
-          []) as P;
-    case 3:
       return (reader.readBool(offset)) as P;
+    case 3:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
     case 4:
       return (reader.readObjectList<NetworkPacket>(
-        offset,
-        NetworkPacketSchema.deserialize,
-        allOffsets,
-        NetworkPacket(),
-      )) as P;
+            offset,
+            NetworkPacketSchema.deserialize,
+            allOffsets,
+            NetworkPacket(),
+          ) ??
+          const []) as P;
     case 5:
       return (reader.readStringOrNull(offset)) as P;
     case 6:
@@ -474,91 +443,6 @@ extension TestRunQueryFilter
     });
   }
 
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> endpointsLengthEqualTo(
-      int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'endpoints',
-        length,
-        true,
-        length,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> endpointsIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'endpoints',
-        0,
-        true,
-        0,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> endpointsIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'endpoints',
-        0,
-        false,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> endpointsLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'endpoints',
-        0,
-        true,
-        length,
-        include,
-      );
-    });
-  }
-
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition>
-      endpointsLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'endpoints',
-        length,
-        include,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> endpointsLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'endpoints',
-        lower,
-        includeLower,
-        upper,
-        includeUpper,
-      );
-    });
-  }
-
   QueryBuilder<TestRun, TestRun, QAfterFilterCondition> hasDataEqualTo(
       bool value) {
     return QueryBuilder.apply(this, (query) {
@@ -621,18 +505,55 @@ extension TestRunQueryFilter
     });
   }
 
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> packetsIsNull() {
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> indexEqualTo(
+      int value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'packets',
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'index',
+        value: value,
       ));
     });
   }
 
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> packetsIsNotNull() {
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> indexGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'packets',
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'index',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> indexLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'index',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> indexBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'index',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
       ));
     });
   }
@@ -1079,16 +1000,9 @@ extension TestRunQueryFilter
 extension TestRunQueryObject
     on QueryBuilder<TestRun, TestRun, QFilterCondition> {
   QueryBuilder<TestRun, TestRun, QAfterFilterCondition> connectionsElement(
-      FilterQuery<TrafficConnection> q) {
+      FilterQuery<NetworkConnection> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'connections');
-    });
-  }
-
-  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> endpointsElement(
-      FilterQuery<TrafficEndpoint> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.object(q, r'endpoints');
     });
   }
 
@@ -1125,6 +1039,18 @@ extension TestRunQuerySortBy on QueryBuilder<TestRun, TestRun, QSortBy> {
   QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByHasDataDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'hasData', Sort.desc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'index', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByIndexDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'index', Sort.desc);
     });
   }
 
@@ -1203,6 +1129,18 @@ extension TestRunQuerySortThenBy
     });
   }
 
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'index', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByIndexDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'index', Sort.desc);
+    });
+  }
+
   QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByPcapPath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'pcapPath', Sort.asc);
@@ -1254,6 +1192,12 @@ extension TestRunQueryWhereDistinct
     });
   }
 
+  QueryBuilder<TestRun, TestRun, QDistinct> distinctByIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'index');
+    });
+  }
+
   QueryBuilder<TestRun, TestRun, QDistinct> distinctByPcapPath(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1284,7 +1228,7 @@ extension TestRunQueryProperty
     });
   }
 
-  QueryBuilder<TestRun, List<TrafficConnection>, QQueryOperations>
+  QueryBuilder<TestRun, List<NetworkConnection>, QQueryOperations>
       connectionsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'connections');
@@ -1297,20 +1241,19 @@ extension TestRunQueryProperty
     });
   }
 
-  QueryBuilder<TestRun, List<TrafficEndpoint>, QQueryOperations>
-      endpointsProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'endpoints');
-    });
-  }
-
   QueryBuilder<TestRun, bool, QQueryOperations> hasDataProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'hasData');
     });
   }
 
-  QueryBuilder<TestRun, List<NetworkPacket>?, QQueryOperations>
+  QueryBuilder<TestRun, int, QQueryOperations> indexProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'index');
+    });
+  }
+
+  QueryBuilder<TestRun, List<NetworkPacket>, QQueryOperations>
       packetsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'packets');

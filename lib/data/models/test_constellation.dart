@@ -17,21 +17,12 @@ class TestConstellation {
   List<TestRun>? _tests;
   @ignore
   List<TestRun> get tests => _tests ?? [];
-  set tests(value) {
+  set tests(List<TestRun> value) {
     _tests = value;
-    trafficGroup = getTrafficGroup();
   }
-  @ignore
-  TrafficGroup? trafficGroup;
 
-  TrafficGroup getTrafficGroup() => TrafficGroup(
-    name: abbreviation,
-    data: this,
-    info: _constellationInfo(),
-    tags: [tConstellation],
-    tests: List.of(tests ?? []),
-  );
-  String _constellationInfo() {
+
+  String get info {
     String info = 'Permissions:\n';
     info += permissions
         .where((p) => p.state == PermissionState.granted)

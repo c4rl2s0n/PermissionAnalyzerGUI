@@ -20,6 +20,7 @@ class TestApplication extends StatelessWidget {
     return BlocProvider<TestApplicationCubit>(
       create: (context) =>
           TestApplicationCubit(
+            context.session,
             application,
             Modular.get<ITestApplicationRepository>(),
             Modular.get<ITestScenarioRepository>(),

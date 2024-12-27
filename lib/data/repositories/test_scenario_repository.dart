@@ -71,18 +71,4 @@ class TestScenarioRepository extends ITestScenarioRepository {
     _updateTests([testScenario]);
     _isar.writeTxnSync(() => _isar.testScenarios.putSync(testScenario));
   }
-
-  @override
-  void updateEndpoints(
-      TestScenario scenario, Map<String, TrafficEndpoint> endpoints) {
-    for (var constellation in scenario.testConstellations) {
-      for (TrafficEndpoint endpoint
-          in constellation.trafficGroup?.endpoints ?? []) {
-        if (endpoints.containsKey(endpoint.ip)) {
-          endpoint.hostname = endpoints[endpoint.ip]!.hostname;
-        }
-      }
-    }
-    _isar.writeTxnSync(() => _isar.testScenarios.putSync(scenario));
-  }
 }

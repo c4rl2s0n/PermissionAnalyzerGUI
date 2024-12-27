@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:path/path.dart';
@@ -10,9 +12,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   String documentsDirectory = join(
-    "PermissionAnalyzerGUI",
     (await getApplicationDocumentsDirectory()).path,
+    "PermissionAnalyzerGUI",
   );
+  await Directory(documentsDirectory).create(recursive: true);
   String databaseFilename = "permission_analyzer_db.isar";
 
   runApp(

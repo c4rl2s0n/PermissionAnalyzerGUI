@@ -61,7 +61,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
     _storeScenario();
   }
 
-  Future _runTest(TestConstellation constellation, String fileDirectory) async {
+  Future _runTest(TestConstellation constellation, String fileDirectory, int index) async {
     String loadingInfoSuffix =
         "${constellation.abbreviation} - ${basename(fileDirectory)}";
     String pcapFilename = "traffic.pcap";
@@ -128,6 +128,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
 
     // Fetch all the generated files and store them in fileDirectory and db
     TestRun testRun = TestRun(
+      index: index,
       startTimeInMs: testStart,
       durationInMs: durationInMs,
     );
@@ -139,7 +140,8 @@ extension TestScenarioExecutor on TestScenarioCubit {
       testRun.packets =
           await TrafficAnalyzer.extractPackets(_tshark, testRun.pcapPath!);
       testRun.connections =
-          TrafficAnalyzer.getConnectionsFromPackets(testRun.packets!);
+          TrafficAnalyzer.getConnectionsFromPackets(testRun.packets);
+      testRun.endpoints = TrafficAnalyzer.getEndpointsFromConnections(testRun.connections, filtered: false, endpointRepository: networkEndpointRepository,);
     }
     if (state.recordScreen) {
       // wait a short time for the device to properly store the screen record
@@ -199,10 +201,11 @@ extension TestScenarioExecutor on TestScenarioCubit {
         if (i == 0) {
           _writePermissionTxt(constellation, fileDirectory);
         }
+        int index = constellation.tests.length;
         await _runTest(
           constellation,
-          join(fileDirectory,
-              "(${constellation.tests.length.toString().padLeft(3, "0")})"),
+          join(fileDirectory, "(${index.toString().padLeft(3, "0")})"),
+          index
         );
       }
     }
@@ -215,9 +218,6 @@ extension TestScenarioExecutor on TestScenarioCubit {
   }
 
   void _updateAnalysis() {
-    for (var constellation in testScenario.testConstellations) {
-      constellation.trafficGroup = constellation.getTrafficGroup();
-    }
     testScenario.testConstellations = List.of(testScenario.testConstellations);
     _storeScenario();
   }

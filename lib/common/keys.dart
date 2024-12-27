@@ -11,6 +11,7 @@ const String tGroup = "Group";
 const String tApplication = "Application";
 const String tScenario = "Scenario";
 const String tConstellation = "Constellation";
+const String tTest = "Test";
 const String tCommon = "Common";
 const String tUnique = "Unique";
 const String tHighlight = "Highlight";

@@ -92,23 +92,21 @@ class NewApplicationDialogCubit extends Cubit<NewApplicationDialogState> {
   }
 
   Future<String?> _findIcon(String path) async {
-    // cp ./myapp/res/mipmap-xxxhdpi-v4/ic_launcher.png ./app_icon.png
-    FileSystemEntity icon =
-        File(join(path, "res/mipmap-xxxhdpi-v4/ic_launcher.png"));
-    if (await icon.exists()) return icon.path;
-    try {
-      icon = await Directory(path)
-          .list(recursive: true)
-          .firstWhere((f) => _isIcon(f));
-      return icon.path;
-    } catch (_) {
-      return null;
-    }
+    Directory directory = Directory(path);
+    List<File> icons = directory
+        .listSync(recursive: true)
+        .where((f) => FileSystemEntity.isFileSync(f.path))
+        .map((f) => File(f.path))
+        .where((f) => _isIcon(f))
+        .toList();
+    icons.sort((a,b) => b.lengthSync().compareTo(a.lengthSync()));
+    return icons.firstOrNull?.path;
   }
 
   bool _isIcon(FileSystemEntity file) {
-    return file.path.contains(".png") &&
-        (file.path.contains("favicon") || file.path.contains("launcher"));
+    String path = file.path.toLowerCase();
+    return path.endsWith(".png") && (path.contains("mipmap") || path.contains("launcher")|| path.contains("favicon"));
+        //(file.path.contains("icon") || file.path.contains("launcher"));
   }
 }
 

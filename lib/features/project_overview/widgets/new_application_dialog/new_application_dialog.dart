@@ -67,6 +67,7 @@ class NewApplicationDialog extends StatelessWidget {
       buildWhen: (oldState, state) =>
           oldState.searching != state.searching ||
           oldState.applicationId != state.applicationId ||
+          oldState.name != state.name ||
           oldState.iconPath != state.iconPath,
       builder: (context, state) {
         return IconTextButton(

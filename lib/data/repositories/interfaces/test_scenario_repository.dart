@@ -7,6 +7,5 @@ abstract class ITestScenarioRepository {
   void deleteForApplication(String applicationId);
   void delete(int id);
   void update(TestScenario testScenario);
-  void updateEndpoints(TestScenario scenario, Map<String, TrafficEndpoint> endpoints);
   void loadTests(List<TestScenario> scenarios);
 }

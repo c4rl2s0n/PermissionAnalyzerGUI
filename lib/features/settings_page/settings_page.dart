@@ -18,7 +18,7 @@ class SettingsPage extends StatelessWidget {
         child: Column(
           children: [
             const ThemeSettings(),
-            const LanguageSettings(),
+            // const LanguageSettings(),
             const ToolSettings(),
           ].insertBetweenItems(() => const Divider()).insertBetweenItems(
               () => Margin.vertical(context.constants.largeSpacing)),

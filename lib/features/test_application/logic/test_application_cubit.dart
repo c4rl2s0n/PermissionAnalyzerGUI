@@ -4,10 +4,12 @@ import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path/path.dart';
+import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
 class TestApplicationCubit extends Cubit<TestApplicationState> {
   TestApplicationCubit(
+    this._sessionCubit,
     this.application,
     this.testApplicationRepository,
     this.testScenarioRepository,
@@ -40,6 +42,7 @@ class TestApplicationCubit extends Cubit<TestApplicationState> {
     return super.close();
   }
 
+  SessionCubit _sessionCubit;
   TestApplication application;
   ITestApplicationRepository testApplicationRepository;
   ITestScenarioRepository testScenarioRepository;
@@ -50,6 +53,7 @@ class TestApplicationCubit extends Cubit<TestApplicationState> {
       applicationId: state.id,
       applicationName: state.name,
       fileDirectory: fileDirectory,
+      device: _sessionCubit.state.adbDevice,
     );
     testScenarioRepository.update(scenario);
     emit(state.copyWith(
@@ -59,16 +63,16 @@ class TestApplicationCubit extends Cubit<TestApplicationState> {
 
   Future<String> _getScenarioFileDirectory() async {
     int i = 0;
-    while (true) {
-      String fileDirectory =
+    String fileDirectory = application.fileDirectory;
+    Directory fileDir = Directory(fileDirectory);
+    while (await fileDir.exists()) {
+      fileDirectory =
           join(application.fileDirectory, i.toString().padLeft(4, "0"));
-      Directory fileDir = Directory(fileDirectory);
-      if (!await fileDir.exists()) {
-        await fileDir.create(recursive: true);
-        return fileDirectory;
-      }
+      fileDir = Directory(fileDirectory);
       i++;
     }
+    await fileDir.create(recursive: true);
+    return fileDirectory;
   }
 
   Future delete() async {

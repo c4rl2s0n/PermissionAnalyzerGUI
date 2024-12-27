@@ -35,6 +35,9 @@ ThemeData getTheme(bool dark) {
         defaultTextStyle.copyWith(fontSize: 14, color: colors.onSurface),
     bodySmall: defaultTextStyle.copyWith(fontSize: 12, color: colors.onSurface),
   );
+  TextSelectionThemeData textSelectionTheme = TextSelectionThemeData(
+    selectionColor: colors.highlight,
+  );
 
   // Theme Data
   ButtonThemeData buttonTheme =
@@ -83,6 +86,7 @@ ThemeData getTheme(bool dark) {
     colorScheme: ColorScheme.fromSeed(seedColor: colors.primary),
     extensions: [colors, icons, constants],
     textTheme: textTheme,
+    textSelectionTheme: textSelectionTheme,
     iconTheme: iconTheme,
     buttonTheme: buttonTheme,
     dialogTheme: dialogTheme,

@@ -2,6 +2,11 @@ import 'dart:math' as math;
 
 extension ListExtensions<T> on List<T> {
   List<T> get distinct => toSet().toList();
+  List<T> sortedCopy(int Function(T a, T b) compare) {
+    List<T> copy = List.of(this);
+    copy.sort(compare);
+    return copy;
+  }
 
   List<T> insertBetweenItems(T Function() getObject) {
     if (isEmpty) return [];
