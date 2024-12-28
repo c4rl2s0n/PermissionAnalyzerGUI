@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:permission_analyzer_gui/common/common.dart';
+
 class SystemProcess {
   SystemProcess({
     this.workingDirectory,
@@ -69,14 +71,15 @@ extension ProcessResultText on ProcessResult {
   String get errText => errLines.join('\n');
 
   /// Out line lists
-  Iterable<String> get outLines => _outStringToLines(this.stdout.toString());
+  Iterable<String> get outLines => _outStringToLines(this.stdout.toString().filterWeirdCharacters);
 
   /// Line lists
-  Iterable<String> get errLines => _outStringToLines(this.stderr.toString());
+  Iterable<String> get errLines => _outStringToLines(this.stderr.toString().filterWeirdCharacters);
 }
 
 /// run response helper.
 extension ProcessText on Process {
+  StreamTransformer<String, String> get _characterFilterTransformer => StreamTransformer.fromHandlers(handleData: (String data, EventSink<String> sink) => sink.add(data.filterWeirdCharacters));
   Stream<String> _streamLines(Stream<List<int>> raw) =>
       raw.transform(utf8.decoder);
 
@@ -84,8 +87,8 @@ extension ProcessText on Process {
   Future<String> get errText async => (await errLines.toList()).join("\n");
 
   /// Out line lists
-  Stream<String> get outLines => _streamLines(this.stdout);
+  Stream<String> get outLines => _streamLines(this.stdout).transform(_characterFilterTransformer);
 
   /// Line lists
-  Stream<String> get errLines => _streamLines(this.stderr);
+  Stream<String> get errLines => _streamLines(this.stderr).transform(_characterFilterTransformer);
 }

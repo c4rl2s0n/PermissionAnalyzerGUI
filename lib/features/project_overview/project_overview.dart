@@ -75,30 +75,31 @@ class ProjectOverview extends StatelessWidget {
           buildWhen: (oldState, state) =>
               oldState.applications != state.applications,
           builder: (context, state) {
-            Widget btn = IconTextButton(
-              text: "New Application",
-              icon: Icon(context.icons.add),
-              onTap: canCreateApplication
-                  ? () async {
-                      model.TestApplication? newApplication =
-                          await NewApplicationDialog.newApplication(
-                        context,
-                        state.applications,
-                      );
-                      if (context.mounted && newApplication != null) {
-                        context.projectOverviewCubit
-                            .createApplication(newApplication);
+            return Optional(
+              buildOptional: (child) => Tooltip(
+                message:
+                    "Please go to the settings and setup all required paths.",
+                child: child,
+              ),
+              useOptional: !canCreateApplication,
+              child: IconTextButton(
+                text: "New Application",
+                icon: Icon(context.icons.add),
+                onTap: canCreateApplication
+                    ? () async {
+                        model.TestApplication? newApplication =
+                            await NewApplicationDialog.newApplication(
+                          context,
+                          state.applications,
+                        );
+                        if (context.mounted && newApplication != null) {
+                          context.projectOverviewCubit
+                              .createApplication(newApplication);
+                        }
                       }
-                    }
-                  : null,
+                    : null,
+              ),
             );
-            if(!canCreateApplication){
-              return Tooltip(
-                message: "Please go to the settings and setup all required paths.",
-                child: btn,
-              );
-            }
-            return btn;
           },
         );
       },

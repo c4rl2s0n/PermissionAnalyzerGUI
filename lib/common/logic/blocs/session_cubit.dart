@@ -59,13 +59,6 @@ class SessionCubit extends Cubit<SessionState> {
     List<TsharkNetworkInterface> interfaces = await tshark.getInterfaces();
     emit(state.copyWith(networkInterfaces: interfaces));
   }
-
-  Future loadApplications() async {
-    if (!_checkAdbDevice()) return;
-    Adb adb = Adb(_settingsCubit, device: state.adbDevice);
-    List<AndroidInputDevice> deviceInputs = await adb.getDeviceInputs();
-    emit(state.copyWith(adbDeviceEventInputs: deviceInputs));
-  }
 }
 
 class SessionState extends Equatable {

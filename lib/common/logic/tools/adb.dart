@@ -189,11 +189,13 @@ class Adb {
   }
 
   Future<List<String>> getApplications() async {
-    return (await shell(["pm", "list", "packages"]))
+    List<String> applications = (await shell(["pm", "list", "packages"]))
         .outLines
         .where((l) => l.contains(":"))
         .map((l) => l.split(":")[1])
         .toList();
+    applications.sort();
+    return applications;
   }
 
   Future<bool> applicationExists(String appId) async {

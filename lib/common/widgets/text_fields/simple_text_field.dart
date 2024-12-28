@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import 'package:permission_analyzer_gui/common/common.dart';
@@ -52,7 +54,9 @@ class _SimpleTextFieldState extends State<SimpleTextField> {
   @override
   void didUpdateWidget(covariant SimpleTextField oldTextField) {
     super.didUpdateWidget(oldTextField);
+    int cursorPos = controller.selection.baseOffset;
     controller.text = widget.initialValue;
+    controller.selection = TextSelection.collapsed(offset: min(cursorPos, controller.text.length));
   }
 
   @override
