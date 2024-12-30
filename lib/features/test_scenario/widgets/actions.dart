@@ -15,7 +15,7 @@ class TestScenarioActions extends StatelessWidget {
         _deleteScenarioButton(),
         _resetScenarioButton(),
         _recordButton(),
-        _addConstellationsButton(),
+        _addConstellationsButton(context),
         _runButton(),
       ],
     );
@@ -73,8 +73,7 @@ class TestScenarioActions extends StatelessWidget {
           BlocBuilder<TestScenarioCubit, TestScenarioState>(
         buildWhen: (oldState, state) => oldState.hasTests != state.hasTests,
         builder: (context, state) {
-          bool isEnabled =
-              !state.hasTests && settings.inputRecordDestinationPath.isNotEmpty;
+          bool isEnabled = !state.hasTests && settings.recorderPath.isNotEmpty;
           return Optional.tooltip(
             tooltip: state.hasTests
                 ? "Tests have already been recorded for this scenario."
@@ -95,29 +94,22 @@ class TestScenarioActions extends StatelessWidget {
     );
   }
 
-  Widget _addConstellationsButton() {
-    return BlocBuilder<TestScenarioCubit, TestScenarioState>(
-      buildWhen: (oldState, state) => oldState.hasTests != state.hasTests,
-      builder: (context, state) {
-        return IconTextButton(
-          onTap: state.hasTests
-              ? null
-              : () async {
-                  int duplicatesCount =
-                      await context.testScenarioCubit.addConstellations();
-                  if (context.mounted && duplicatesCount > 0) {
-                    InfoDialog.showInfo(
-                      context,
-                      title: "Duplicate constellations ignored",
-                      content:
-                          "Ignored $duplicatesCount constellations, that already exist.",
-                    );
-                  }
-                },
-          text: "Add Constellations",
-          icon: Icon(context.icons.create),
-        );
+  Widget _addConstellationsButton(BuildContext context) {
+    return IconTextButton(
+      onTap: () async {
+        int duplicatesCount =
+            await context.testScenarioCubit.addConstellations();
+        if (context.mounted && duplicatesCount > 0) {
+          InfoDialog.showInfo(
+            context,
+            title: "Duplicate constellations ignored",
+            content:
+                "Ignored $duplicatesCount constellations, that already exist.",
+          );
+        }
       },
+      text: "Add Constellations",
+      icon: Icon(context.icons.create),
     );
   }
 

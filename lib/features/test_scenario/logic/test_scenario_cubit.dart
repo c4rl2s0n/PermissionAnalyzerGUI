@@ -70,6 +70,10 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
 
   Future _initialize() async {
     sessionListener = sessionCubit.stream.listen((_) => checkDevice());
+    if(_settings.tsharkPath.isEmpty){
+      testScenario.captureTraffic = false;
+      emit(state.copyWith(captureTraffic: testScenario.captureTraffic));
+    }
     checkDevice();
   }
 
@@ -343,4 +347,5 @@ class TestScenarioState with _$TestScenarioState {
       );
   bool get hasInputRecord => userInputRecord.isNotEmpty;
   bool get hasTests => testConstellations.any((c) => c.testIds.isNotEmpty);
+  int get numTestsPerformed => testConstellations.map((tc) => tc.tests.length).toList().max as int;
 }

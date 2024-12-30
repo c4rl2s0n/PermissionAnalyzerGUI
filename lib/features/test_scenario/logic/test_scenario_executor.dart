@@ -159,6 +159,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
     }
 
     if (testRun.hasData) {
+      // No data to store...
       constellation.tests = <TestRun>[...constellation.tests, testRun];
     }
     _storeScenario();

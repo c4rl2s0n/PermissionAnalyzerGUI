@@ -16,12 +16,17 @@ class ScenarioDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return InfoContainer(
       title: "Details",
+      action: _deviceIndicator(context),
       child: Form(
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             SizedBox(
               width: leftColumnWidth,
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   _scenarioName(),
@@ -35,6 +40,7 @@ class ScenarioDetails extends StatelessWidget {
             ),
             Margin.horizontal(context.constants.largeSpacing),
             Column(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 _appId(),
                 _appName(),
@@ -45,6 +51,29 @@ class ScenarioDetails extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _deviceIndicator(BuildContext context) {
+    return BlocBuilder<SessionCubit, SessionState>(
+      builder: (context, session) {
+        return BlocBuilder<TestScenarioCubit, TestScenarioState>(
+            builder: (context, state) {
+          bool deviceConnected = session.deviceConnected(state.device);
+          return Tooltip(
+            message: deviceConnected
+                ? "The device is connected."
+                : "The device is NOT connected.",
+            child: Text(
+              state.device,
+              style: context.textTheme.labelLarge?.copyWith(
+                  color: deviceConnected
+                      ? context.colors.positive
+                      : context.colors.negative),
+            ),
+          );
+        });
+      },
     );
   }
 
@@ -114,6 +143,11 @@ class ScenarioDetails extends StatelessWidget {
             bool dropdownEnabled =
                 !state.hasInputRecord && !state.hasTests && deviceConnected;
 
+            List<AndroidInputDevice> inputDevices =
+                List.of(session.adbDeviceEventInputs);
+            if (!inputDevices.any((i) => i.path == state.deviceInput.path)) {
+              inputDevices.insert(0, state.deviceInput);
+            }
             // Dropdown widget here
             return SizedBox(
               width: leftColumnWidth,
@@ -142,7 +176,7 @@ class ScenarioDetails extends StatelessWidget {
                           : context.testScenarioCubit.setEventInputDevice(i),
                       initialSelection: state.deviceInput,
                       requestFocusOnTap: false,
-                      dropdownMenuEntries: session.inputDevices
+                      dropdownMenuEntries: inputDevices
                           .map((i) => DropDownMenuFactory.dropdownMenuEntry(
                                 context,
                                 value: i,
@@ -152,7 +186,7 @@ class ScenarioDetails extends StatelessWidget {
                     ),
                   ),
                   Optional.collapsed(
-                    collapse: state.deviceInput.info.isNotEmpty,
+                    collapse: state.deviceInput.info.isEmpty,
                     child: IconButton(
                       onPressed: () => InfoDialog.showInfo(
                         context,
@@ -290,8 +324,9 @@ class ScenarioDetails extends StatelessWidget {
           int? numTests = int.tryParse(s);
           if (numTests == null) return "Please enter a valid number";
           if (numTests <= 0) return "Please enter a positive number";
-          if (state.hasTests && numTests <= state.numTestRuns) {
-            return "Once tests have been performed, you can only increase the number of tests to be performed!";
+          int minNum = state.numTestsPerformed;
+          if (state.hasTests && numTests < minNum) {
+            return "Minimum number is $minNum.";
           }
           return null;
         }

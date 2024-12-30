@@ -16,7 +16,7 @@ class PermissionSelector extends StatelessWidget {
       builder: (context, state) => InfoContainer(
         title: "Optional Permissions (${state.permissions.length})",
         scrollable: true,
-        action: _buildActions(context, !state.hasTests),
+        action: _buildActions(context),
         child: Column(
             children: state.permissions
                 .map(
@@ -24,7 +24,6 @@ class PermissionSelector extends StatelessWidget {
                     backgroundColor: Colors.transparent,
                     onTap: () => context.testScenarioCubit
                             .togglePermissionState(p.permission),
-                    enabled: !state.hasTests,
                     padding: EdgeInsets.symmetric(
                         horizontal: context.constants.smallSpacing),
                     child: Padding(
@@ -43,24 +42,20 @@ class PermissionSelector extends StatelessWidget {
     );
   }
 
-  Widget _buildActions(BuildContext context, bool canAction) {
+  Widget _buildActions(BuildContext context) {
     return Row(
       children: <Widget>[
         IconTextButton(
           text: "Reset",
           icon: Icon(context.icons.reset),
           color: context.colors.negative,
-          onTap: canAction
-              ? context.testScenarioCubit.resetAllPermissionStates
-              : null,
+          onTap: context.testScenarioCubit.resetAllPermissionStates,
           padding: 2,
         ),
         IconTextButton(
           text: "Toggle all",
           icon: Icon(context.icons.toggle),
-          onTap: canAction
-              ? context.testScenarioCubit.toggleAllPermissionStates
-              : null,
+          onTap: context.testScenarioCubit.toggleAllPermissionStates,
           padding: 2,
         ),
       ].insertBetweenItems(() => Margin.horizontal(context.constants.spacing)),

@@ -62,15 +62,20 @@ class ToolSettings extends StatelessWidget {
           description: state.adbPath,
           actions: [
             // Scan for file
-            Optional.hidden(hide: Platform.isWindows, child: _adbLookupButton(context)),
+            Optional.hidden(
+                hide: Platform.isWindows, child: _adbLookupButton(context)),
             // pick file manually
-            PathPickerButton(dialogTitle: context.strings.pickAdbPath, onPathSelected: (path) => context.settings.setAdbPath(path),),
+            PathPickerButton(
+              dialogTitle: context.strings.pickAdbPath,
+              onPathSelected: (path) => context.settings.setAdbPath(path),
+            ),
           ],
         );
       },
     );
   }
-  Widget _adbLookupButton(BuildContext context){
+
+  Widget _adbLookupButton(BuildContext context) {
     return IconButton(
       onPressed: () async {
         String? adbPath = await Adb.lookupPath();
@@ -132,16 +137,23 @@ class ToolSettings extends StatelessWidget {
           description: state.tsharkPath,
           actions: [
             // Scan for file
-            Optional.hidden(hide: Platform.isWindows, child: _tsharkLookupButton(context)),
+            Optional.hidden(
+                hide: Platform.isWindows, child: _tsharkLookupButton(context)),
             // pick file manually
-            PathPickerButton(dialogTitle: context.strings.pickTsharkPath, onPathSelected: (path) => context.settings.setTsharkPath(path),),
+            PathPickerButton(
+              dialogTitle: context.strings.pickTsharkPath,
+              onPathSelected: (path) {
+                context.settings.setTsharkPath(path);
+                context.session.loadNetworkInterfaces();
+              },
+            ),
           ],
         );
       },
     );
   }
 
-  Widget _tsharkLookupButton(BuildContext context){
+  Widget _tsharkLookupButton(BuildContext context) {
     return IconButton(
       onPressed: () async {
         String? tsharkPath = await Tshark.lookupPath();
