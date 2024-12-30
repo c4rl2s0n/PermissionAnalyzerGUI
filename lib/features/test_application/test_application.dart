@@ -18,13 +18,11 @@ class TestApplication extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<TestApplicationCubit>(
-      create: (context) =>
-          TestApplicationCubit(
-            context.session,
-            application,
-            Modular.get<ITestApplicationRepository>(),
-            Modular.get<ITestScenarioRepository>(),
-          ),
+      create: (context) => TestApplicationCubit(
+        application,
+        Modular.get<ITestApplicationRepository>(),
+        Modular.get<ITestScenarioRepository>(),
+      ),
       child: PageComponentFactory.scaffold(
         context,
         appBar: PageComponentFactory.appBar(
@@ -32,18 +30,20 @@ class TestApplication extends StatelessWidget {
           title: application.name,
           actions: [
             BlocBuilder<TestApplicationCubit, TestApplicationState>(
-              buildWhen: (oldState, state) => oldState.scenarios != state.scenarios && state.scenarios.isNotEmpty,
+              buildWhen: (oldState, state) =>
+                  oldState.scenarios != state.scenarios &&
+                  state.scenarios.isNotEmpty,
               builder: (context, state) {
                 return PageComponentFactory.navigationIconButton(
                   context,
-                      () => Analysis(state.scenarios),
+                  () => Analysis(state.scenarios),
                   context.icons.analysis,
                 );
               },
             ),
             PageComponentFactory.navigationIconButton(
               context,
-                  () => const SettingsPage(),
+              () => const SettingsPage(),
               context.icons.settings,
             )
           ],
@@ -81,9 +81,9 @@ class TestApplication extends StatelessWidget {
         color: context.colors.negative,
         onTap: () async {
           if (await ConfirmationDialog.ask(context,
-              title: "Are you sure?",
-              content:
-              "Do you want to delete the application '${application.name}'?") &&
+                  title: "Are you sure?",
+                  content:
+                      "Do you want to delete the application '${application.name}'?") &&
               context.mounted) {
             context.navigator.pop();
             await context.testApplicationCubit.delete();
@@ -92,42 +92,49 @@ class TestApplication extends StatelessWidget {
   }
 
   Widget _newScenarioButton() {
-    return BlocBuilder<TestApplicationCubit, TestApplicationState>(
-      buildWhen: (oldState, state) => oldState.scenarios != state.scenarios,
-      builder: (context, state) =>
-          IconTextButton(
-              text: "New Scenario",
-              icon: Icon(context.icons.add),
-              onTap: () async {
-                model.TestScenario scenario =
-                await context.testApplicationCubit.newScenario();
-                if (context.mounted) {
-                  context.navigator.navigateTo(TestScenario(scenario));
-                }
-              }),
+    return BlocBuilder<SessionCubit, SessionState>(
+      buildWhen: (oldState, state) => oldState.adbDevices != state.adbDevices,
+      builder: (context, state) {
+        bool canCreateScenario = state.adbDevices.contains(application.device);
+        return Optional.tooltip(
+          tooltip: "Please connect the device the application was created with.",
+          show: !canCreateScenario,
+          child: IconTextButton(
+            text: "New Scenario",
+            icon: Icon(context.icons.add),
+            onTap: canCreateScenario
+                ? () async {
+                    model.TestScenario scenario =
+                        await context.testApplicationCubit.newScenario();
+                    if (context.mounted) {
+                      context.navigator.navigateTo(TestScenario(scenario));
+                    }
+                  }
+                : null),
+        );
+        },
     );
   }
 
   Widget _overview() {
     return BlocBuilder<TestApplicationCubit, TestApplicationState>(
       buildWhen: (oldState, state) => oldState.scenarios != state.scenarios,
-      builder: (context, state) =>
-          InfoContainer(
-            title: "Scenarios",
-            child: DataGrid<model.TestScenario>(
-              columns: [
-                DataGridColumn<model.TestScenario, String>(
-                  name: "Name",
-                  width: 100,
-                  getCell: (ts) => Text(ts.name),
-                  getValue: (ts) => ts.name,
-                ),
-              ],
-              data: state.scenarios,
-              onDataTap: (ts) => context.navigator.navigateTo(TestScenario(ts)),
-              provideHorizontalScrollbarSpace: false,
+      builder: (context, state) => InfoContainer(
+        title: "Scenarios",
+        child: DataGrid<model.TestScenario>(
+          columns: [
+            DataGridColumn<model.TestScenario, String>(
+              name: "Name",
+              width: 100,
+              getCell: (ts) => Text(ts.name),
+              getValue: (ts) => ts.name,
             ),
-          ),
+          ],
+          data: state.scenarios,
+          onDataTap: (ts) => context.navigator.navigateTo(TestScenario(ts)),
+          provideHorizontalScrollbarSpace: false,
+        ),
+      ),
     );
   }
 }

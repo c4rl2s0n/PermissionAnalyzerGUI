@@ -1,11 +1,13 @@
+import 'dart:async';
 import 'dart:io';
 
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:path/path.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
+part 'test_scenario_cubit.freezed.dart';
 part 'test_scenario_executor.dart';
 
 class TestScenarioCubit extends Cubit<TestScenarioState> {
@@ -58,15 +60,25 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
 
   void _emit(TestScenarioState state) => emit(state);
 
+  StreamSubscription? sessionListener;
+
+  @override
+  Future<void> close() async {
+    await super.close();
+    await sessionListener?.cancel();
+  }
+
   Future _initialize() async {
-    //emit(state.copyWith(loading: true));
-    if (_session.adbDevice.isEmpty) return;
-    emit(state.copyWith(
-        deviceFound: _session.adbDevices.contains(state.device)));
+    sessionListener = sessionCubit.stream.listen((_) => checkDevice());
+    checkDevice();
+  }
+
+  Future checkDevice() async {
+    if (!_session.deviceConnected(testScenario.device)) return;
+
     if (testScenario.permissions.isEmpty) {
       await _loadAppPermissions();
     }
-    //emit(state.copyWith(loading: false));
   }
 
   Future reset() async {
@@ -97,6 +109,11 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
         .map((p) =>
             PermissionSetting(permission: p, state: PermissionState.revoked))
         .toList();
+
+    // in case an empty testConstellation was created, set the permissions
+    for(var constellation in state.testConstellations){
+      constellation.permissions = List.of(testScenario.permissions);
+    }
     emit(state.copyWith(permissions: List.of(testScenario.permissions)));
   }
 
@@ -114,7 +131,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     // emit twice to ensure ui is updated
     testScenario.durationInSeconds = seconds;
     emit(state.copyWith(duration: testScenario.duration));
-    if(state.recordScreen && seconds > 180){
+    if (state.recordScreen && seconds > 180) {
       seconds = 180;
       testScenario.durationInSeconds = seconds;
       emit(state.copyWith(duration: testScenario.duration));
@@ -180,13 +197,6 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     _storeScenario();
   }
 
-  Future setAdbDevice(String device) async {
-    testScenario.device = device;
-    bool deviceFound = _session.adbDevices.contains(device);
-    emit(state.copyWith(device: testScenario.device, deviceFound: deviceFound));
-    _storeScenario();
-  }
-
   Future setEventInputDevice(AndroidInputDevice deviceInput) async {
     testScenario.deviceInput = deviceInput;
     emit(state.copyWith(deviceInput: deviceInput));
@@ -239,7 +249,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     // only add constellations that do not yet exist
     List<TestConstellation> newConstellations = constellations
         .where((tc) => !testScenario.testConstellations
-        .any((tstc) => tc.abbreviation == tstc.abbreviation))
+            .any((tstc) => tc.abbreviation == tstc.abbreviation))
         .toList();
     testScenario.testConstellations = [
       ...testScenario.testConstellations,
@@ -271,125 +281,66 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   }
 }
 
-class TestScenarioState extends Equatable {
-  const TestScenarioState({
-    this.loading = false,
-    this.deviceFound = false,
-    this.loadingInfo = "",
-    this.applicationId = "",
-    this.applicationName = "",
-    this.name = "",
-    this.fileDirectory = "",
-    this.userInputRecord = "",
-    this.device = "",
-    this.deviceInput = const AndroidInputDevice(),
-    this.networkInterface = const TsharkNetworkInterface(),
-    this.duration = Duration.zero,
-    this.numTestRuns = 1,
-    this.permissions = const [],
-    this.recordScreen = true,
-    this.captureTraffic = true,
-    this.testConstellations = const [],
-  });
-  TestScenarioState.fromScenario(TestScenario scenario)
-      : this(
-          userInputRecord: scenario.userInputRecord,
-          applicationId: scenario.applicationId,
-          applicationName: scenario.applicationName,
-          device: scenario.device,
-          deviceInput: scenario.deviceInput,
-          networkInterface: scenario.networkInterface,
-          name: scenario.name,
-          fileDirectory: scenario.fileDirectory,
-          duration: scenario.duration,
-          numTestRuns: scenario.numTestRuns,
-          permissions: List.of(scenario.permissions),
-          recordScreen: scenario.recordScreen,
-          captureTraffic: scenario.captureTraffic,
-          testConstellations: List.of(scenario.testConstellations),
-        );
+@freezed
+class TestScenarioState with _$TestScenarioState {
+  const TestScenarioState._();
 
-  final bool loading;
-  final bool deviceFound;
-  final String loadingInfo;
-  final String applicationId;
-  final String applicationName;
-  final String name;
-  final String fileDirectory;
-  final String userInputRecord;
+  const factory TestScenarioState({
+    required bool loading,
+    required String loadingInfo,
+    required String applicationId,
+    required String applicationName,
+    required String name,
+    required String fileDirectory,
+    required String userInputRecord,
+    required String device,
+    required AndroidInputDevice deviceInput,
+    required TsharkNetworkInterface networkInterface,
+    required Duration duration,
+    required int numTestRuns,
+    required List<PermissionSetting> permissions,
+    required bool recordScreen,
+    required bool captureTraffic,
+    required List<TestConstellation> testConstellations,
+  }) = _TestScenarioState;
+
+  factory TestScenarioState.empty() => const TestScenarioState(
+        loading: false,
+        loadingInfo: "",
+        applicationId: "",
+        applicationName: "",
+        name: "",
+        fileDirectory: "",
+        userInputRecord: "",
+        device: "",
+        deviceInput: AndroidInputDevice(),
+        networkInterface: TsharkNetworkInterface(),
+        duration: Duration.zero,
+        numTestRuns: 1,
+        permissions: [],
+        recordScreen: true,
+        captureTraffic: true,
+        testConstellations: [],
+      );
+  factory TestScenarioState.fromScenario(TestScenario scenario) =>
+      TestScenarioState(
+        loading: false,
+        loadingInfo: "",
+        userInputRecord: scenario.userInputRecord,
+        applicationId: scenario.applicationId,
+        applicationName: scenario.applicationName,
+        device: scenario.device,
+        deviceInput: scenario.deviceInput,
+        networkInterface: scenario.networkInterface,
+        name: scenario.name,
+        fileDirectory: scenario.fileDirectory,
+        duration: scenario.duration,
+        numTestRuns: scenario.numTestRuns,
+        permissions: List.of(scenario.permissions),
+        recordScreen: scenario.recordScreen,
+        captureTraffic: scenario.captureTraffic,
+        testConstellations: List.of(scenario.testConstellations),
+      );
   bool get hasInputRecord => userInputRecord.isNotEmpty;
-  final String device;
-  final AndroidInputDevice deviceInput;
-  final TsharkNetworkInterface networkInterface;
-  final Duration duration;
-  final int numTestRuns;
-  final List<PermissionSetting> permissions;
-  final bool recordScreen;
-  final bool captureTraffic;
-  final List<TestConstellation> testConstellations;
-  bool get canConfigure => !hasTests;
-  bool get canRun => testConstellations.isNotEmpty && !hasTests;
   bool get hasTests => testConstellations.any((c) => c.testIds.isNotEmpty);
-
-  @override
-  List<Object?> get props => [
-        loading,
-        deviceFound,
-        loadingInfo,
-        applicationId,
-        applicationName,
-        userInputRecord,
-        device,
-        deviceInput,
-        networkInterface,
-        name,
-        fileDirectory,
-        duration,
-        numTestRuns,
-        permissions,
-        recordScreen,
-        captureTraffic,
-        testConstellations,
-        hasTests,
-      ];
-
-  TestScenarioState copyWith({
-    bool? loading,
-    bool? deviceFound,
-    String? loadingInfo,
-    String? applicationId,
-    String? applicationName,
-    String? userInputRecord,
-    String? device,
-    AndroidInputDevice? deviceInput,
-    TsharkNetworkInterface? networkInterface,
-    String? name,
-    String? fileDirectory,
-    Duration? duration,
-    int? numTestRuns,
-    List<PermissionSetting>? permissions,
-    bool? recordScreen,
-    bool? captureTraffic,
-    List<TestConstellation>? testConstellations,
-  }) {
-    return TestScenarioState(
-      loading: loading ?? this.loading,
-      deviceFound: deviceFound ?? this.deviceFound,
-      loadingInfo: loadingInfo ?? this.loadingInfo,
-      applicationId: applicationId ?? this.applicationId,
-      applicationName: applicationName ?? this.applicationName,
-      userInputRecord: userInputRecord ?? this.userInputRecord,
-      device: device ?? this.device,
-      deviceInput: deviceInput ?? this.deviceInput,
-      networkInterface: networkInterface ?? this.networkInterface,
-      name: name ?? this.name,
-      fileDirectory: fileDirectory ?? this.fileDirectory,
-      duration: duration ?? this.duration,
-      numTestRuns: numTestRuns ?? this.numTestRuns,
-      permissions: permissions ?? this.permissions,
-      recordScreen: recordScreen ?? this.recordScreen,
-      captureTraffic: captureTraffic ?? this.captureTraffic,
-      testConstellations: testConstellations ?? this.testConstellations,
-    );
-  }
 }

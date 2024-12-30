@@ -6,6 +6,7 @@ part 'test_application.g.dart';
 class TestApplication {
   TestApplication({
     this.name = "",
+    this.device = "",
     this.id = "",
     this.iconPath,
     this.fileDirectory = "",
@@ -15,6 +16,7 @@ class TestApplication {
 
   @Index(unique: true, replace: false, type: IndexType.hash)
   String id;
+  String device;
   String name;
   String? iconPath;
   String fileDirectory;

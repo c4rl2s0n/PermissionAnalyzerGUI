@@ -10,6 +10,7 @@ class CustomColors extends ThemeExtension<CustomColors> {
     this.secondary = const Color(0xff489fb5),
     this.surface = const Color(0xff444444),
     this.highlight = const Color(0xffffa62b),
+    this.disabled = const Color(0xb33e372f),
     this.favorite = Colors.yellowAccent,
     this.warning = Colors.orange,
     this.positive = const Color(0xff409c18),
@@ -29,6 +30,7 @@ class CustomColors extends ThemeExtension<CustomColors> {
   final Color secondary;
   final Color surface;
   final Color highlight;
+  final Color disabled;
 
   final Color favorite;
   final Color warning;
@@ -46,7 +48,6 @@ class CustomColors extends ThemeExtension<CustomColors> {
   Color get divider => _onDark.withOpacity(_themeConstants.subtleColorOpacity);
   Color get border =>
       onBackground.withOpacity(_themeConstants.strongColorOpacity);
-  Color get disabled => _onDark.withOpacity(_themeConstants.strongColorOpacity);
   Color get error => negative;
   Color get onError => _onBright;
 
@@ -101,9 +102,10 @@ class MyBrightColors extends CustomColors {
       : super(
           background: CustomColors._white,
           primary: const Color(0xff8d5d0d),
-          secondary: const Color(0xff938311),
+          secondary: const Color(0xffc5af21),
           surface: const Color(0xffd7cfcf),
           highlight: const Color(0xff54a611),
+          disabled: const Color(0x80251A1A),
         );
 
   @override
@@ -126,6 +128,7 @@ class MyDarkColors extends CustomColors {
           secondary: const Color(0xff415a77),
           surface: const Color(0xff23130b),
           highlight: const Color(0xff5cb5e1),
+          disabled: const Color(0x80E8E3E3),
         );
   @override
   Color get onPrimary => _onDark;

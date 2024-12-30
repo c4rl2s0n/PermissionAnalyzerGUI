@@ -70,7 +70,6 @@ extension TestScenarioExecutor on TestScenarioCubit {
       await Directory(fileDirectory).create(recursive: true);
     }
     Process? pcapProcess;
-    String? pcapJson;
 
     // set all permissions according to test constellation
     _emit(state.copyWith(
@@ -194,14 +193,20 @@ extension TestScenarioExecutor on TestScenarioCubit {
     // run the Test #numTestRuns times
     for (int i = 0; i < state.numTestRuns; i++) {
       // run the Test for each constellation
-      for (var constellation in testScenario.testConstellations) {
+      for (TestConstellation constellation in testScenario.testConstellations) {
+        int index = constellation.tests.length;
+        // if there are already tests for this constellations, only perform the missing ones if numTestRuns was increased
+        if(index > i) continue;
+
+        // get the file-directory for the constellation
         String fileDirectory =
             join(_workingDirectory, constellation.abbreviation);
 
+        // write the permissions for the constellation to a file
         if (i == 0) {
           _writePermissionTxt(constellation, fileDirectory);
         }
-        int index = constellation.tests.length;
+        // run the current test
         await _runTest(
           constellation,
           join(fileDirectory, "(${index.toString().padLeft(3, "0")})"),

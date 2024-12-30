@@ -10,47 +10,39 @@ class ScenarioDetails extends StatelessWidget {
 
   final double textFieldWidth = 200;
   final double dropDownWidth = 330;
+  final double leftColumnWidth = 350;
 
   @override
   Widget build(BuildContext context) {
     return InfoContainer(
       title: "Details",
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Row(
-            children: [
-              Expanded(child: _scenarioName()),
-              Margin.horizontal(context.constants.largeSpacing),
-              _appId(),
-            ],
-          ),
-          Row(
-            //mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(child: _inputDeviceSelection()),
-              Margin.horizontal(context.constants.largeSpacing),
-              _appName(),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Expanded(child: _networkInterfaceSelection()),
-              Margin.horizontal(context.constants.spacing),
-              _duration(),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _hasUserInputRecordedIndicator(),
-              _numTestRuns(),
-            ],
-          ),
-        ].insertBetweenItems(
-          () => Margin.vertical(context.constants.spacing),
+      child: Form(
+        child: Row(
+          children: [
+            SizedBox(
+              width: leftColumnWidth,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  _scenarioName(),
+                  _inputDeviceSelection(),
+                  _networkInterfaceSelection(),
+                  _hasUserInputRecordedIndicator(),
+                ].insertBetweenItems(
+                  () => Margin.vertical(context.constants.spacing),
+                ),
+              ),
+            ),
+            Margin.horizontal(context.constants.largeSpacing),
+            Column(
+              children: [
+                _appId(),
+                _appName(),
+                _duration(),
+                _numTestRuns(),
+              ],
+            )
+          ],
         ),
       ),
     );
@@ -61,7 +53,7 @@ class ScenarioDetails extends StatelessWidget {
       buildWhen: (oldState, state) => oldState.name != state.name,
       builder: (context, state) {
         return SizedBox(
-          width: 300,
+          width: leftColumnWidth,
           child: SimpleTextField(
             initialValue: state.name,
             onChanged: (s) => context.testScenarioCubit.setName(s),
@@ -109,46 +101,69 @@ class ScenarioDetails extends StatelessWidget {
   Widget _inputDeviceSelection() {
     return BlocBuilder<SessionCubit, SessionState>(
       buildWhen: (oldState, state) =>
+          oldState.adbDevices != state.adbDevices ||
           oldState.adbDeviceEventInputs != state.adbDeviceEventInputs,
       builder: (context, session) {
         return BlocBuilder<TestScenarioCubit, TestScenarioState>(
           buildWhen: (oldState, state) =>
               oldState.deviceInput != state.deviceInput ||
-              oldState.canConfigure != state.canConfigure ||
+              oldState.hasTests != state.hasTests ||
               oldState.hasInputRecord != state.hasInputRecord,
           builder: (context, state) {
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                DropdownMenu<AndroidInputDevice>(
-                  key: const Key("InputDeviceSelection"),
-                  width: dropDownWidth,
-                  enabled: !state.hasInputRecord && state.canConfigure,
-                  label: const Text("Input Device"),
-                  onSelected: (i) => i == null
-                      ? null
-                      : context.testScenarioCubit.setEventInputDevice(i),
-                  initialSelection: state.deviceInput,
-                  requestFocusOnTap: false,
-                  dropdownMenuEntries: session.inputDevices
-                      .map((i) => DropDownMenuFactory.dropdownMenuEntry(
-                            context,
-                            value: i,
-                            label: i.name,
-                          ))
-                      .toList(),
-                ),
-                IconButton(
-                  onPressed: state.deviceInput.info.isNotEmpty
-                      ? () => InfoDialog.showInfo(
-                            context,
-                            title: "Input Device: ${state.deviceInput.name}",
-                            content: state.deviceInput.info,
-                          )
-                      : null,
-                  icon: Icon(context.icons.info),
-                ),
-              ],
+            bool deviceConnected = session.deviceConnected(state.device);
+            bool dropdownEnabled =
+                !state.hasInputRecord && !state.hasTests && deviceConnected;
+
+            // Dropdown widget here
+            return SizedBox(
+              width: leftColumnWidth,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Optional.tooltip(
+                    tooltip: state.hasInputRecord
+                        ? "Some input has already been recorded."
+                        : state.hasTests
+                            ? "Tests have already been recorded for this scenario."
+                            : !deviceConnected
+                                ? "The required device is not connected."
+                                : "",
+                    show: !dropdownEnabled,
+                    child: DropdownMenu<AndroidInputDevice>(
+                      key: const Key("InputDeviceSelection"),
+                      width: state.deviceInput.info.isNotEmpty
+                          ? leftColumnWidth - 50
+                          : leftColumnWidth,
+                      enabled: dropdownEnabled,
+                      enableSearch: false,
+                      label: const Text("Input Device"),
+                      onSelected: (i) => i == null
+                          ? null
+                          : context.testScenarioCubit.setEventInputDevice(i),
+                      initialSelection: state.deviceInput,
+                      requestFocusOnTap: false,
+                      dropdownMenuEntries: session.inputDevices
+                          .map((i) => DropDownMenuFactory.dropdownMenuEntry(
+                                context,
+                                value: i,
+                                label: i.name,
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                  Optional.collapsed(
+                    collapse: state.deviceInput.info.isNotEmpty,
+                    child: IconButton(
+                      onPressed: () => InfoDialog.showInfo(
+                        context,
+                        title: "Input Device: ${state.deviceInput.name}",
+                        content: state.deviceInput.info,
+                      ),
+                      icon: Icon(context.icons.info),
+                    ),
+                  ),
+                ],
+              ),
             );
           },
         );
@@ -157,36 +172,56 @@ class ScenarioDetails extends StatelessWidget {
   }
 
   Widget _networkInterfaceSelection() {
-    return BlocBuilder<SessionCubit, SessionState>(
-      buildWhen: (oldState, state) =>
-          oldState.networkInterfaces != state.networkInterfaces,
-      builder: (context, session) {
-        return BlocBuilder<TestScenarioCubit, TestScenarioState>(
-          buildWhen: (oldState, state) =>
-              oldState.networkInterface != state.networkInterface ||
-              oldState.canConfigure != state.canConfigure,
-          builder: (context, state) {
-            return DropdownMenu<TsharkNetworkInterface>(
-              key: const Key("NetworkInterfaceSelection"),
-              width: dropDownWidth,
-              enabled: state.canConfigure,
-              label: const Text("Network Interface"),
-              onSelected: (i) => i == null
-                  ? null
-                  : context.testScenarioCubit.setNetworkInterface(i),
-              initialSelection: state.networkInterface,
-              requestFocusOnTap: false,
-              dropdownMenuEntries: session.networkInterfaces
-                  .map((i) => DropDownMenuFactory.dropdownMenuEntry(
-                        context,
-                        value: i,
-                        label: i.name,
-                      ))
-                  .toList(),
-            );
-          },
-        );
-      },
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      buildWhen: (oldState, state) => oldState.tsharkPath != state.tsharkPath,
+      builder: (context, settings) => BlocBuilder<SessionCubit, SessionState>(
+        buildWhen: (oldState, state) =>
+            oldState.adbDevices != state.adbDevices ||
+            oldState.networkInterfaces != state.networkInterfaces,
+        builder: (context, session) {
+          return BlocBuilder<TestScenarioCubit, TestScenarioState>(
+            buildWhen: (oldState, state) =>
+                oldState.networkInterface != state.networkInterface ||
+                oldState.hasTests != state.hasTests,
+            builder: (context, state) {
+              bool deviceFound = session.deviceConnected(state.device);
+              bool isEnabled = settings.tsharkPath.isNotEmpty &&
+                  !state.hasTests &&
+                  deviceFound;
+
+              // Widget
+              return Optional.tooltip(
+                tooltip: settings.tsharkPath.isEmpty
+                    ? "The path of the TShark executable needs to be defined in the settings."
+                    : state.hasTests
+                        ? "Tests have already been recorded for this scenario."
+                        : !deviceFound
+                            ? "The required device is not connected."
+                            : "",
+                show: !isEnabled,
+                child: DropdownMenu<TsharkNetworkInterface>(
+                  key: const Key("NetworkInterfaceSelection"),
+                  width: leftColumnWidth,
+                  enabled: isEnabled,
+                  label: const Text("Network Interface"),
+                  onSelected: (i) => i == null
+                      ? null
+                      : context.testScenarioCubit.setNetworkInterface(i),
+                  initialSelection: state.networkInterface,
+                  requestFocusOnTap: false,
+                  dropdownMenuEntries: session.networkInterfaces
+                      .map((i) => DropDownMenuFactory.dropdownMenuEntry(
+                            context,
+                            value: i,
+                            label: i.name,
+                          ))
+                      .toList(),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -207,44 +242,71 @@ class ScenarioDetails extends StatelessWidget {
           oldState.duration != state.duration ||
           oldState.recordScreen != state.recordScreen ||
           oldState.hasInputRecord != state.hasInputRecord ||
-          oldState.canConfigure != state.canConfigure,
-      builder: (context, state) => SizedBox(
-        width: textFieldWidth,
-        child: SimpleTextField(
-          enabled: !state.hasInputRecord && state.canConfigure,
-          initialValue: state.duration.inSeconds.toString(),
-          validate: validateDuration,
-          onChanged: (s) => context.testScenarioCubit.setDuration(int.parse(s)),
-          labelText: "Test Duration",
-        ),
-      ),
+          oldState.hasTests != state.hasTests,
+      builder: (context, state) {
+        bool isEnabled = !state.hasInputRecord && !state.hasTests;
+        return SizedBox(
+          width: textFieldWidth,
+          child: Alternative(
+            buildA: (child) => Optional.tooltip(
+              tooltip:
+                  "The maximum duration for screen recording is 180 seconds",
+              show: state.recordScreen,
+              child: child,
+            ),
+            buildB: (child) => Optional.tooltip(
+              tooltip: state.hasInputRecord
+                  ? "Some replay-input has already been recorded for the specified duration."
+                  : state.hasTests
+                      ? "Tests have already been recorded for this scenario."
+                      : "",
+              show: !isEnabled,
+              child: child,
+            ),
+            useB: !isEnabled,
+            // Duration text field
+            child: SimpleTextField(
+              enabled: isEnabled,
+              initialValue: state.duration.inSeconds.toString(),
+              validate: validateDuration,
+              onChanged: (s) =>
+                  context.testScenarioCubit.setDuration(int.parse(s)),
+              labelText: "Test Duration",
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _numTestRuns() {
-    String? validateNumTestRuns(String? s) {
-      if (s == null) return null;
-      int? seconds = int.tryParse(s);
-      if (seconds == null) return "Please enter a valid number";
-      if (seconds <= 0) return "Please enter a positive number";
-      return null;
-    }
-
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
       buildWhen: (oldState, state) =>
           oldState.numTestRuns != state.numTestRuns ||
-          oldState.canConfigure != state.canConfigure,
-      builder: (context, state) => SizedBox(
-        width: textFieldWidth,
-        child: SimpleTextField(
-          enabled: state.canConfigure,
-          initialValue: state.numTestRuns.toString(),
-          validate: validateNumTestRuns,
-          onChanged: (s) =>
-              context.testScenarioCubit.setNumTestRuns(int.parse(s)),
-          labelText: "# Test Runs",
-        ),
-      ),
+          oldState.hasTests != state.hasTests,
+      builder: (context, state) {
+        String? validateNumTestRuns(String? s) {
+          if (s == null) return null;
+          int? numTests = int.tryParse(s);
+          if (numTests == null) return "Please enter a valid number";
+          if (numTests <= 0) return "Please enter a positive number";
+          if (state.hasTests && numTests <= state.numTestRuns) {
+            return "Once tests have been performed, you can only increase the number of tests to be performed!";
+          }
+          return null;
+        }
+
+        return SizedBox(
+          width: textFieldWidth,
+          child: SimpleTextField(
+            initialValue: state.numTestRuns.toString(),
+            validate: validateNumTestRuns,
+            onChanged: (s) =>
+                context.testScenarioCubit.setNumTestRuns(int.parse(s)),
+            labelText: "# Test Runs",
+          ),
+        );
+      },
     );
   }
 
@@ -254,32 +316,40 @@ class ScenarioDetails extends StatelessWidget {
           oldState.hasInputRecord != state.hasInputRecord ||
           oldState.hasTests != state.hasTests,
       builder: (context, state) {
-        return Row(
-          children: [
-            Text(
-              "${!state.hasInputRecord ? " (EMPTY) " : ""}User Input Recorded",
-            ),
-            if (state.hasInputRecord) ...[
-              IconButton(
-                onPressed: state.hasInputRecord && !state.hasTests
-                    ? () async {
-                        if (await ConfirmationDialog.ask(
-                              context,
-                              content:
-                                  "Do you want to reset the recorded user input?",
-                            ) &&
-                            context.mounted) {
-                          context.testScenarioCubit.resetUserInput();
-                        }
-                      }
-                    : null,
-                icon: Icon(
-                  context.icons.remove,
-                  color: context.colors.negative,
-                ),
+        return SizedBox(
+          width: leftColumnWidth,
+          child: Row(
+            children: [
+              Text(
+                "${!state.hasInputRecord ? " (EMPTY) " : ""}User Input Recorded",
               ),
+              if (state.hasInputRecord) ...[
+                Optional.tooltip(
+                  tooltip:
+                      "Tests have already been recorded for this scenario.",
+                  show: state.hasTests,
+                  child: IconButton(
+                    onPressed: state.hasInputRecord && !state.hasTests
+                        ? () async {
+                            if (await ConfirmationDialog.ask(
+                                  context,
+                                  content:
+                                      "Do you want to reset the recorded user input?",
+                                ) &&
+                                context.mounted) {
+                              context.testScenarioCubit.resetUserInput();
+                            }
+                          }
+                        : null,
+                    icon: Icon(
+                      context.icons.remove,
+                      color: context.colors.negative,
+                    ),
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         );
       },
     );

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -60,41 +62,33 @@ class ToolSettings extends StatelessWidget {
           description: state.adbPath,
           actions: [
             // Scan for file
-            IconButton(
-              onPressed: () async {
-                String? adbPath = await Adb.lookupPath();
-                if (!context.mounted) return;
-                if (adbPath != null && adbPath.isNotEmpty) {
-                  context.settings.setAdbPath(adbPath);
-                  context.messenger.showSnackBar(
-                    SnackBarFactory.getPositiveSnackBar(context,
-                        text: context.strings.pathFound),
-                  );
-                } else {
-                  InfoDialog.showError(
-                    context,
-                    content: context.strings.adbNotFound,
-                  );
-                }
-              },
-              icon: Icon(context.icons.search),
-            ),
+            Optional.hidden(hide: Platform.isWindows, child: _adbLookupButton(context)),
             // pick file manually
-            IconButton(
-              onPressed: () async {
-                FilePickerResult? file = await FilePickerFactory.getFilePicker()
-                    .pickFiles(dialogTitle: context.strings.pickAdbPath);
-                if (!context.mounted) return;
-                String? adbPath = file?.files.firstOrNull?.path;
-                if (adbPath != null && adbPath.isNotEmpty) {
-                  context.settings.setAdbPath(adbPath);
-                }
-              },
-              icon: Icon(context.icons.pickFile),
-            ),
+            PathPickerButton(dialogTitle: context.strings.pickAdbPath, onPathSelected: (path) => context.settings.setAdbPath(path),),
           ],
         );
       },
+    );
+  }
+  Widget _adbLookupButton(BuildContext context){
+    return IconButton(
+      onPressed: () async {
+        String? adbPath = await Adb.lookupPath();
+        if (!context.mounted) return;
+        if (adbPath != null && adbPath.isNotEmpty) {
+          context.settings.setAdbPath(adbPath);
+          context.messenger.showSnackBar(
+            SnackBarFactory.getPositiveSnackBar(context,
+                text: context.strings.pathFound),
+          );
+        } else {
+          InfoDialog.showError(
+            context,
+            content: context.strings.adbNotFound,
+          );
+        }
+      },
+      icon: Icon(context.icons.search),
     );
   }
 
@@ -106,22 +100,17 @@ class ToolSettings extends StatelessWidget {
           name: context.strings.adbDeviceSettings,
           description: state.adbDevice,
           actions: [
-            BlocBuilder<SessionCubit, SessionState>(
-              buildWhen: (oldState, state) =>
-                  oldState.adbDevices != state.adbDevices,
-              builder: (context, state) {
-                return DropdownMenu<String>(
-                  width: 250,
-                  initialSelection: state.adbDevice,
-                  requestFocusOnTap: false,
-                  onSelected: (s) => s != null
-                      ? context.read<SessionCubit>().setAdbDevice(s)
-                      : null,
-                  dropdownMenuEntries: state.adbDevices
-                      .map((d) => DropdownMenuEntry<String>(value: d, label: d))
-                      .toList(),
-                );
-              },
+            DropdownMenu<String>(
+              key: Key(state.adbDevice),
+              width: 250,
+              initialSelection: state.adbDevice,
+              requestFocusOnTap: false,
+              onSelected: (s) => s != null
+                  ? context.read<SessionCubit>().setAdbDevice(s)
+                  : null,
+              dropdownMenuEntries: state.adbDevices
+                  .map((d) => DropdownMenuEntry<String>(value: d, label: d))
+                  .toList(),
             ),
             // Scan for devices
             IconButton(
@@ -143,41 +132,34 @@ class ToolSettings extends StatelessWidget {
           description: state.tsharkPath,
           actions: [
             // Scan for file
-            IconButton(
-              onPressed: () async {
-                String? tsharkPath = await Tshark.lookupPath();
-                if (!context.mounted) return;
-                if (tsharkPath != null && tsharkPath.isNotEmpty) {
-                  context.settings.setTsharkPath(tsharkPath);
-                  context.messenger.showSnackBar(
-                    SnackBarFactory.getPositiveSnackBar(context,
-                        text: context.strings.pathFound),
-                  );
-                } else {
-                  InfoDialog.showError(
-                    context,
-                    content: context.strings.tsharkNotFound,
-                  );
-                }
-              },
-              icon: Icon(context.icons.search),
-            ),
+            Optional.hidden(hide: Platform.isWindows, child: _tsharkLookupButton(context)),
             // pick file manually
-            IconButton(
-              onPressed: () async {
-                FilePickerResult? file = await FilePickerFactory.getFilePicker()
-                    .pickFiles(dialogTitle: context.strings.pickTsharkPath);
-                if (!context.mounted) return;
-                String? tsharkPath = file?.files.firstOrNull?.path;
-                if (tsharkPath != null && tsharkPath.isNotEmpty) {
-                  context.settings.setTsharkPath(tsharkPath);
-                }
-              },
-              icon: Icon(context.icons.pickFile),
-            ),
+            PathPickerButton(dialogTitle: context.strings.pickTsharkPath, onPathSelected: (path) => context.settings.setTsharkPath(path),),
           ],
         );
       },
+    );
+  }
+
+  Widget _tsharkLookupButton(BuildContext context){
+    return IconButton(
+      onPressed: () async {
+        String? tsharkPath = await Tshark.lookupPath();
+        if (!context.mounted) return;
+        if (tsharkPath != null && tsharkPath.isNotEmpty) {
+          context.settings.setTsharkPath(tsharkPath);
+          context.messenger.showSnackBar(
+            SnackBarFactory.getPositiveSnackBar(context,
+                text: context.strings.pathFound),
+          );
+        } else {
+          InfoDialog.showError(
+            context,
+            content: context.strings.tsharkNotFound,
+          );
+        }
+      },
+      icon: Icon(context.icons.search),
     );
   }
 

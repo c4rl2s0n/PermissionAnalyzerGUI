@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -8,11 +10,13 @@ import 'package:permission_analyzer_gui/features/project_overview/widgets/new_ap
 
 class NewApplicationDialog extends StatelessWidget {
   const NewApplicationDialog({
-    required this.applications,
+    required this.existingApplications,
     super.key,
   });
 
-  final List<String> applications;
+  final List<String> existingApplications;
+
+  static const double dialogWidth = 420;
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +24,7 @@ class NewApplicationDialog extends StatelessWidget {
       create: (context) => NewApplicationDialogCubit(
         context.settings,
         context.session,
+        existingApplications,
       ),
       child: BlocBuilder<NewApplicationDialogCubit, NewApplicationDialogState>(
         buildWhen: (oldState, state) => oldState.searching != state.searching,
@@ -32,7 +37,8 @@ class NewApplicationDialog extends StatelessWidget {
             content: _buildContent(context),
             actions: [
               _cancelButton(context),
-              _loadIconButton(),
+              Optional.hidden(
+                  hide: Platform.isWindows, child: _loadIconButton()),
               _createButton(),
             ],
           );
@@ -42,13 +48,17 @@ class NewApplicationDialog extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _applicationSelection(),
-        _applicationName(),
-      ].insertBetweenItems(() => Margin.vertical(context.constants.spacing)),
+    return SizedBox(
+      width: dialogWidth,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _deviceSelection(context),
+          _applicationSelection(),
+          _applicationName(),
+        ].insertBetweenItems(() => Margin.vertical(context.constants.spacing)),
+      ),
     );
   }
 
@@ -98,19 +108,45 @@ class NewApplicationDialog extends StatelessWidget {
     );
   }
 
+  Widget _deviceSelection(BuildContext context) {
+    return BlocBuilder<NewApplicationDialogCubit, NewApplicationDialogState>(
+      buildWhen: (oldState, state) => oldState.adbDevice != state.adbDevice,
+      builder: (context, state) {
+        return DropdownMenu(
+          label: const Text("Select a device"),
+          width: dialogWidth,
+          onSelected: (dev) => dev != null
+              ? context.newApplicationDialogCubit.selectAdbDevice(dev)
+              : null,
+          requestFocusOnTap: false,
+          initialSelection: state.adbDevice,
+          dropdownMenuEntries: context.session.state.adbDevices
+              .map((dev) => DropDownMenuFactory.dropdownMenuEntry(
+                    context,
+                    value: dev,
+                    label: dev,
+                  ))
+              .toList(),
+        );
+      },
+    );
+  }
+
   Widget _applicationSelection() {
     return BlocBuilder<NewApplicationDialogCubit, NewApplicationDialogState>(
       buildWhen: (oldState, state) =>
+          oldState.applications != state.applications ||
           oldState.applicationId != state.applicationId,
       builder: (context, state) {
         return DropdownMenu(
-          label: const Text("Select the application"),
+          label: const Text("Select an application"),
+          width: dialogWidth,
           onSelected: (a) => a != null
               ? context.newApplicationDialogCubit.selectApplication(a)
               : null,
           requestFocusOnTap: false,
           initialSelection: state.applicationId,
-          dropdownMenuEntries: applications
+          dropdownMenuEntries: state.applications
               .map((a) => DropDownMenuFactory.dropdownMenuEntry(context,
                   value: a, label: a))
               .toList(),
@@ -135,17 +171,11 @@ class NewApplicationDialog extends StatelessWidget {
     BuildContext context,
     List<TestApplication> existingApplications,
   ) async {
-    List<String> applications =
-        await Adb(context.settings, device: context.session.state.adbDevice)
-            .getApplications();
-    List<String> newApplications = applications
-        .where((a) => !existingApplications.any((ea) => ea.id == a))
-        .toList();
     if (context.mounted) {
       return showDialog<TestApplication?>(
           context: context,
           builder: (context) =>
-              NewApplicationDialog(applications: newApplications));
+              NewApplicationDialog(existingApplications: existingApplications.map((a) => a.id).toList()));
     }
     return null;
   }

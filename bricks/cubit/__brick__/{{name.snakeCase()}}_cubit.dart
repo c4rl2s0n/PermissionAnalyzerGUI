@@ -25,7 +25,13 @@ class {{name.pascalCase()}}Cubit extends Cubit<{{name.pascalCase()}}State>{
 
 @freezed
 class {{name.pascalCase()}}State with _${{name.pascalCase()}}State {
-  const factory {{name.pascalCase()}}State() = _{{name.pascalCase()}}State;
+  const {{name.pascalCase()}}State._();
+  const factory {{name.pascalCase()}}State({
+    required String name,
+  }) = _NewApplicationDialogState;
 
+  factory {{name.pascalCase()}}State.empty() => const {{name.pascalCase()}}State(
+    name: "",
+  );
 }
 

@@ -12,20 +12,19 @@ class PermissionSelector extends StatelessWidget {
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
       buildWhen: (oldState, state) =>
           oldState.permissions != state.permissions ||
-          oldState.canConfigure != state.canConfigure,
+          oldState.hasTests != state.hasTests,
       builder: (context, state) => InfoContainer(
         title: "Optional Permissions (${state.permissions.length})",
         scrollable: true,
-        action: _buildActions(context, state.canConfigure),
+        action: _buildActions(context, !state.hasTests),
         child: Column(
             children: state.permissions
                 .map(
                   (p) => TapContainer(
                     backgroundColor: Colors.transparent,
-                    onTap: state.canConfigure
-                        ? () => context.testScenarioCubit
-                            .togglePermissionState(p.permission)
-                        : null,
+                    onTap: () => context.testScenarioCubit
+                            .togglePermissionState(p.permission),
+                    enabled: !state.hasTests,
                     padding: EdgeInsets.symmetric(
                         horizontal: context.constants.smallSpacing),
                     child: Padding(

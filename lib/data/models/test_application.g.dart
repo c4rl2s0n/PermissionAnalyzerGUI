@@ -17,23 +17,28 @@ const TestApplicationSchema = CollectionSchema(
   name: r'TestApplication',
   id: 6870273039603311303,
   properties: {
-    r'fileDirectory': PropertySchema(
+    r'device': PropertySchema(
       id: 0,
+      name: r'device',
+      type: IsarType.string,
+    ),
+    r'fileDirectory': PropertySchema(
+      id: 1,
       name: r'fileDirectory',
       type: IsarType.string,
     ),
     r'iconPath': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'iconPath',
       type: IsarType.string,
     ),
     r'id': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'id',
       type: IsarType.string,
     ),
     r'name': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'name',
       type: IsarType.string,
     )
@@ -72,6 +77,7 @@ int _testApplicationEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  bytesCount += 3 + object.device.length * 3;
   bytesCount += 3 + object.fileDirectory.length * 3;
   {
     final value = object.iconPath;
@@ -90,10 +96,11 @@ void _testApplicationSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.fileDirectory);
-  writer.writeString(offsets[1], object.iconPath);
-  writer.writeString(offsets[2], object.id);
-  writer.writeString(offsets[3], object.name);
+  writer.writeString(offsets[0], object.device);
+  writer.writeString(offsets[1], object.fileDirectory);
+  writer.writeString(offsets[2], object.iconPath);
+  writer.writeString(offsets[3], object.id);
+  writer.writeString(offsets[4], object.name);
 }
 
 TestApplication _testApplicationDeserialize(
@@ -103,10 +110,11 @@ TestApplication _testApplicationDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = TestApplication(
-    fileDirectory: reader.readStringOrNull(offsets[0]) ?? "",
-    iconPath: reader.readStringOrNull(offsets[1]),
-    id: reader.readStringOrNull(offsets[2]) ?? "",
-    name: reader.readStringOrNull(offsets[3]) ?? "",
+    device: reader.readStringOrNull(offsets[0]) ?? "",
+    fileDirectory: reader.readStringOrNull(offsets[1]) ?? "",
+    iconPath: reader.readStringOrNull(offsets[2]),
+    id: reader.readStringOrNull(offsets[3]) ?? "",
+    name: reader.readStringOrNull(offsets[4]) ?? "",
   );
   object.isarId = id;
   return object;
@@ -122,10 +130,12 @@ P _testApplicationDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset) ?? "") as P;
     case 1:
-      return (reader.readStringOrNull(offset)) as P;
-    case 2:
       return (reader.readStringOrNull(offset) ?? "") as P;
+    case 2:
+      return (reader.readStringOrNull(offset)) as P;
     case 3:
+      return (reader.readStringOrNull(offset) ?? "") as P;
+    case 4:
       return (reader.readStringOrNull(offset) ?? "") as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -327,6 +337,142 @@ extension TestApplicationQueryWhere
 
 extension TestApplicationQueryFilter
     on QueryBuilder<TestApplication, TestApplication, QFilterCondition> {
+  QueryBuilder<TestApplication, TestApplication, QAfterFilterCondition>
+      deviceEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'device',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestApplication, TestApplication, QAfterFilterCondition>
+      deviceGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'device',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestApplication, TestApplication, QAfterFilterCondition>
+      deviceLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'device',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestApplication, TestApplication, QAfterFilterCondition>
+      deviceBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'device',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestApplication, TestApplication, QAfterFilterCondition>
+      deviceStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'device',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestApplication, TestApplication, QAfterFilterCondition>
+      deviceEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'device',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestApplication, TestApplication, QAfterFilterCondition>
+      deviceContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'device',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestApplication, TestApplication, QAfterFilterCondition>
+      deviceMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'device',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestApplication, TestApplication, QAfterFilterCondition>
+      deviceIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'device',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TestApplication, TestApplication, QAfterFilterCondition>
+      deviceIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'device',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<TestApplication, TestApplication, QAfterFilterCondition>
       fileDirectoryEqualTo(
     String value, {
@@ -954,6 +1100,19 @@ extension TestApplicationQueryLinks
 
 extension TestApplicationQuerySortBy
     on QueryBuilder<TestApplication, TestApplication, QSortBy> {
+  QueryBuilder<TestApplication, TestApplication, QAfterSortBy> sortByDevice() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'device', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestApplication, TestApplication, QAfterSortBy>
+      sortByDeviceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'device', Sort.desc);
+    });
+  }
+
   QueryBuilder<TestApplication, TestApplication, QAfterSortBy>
       sortByFileDirectory() {
     return QueryBuilder.apply(this, (query) {
@@ -1010,6 +1169,19 @@ extension TestApplicationQuerySortBy
 
 extension TestApplicationQuerySortThenBy
     on QueryBuilder<TestApplication, TestApplication, QSortThenBy> {
+  QueryBuilder<TestApplication, TestApplication, QAfterSortBy> thenByDevice() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'device', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestApplication, TestApplication, QAfterSortBy>
+      thenByDeviceDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'device', Sort.desc);
+    });
+  }
+
   QueryBuilder<TestApplication, TestApplication, QAfterSortBy>
       thenByFileDirectory() {
     return QueryBuilder.apply(this, (query) {
@@ -1079,6 +1251,13 @@ extension TestApplicationQuerySortThenBy
 
 extension TestApplicationQueryWhereDistinct
     on QueryBuilder<TestApplication, TestApplication, QDistinct> {
+  QueryBuilder<TestApplication, TestApplication, QDistinct> distinctByDevice(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'device', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<TestApplication, TestApplication, QDistinct>
       distinctByFileDirectory({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1114,6 +1293,12 @@ extension TestApplicationQueryProperty
   QueryBuilder<TestApplication, int, QQueryOperations> isarIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isarId');
+    });
+  }
+
+  QueryBuilder<TestApplication, String, QQueryOperations> deviceProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'device');
     });
   }
 

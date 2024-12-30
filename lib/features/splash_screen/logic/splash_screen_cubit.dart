@@ -20,7 +20,6 @@ class SplashScreenCubit extends Cubit<SplashScreenState> {
 
     if (settingsCubit.state.adbPath.isNotEmpty) {
       await sessionCubit.loadAdbDevices();
-      await sessionCubit.loadAdbDeviceEventInputs();
     }
 
     emit(state.copyWith(isDone: true));

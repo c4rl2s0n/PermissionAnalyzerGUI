@@ -1,20 +1,21 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:path/path.dart';
-import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
+
+part 'test_application_cubit.freezed.dart';
 
 class TestApplicationCubit extends Cubit<TestApplicationState> {
   TestApplicationCubit(
-    this._sessionCubit,
     this.application,
     this.testApplicationRepository,
     this.testScenarioRepository,
   ) : super(
           TestApplicationState(
+            application: application,
             name: application.name,
             id: application.id,
             iconPath: application.iconPath,
@@ -35,14 +36,13 @@ class TestApplicationCubit extends Cubit<TestApplicationState> {
     );
   }
 
-  late StreamSubscription scenarioWatcher;
+  StreamSubscription? scenarioWatcher;
   @override
   Future<void> close() async {
-    await scenarioWatcher.cancel();
+    await scenarioWatcher?.cancel();
     return super.close();
   }
 
-  SessionCubit _sessionCubit;
   TestApplication application;
   ITestApplicationRepository testApplicationRepository;
   ITestScenarioRepository testScenarioRepository;
@@ -53,7 +53,7 @@ class TestApplicationCubit extends Cubit<TestApplicationState> {
       applicationId: state.id,
       applicationName: state.name,
       fileDirectory: fileDirectory,
-      device: _sessionCubit.state.adbDevice,
+      device: state.application.device,
     );
     testScenarioRepository.update(scenario);
     emit(state.copyWith(
@@ -85,38 +85,16 @@ class TestApplicationCubit extends Cubit<TestApplicationState> {
   }
 }
 
-class TestApplicationState extends Equatable {
-  const TestApplicationState({
-    this.name = "",
-    this.id = "",
-    this.iconPath,
-    this.fileDirectory = "",
-    this.scenarios = const [],
-  });
 
-  final String name;
-  final String id;
-  final String? iconPath;
-  final String fileDirectory;
-
-  final List<TestScenario> scenarios;
-
-  @override
-  List<Object?> get props => [name, id, iconPath, fileDirectory, scenarios];
-
-  TestApplicationState copyWith({
-    String? name,
-    String? id,
+@freezed
+class TestApplicationState with _$TestApplicationState {
+  const TestApplicationState._();
+  const factory TestApplicationState({
+    required TestApplication application,
+    required String name,
+    required String id,
     String? iconPath,
-    String? fileDirectory,
-    List<TestScenario>? scenarios,
-  }) {
-    return TestApplicationState(
-      name: name ?? this.name,
-      iconPath: iconPath ?? this.iconPath,
-      fileDirectory: fileDirectory ?? this.fileDirectory,
-      id: id ?? this.id,
-      scenarios: scenarios ?? this.scenarios,
-    );
-  }
+    required String fileDirectory,
+    required List<TestScenario> scenarios,
+  }) = _TestApplicationState;
 }

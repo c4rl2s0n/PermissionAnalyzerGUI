@@ -63,14 +63,12 @@ class ProjectOverview extends StatelessWidget {
     return BlocBuilder<SettingsCubit, SettingsState>(
       buildWhen: (oldState, state) =>
           oldState.workingDirectory != state.workingDirectory ||
-          oldState.adbPath != state.adbPath ||
-          oldState.tsharkPath != state.tsharkPath ||
-          oldState.recorderPath != state.recorderPath,
+          oldState.adbPath != state.adbPath,
       builder: (context, settings) {
-        bool canCreateApplication = settings.recorderPath.isNotEmpty &&
-            settings.workingDirectory.isNotEmpty &&
-            settings.adbPath.isNotEmpty &&
-            settings.tsharkPath.isNotEmpty;
+        bool canCreateApplication = settings.workingDirectory.isNotEmpty &&
+            settings.adbPath.isNotEmpty;
+        String missingPaths = settings.workingDirectory.isEmpty? "Working Directory":"";
+        missingPaths += settings.adbPath.isEmpty? "${missingPaths.isNotEmpty?", ":""}ADB path":"";
         return BlocBuilder<ProjectOverviewCubit, ProjectOverviewState>(
           buildWhen: (oldState, state) =>
               oldState.applications != state.applications,
@@ -78,7 +76,7 @@ class ProjectOverview extends StatelessWidget {
             return Optional(
               buildOptional: (child) => Tooltip(
                 message:
-                    "Please go to the settings and setup all required paths.",
+                    "Please go to the settings and setup all required paths ($missingPaths).",
                 child: child,
               ),
               useOptional: !canCreateApplication,

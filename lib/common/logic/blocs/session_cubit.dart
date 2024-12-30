@@ -1,10 +1,12 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
+part 'session_cubit.freezed.dart';
+
 class SessionCubit extends Cubit<SessionState> {
-  SessionCubit(this._settingsCubit) : super(const SessionState()) {
+  SessionCubit(this._settingsCubit) : super(SessionState.empty()) {
     _initialize();
   }
   final SettingsCubit _settingsCubit;
@@ -17,16 +19,25 @@ class SessionCubit extends Cubit<SessionState> {
   }
 
   bool get _hasAdb => _settingsCubit.state.adbPath.isNotEmpty;
+  bool get _hasTshark => _settingsCubit.state.tsharkPath.isNotEmpty;
 
   bool _checkAdbDevice() {
     if (_hasAdb && state.hasDevice) {
       return true;
     }
-    emit(const SessionState());
+    emit(SessionState.empty());
     return false;
   }
 
-  Future setAdbDevice(String adbDevice) async {
+  Future setAdbDevice(String? adbDevice) async {
+    if (adbDevice == null) {
+      emit(state.copyWith(
+        adbDevice: "",
+        adbDeviceEventInputs: [],
+        networkInterfaces: [],
+      ));
+      return;
+    }
     emit(state.copyWith(adbDevice: adbDevice));
     await Adb(_settingsCubit, device: adbDevice).root();
     await loadAdbDeviceEventInputs();
@@ -38,11 +49,9 @@ class SessionCubit extends Cubit<SessionState> {
     Adb adb = Adb(_settingsCubit);
     List<String> devices = await adb.devices();
     emit(state.copyWith(adbDevices: devices));
-    if(state.adbDevice.isEmpty){
+    if (state.adbDevice.isEmpty || !devices.contains(state.adbDevice)) {
       String? device = devices.firstOrNull;
-      if(device != null) {
-        setAdbDevice(device);
-      }
+      setAdbDevice(device);
     }
   }
 
@@ -54,27 +63,35 @@ class SessionCubit extends Cubit<SessionState> {
   }
 
   Future loadNetworkInterfaces() async {
-    if (!_checkAdbDevice()) return;
+    if (!_checkAdbDevice() || !_hasTshark) return;
     Tshark tshark = Tshark(_settingsCubit);
     List<TsharkNetworkInterface> interfaces = await tshark.getInterfaces();
     emit(state.copyWith(networkInterfaces: interfaces));
   }
 }
 
-class SessionState extends Equatable {
-  const SessionState({
-    this.adbDevice = "",
-    this.adbDevices = const [],
-    this.adbDeviceEventInputs = const [],
-    this.networkInterfaces = const [],
-    this.applications = const [],
-  });
+@freezed
+class SessionState with _$SessionState {
+  const SessionState._();
 
-  final String adbDevice;
+  const factory SessionState({
+    required String adbDevice,
+    required List<String> adbDevices,
+    required List<AndroidInputDevice> adbDeviceEventInputs,
+    required List<TsharkNetworkInterface> networkInterfaces,
+    required List<TestApplication> applications,
+  }) = _SessionState;
+
+  factory SessionState.empty() => const SessionState(
+        adbDevice: "",
+        adbDevices: [],
+        adbDeviceEventInputs: [],
+        networkInterfaces: [],
+        applications: [],
+      );
   bool get hasDevice => adbDevice.isNotEmpty;
 
-  final List<String> adbDevices;
-  final List<AndroidInputDevice> adbDeviceEventInputs;
+  bool deviceConnected(String device) => adbDevices.contains(device);
 
   List<AndroidInputDevice> get inputDevices {
     List<AndroidInputDevice> devices = List.of(adbDeviceEventInputs);
@@ -82,34 +99,5 @@ class SessionState extends Equatable {
         ? a.path.length.compareTo(b.path.length)
         : a.path.compareTo(b.path));
     return devices;
-  }
-
-  final List<TsharkNetworkInterface> networkInterfaces;
-
-  final List<TestApplication> applications;
-
-  @override
-  List<Object?> get props => [
-        adbDevice,
-        adbDevices,
-        adbDeviceEventInputs,
-        networkInterfaces,
-        applications,
-      ];
-
-  SessionState copyWith({
-    String? adbDevice,
-    List<String>? adbDevices,
-    List<AndroidInputDevice>? adbDeviceEventInputs,
-    List<TsharkNetworkInterface>? networkInterfaces,
-    List<TestApplication>? applications,
-  }) {
-    return SessionState(
-      adbDevice: adbDevice ?? this.adbDevice,
-      adbDevices: adbDevices ?? this.adbDevices,
-      adbDeviceEventInputs: adbDeviceEventInputs ?? this.adbDeviceEventInputs,
-      networkInterfaces: networkInterfaces ?? this.networkInterfaces,
-      applications: applications ?? this.applications,
-    );
   }
 }

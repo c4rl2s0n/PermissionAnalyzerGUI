@@ -1,17 +1,42 @@
 import 'dart:io';
 
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:path/path.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
+part 'new_application_dialog_cubit.freezed.dart';
+
 class NewApplicationDialogCubit extends Cubit<NewApplicationDialogState> {
-  NewApplicationDialogCubit(this._settingsCubit, this._sessionCubit)
-      : super(const NewApplicationDialogState());
+  NewApplicationDialogCubit(
+    this._settingsCubit,
+    this._sessionCubit,
+    this.existingApplications,
+  ) : super(NewApplicationDialogState.empty()){
+    selectAdbDevice(_sessionCubit.state.adbDevice);
+  }
 
   final SettingsCubit _settingsCubit;
   final SessionCubit _sessionCubit;
+  final List<String> existingApplications;
+
+  Future selectAdbDevice(String device) async {
+    List<String> appIds = state.applications;
+    String appId = state.applicationId;
+    if (device != state.adbDevice) {
+      List<String> applications =
+          await Adb(_settingsCubit, device: device).getApplications();
+      appIds =
+          applications.where((a) => !existingApplications.contains(a)).toList();
+      appId = "";
+    }
+    emit(state.copyWith(
+      adbDevice: device,
+      applications: appIds,
+      applicationId: appId,
+    ));
+  }
 
   void selectApplication(String id) {
     String fileDirectory = join(_settingsCubit.state.workingDirectory, id);
@@ -99,60 +124,50 @@ class NewApplicationDialogCubit extends Cubit<NewApplicationDialogState> {
         .map((f) => File(f.path))
         .where((f) => _isIcon(f))
         .toList();
-    icons.sort((a,b) => b.lengthSync().compareTo(a.lengthSync()));
+    icons.sort((a, b) => b.lengthSync().compareTo(a.lengthSync()));
     return icons.firstOrNull?.path;
   }
 
   bool _isIcon(FileSystemEntity file) {
     String path = file.path.toLowerCase();
-    return path.endsWith(".png") && (path.contains("mipmap") || path.contains("launcher")|| path.contains("favicon"));
-        //(file.path.contains("icon") || file.path.contains("launcher"));
+    return path.endsWith(".png") &&
+        (path.contains("mipmap") ||
+            path.contains("launcher") ||
+            path.contains("favicon"));
+    //(file.path.contains("icon") || file.path.contains("launcher"));
   }
 }
 
-class NewApplicationDialogState extends Equatable {
-  const NewApplicationDialogState({
-    this.applicationId = "",
-    this.name = "",
-    this.fileDirectory = "",
-    this.iconPath = "",
-    this.iconFound = false,
-    this.searching = false,
-  });
+@freezed
+class NewApplicationDialogState with _$NewApplicationDialogState {
+  const NewApplicationDialogState._();
+  const factory NewApplicationDialogState({
+    required String adbDevice,
+    required List<String> applications,
+    required String applicationId,
+    required String name,
+    required String fileDirectory,
+    required String iconPath,
+    required bool iconFound,
+    required bool searching,
+  }) = _NewApplicationDialogState;
 
-  final String applicationId;
-  final String name;
-  final String fileDirectory;
-  final String iconPath;
-  final bool iconFound;
-  final bool searching;
+  factory NewApplicationDialogState.empty() => const NewApplicationDialogState(
+        adbDevice: "",
+        applications: [],
+        applicationId: "",
+        name: "",
+        fileDirectory: "",
+        iconPath: "",
+        iconFound: false,
+        searching: false,
+      );
 
   TestApplication get application => TestApplication(
         name: name,
+        device: adbDevice,
         id: applicationId,
         fileDirectory: fileDirectory,
         iconPath: iconPath,
       );
-
-  @override
-  List<Object?> get props =>
-      [applicationId, name, fileDirectory, iconPath, iconFound, searching];
-
-  NewApplicationDialogState copyWith({
-    String? applicationId,
-    String? name,
-    String? fileDirectory,
-    String? iconPath,
-    bool? iconFound,
-    bool? searching,
-  }) {
-    return NewApplicationDialogState(
-      applicationId: applicationId ?? this.applicationId,
-      name: name ?? this.name,
-      fileDirectory: fileDirectory ?? this.fileDirectory,
-      iconPath: iconPath ?? this.iconPath,
-      iconFound: iconFound ?? this.iconFound,
-      searching: searching ?? this.searching,
-    );
-  }
 }

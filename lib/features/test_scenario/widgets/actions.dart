@@ -65,17 +65,33 @@ class TestScenarioActions extends StatelessWidget {
   }
 
   Widget _recordButton() {
-    return BlocBuilder<TestScenarioCubit, TestScenarioState>(
-      buildWhen: (oldState, state) => oldState.hasTests != state.hasTests,
-      builder: (context, state) {
-        return IconTextButton(
-          onTap: state.hasTests
-              ? null
-              : () => context.testScenarioCubit.recordScenario(),
-          text: "Record Scenario",
-          icon: Icon(context.icons.record),
-        );
-      },
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      buildWhen: (oldState, state) =>
+          oldState.inputRecordDestinationPath !=
+          state.inputRecordDestinationPath,
+      builder: (context, settings) =>
+          BlocBuilder<TestScenarioCubit, TestScenarioState>(
+        buildWhen: (oldState, state) => oldState.hasTests != state.hasTests,
+        builder: (context, state) {
+          bool isEnabled =
+              !state.hasTests && settings.inputRecordDestinationPath.isNotEmpty;
+          return Optional.tooltip(
+            tooltip: state.hasTests
+                ? "Tests have already been recorded for this scenario."
+                : settings.inputRecordDestinationPath.isEmpty
+                    ? "The tool for recording user input needs to be specified (in the settings)."
+                    : "",
+            show: !isEnabled,
+            child: IconTextButton(
+              onTap: isEnabled
+                  ? () => context.testScenarioCubit.recordScenario()
+                  : null,
+              text: "Record Scenario",
+              icon: Icon(context.icons.record),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -106,16 +122,32 @@ class TestScenarioActions extends StatelessWidget {
   }
 
   Widget _runButton() {
-    return BlocBuilder<TestScenarioCubit, TestScenarioState>(
-      buildWhen: (oldState, state) => oldState.canRun != state.canRun,
-      builder: (context, state) {
-        return IconTextButton(
-          onTap:
-              state.canRun ? () => context.testScenarioCubit.runTests() : null,
-          text: "Run Tests",
-          icon: Icon(context.icons.run),
-        );
-      },
+    return BlocBuilder<SessionCubit, SessionState>(
+      buildWhen: (oldState, state) => oldState.adbDevices != state.adbDevices,
+      builder: (context, session) =>
+          BlocBuilder<TestScenarioCubit, TestScenarioState>(
+        buildWhen: (oldState, state) =>
+            oldState.testConstellations != state.testConstellations,
+        builder: (context, state) {
+          bool deviceConnected = session.deviceConnected(state.device);
+          bool isEnabled =
+              state.testConstellations.isNotEmpty && deviceConnected;
+          return Optional.tooltip(
+            tooltip: state.testConstellations.isEmpty
+                ? "No test constellations are defined"
+                : !deviceConnected
+                    ? "Target device is not connected."
+                    : "",
+            show: !isEnabled,
+            child: IconTextButton(
+              onTap:
+                  isEnabled ? () => context.testScenarioCubit.runTests() : null,
+              text: "Run Tests",
+              icon: Icon(context.icons.run),
+            ),
+          );
+        },
+      ),
     );
   }
 }
