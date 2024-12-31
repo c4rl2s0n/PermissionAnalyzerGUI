@@ -14,8 +14,7 @@ class ConnectionGroup extends INetworkConnection {
   List<NetworkConnection> connections;
 
   @override
-  int get testRunCount =>
-      connections.map((c) => c.testRunCount).toList().max as int;
+  List<TestRun> get testRuns => connections.fold([], (all, con) => [...all, ...con.testRuns].distinct);
 
   @override
   List<String> get ips {

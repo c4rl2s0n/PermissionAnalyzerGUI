@@ -128,6 +128,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
     // Fetch all the generated files and store them in fileDirectory and db
     TestRun testRun = TestRun(
       index: index,
+      directory: fileDirectory,
       startTimeInMs: testStart,
       durationInMs: durationInMs,
     );
@@ -139,7 +140,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
       testRun.packets =
           await TrafficAnalyzer.extractPackets(_tshark, testRun.pcapPath!);
       testRun.connections =
-          TrafficAnalyzer.getConnectionsFromPackets(testRun.packets);
+          TrafficAnalyzer.getConnectionsFromPackets(testRun.packets, testRun: testRun);
       testRun.endpoints = TrafficAnalyzer.getEndpointsFromConnections(testRun.connections, filtered: false, endpointRepository: networkEndpointRepository,);
     }
     if (state.recordScreen) {

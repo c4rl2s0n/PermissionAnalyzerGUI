@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
@@ -65,12 +63,15 @@ class ConnectionOverviewTable extends StatelessWidget {
   ) {
     return state.analyzingEndpoints
         ? const CircularProgressIndicator()
-        : IconTextButton(
-            text: "Analyze Endpoints",
-            icon: Icon(context.icons.test),
-            padding: context.constants.infoContainerActionButtonPadding,
-            onTap: () => context.analysisCubit.analyzeEndpoints(),
-          );
+        : GestureDetector(
+          onSecondaryTap: () => context.analysisCubit.analyzeEndpoints(force: true),
+          child: IconTextButton(
+              text: "Analyze Endpoints",
+              icon: Icon(context.icons.test),
+              padding: context.constants.infoContainerActionButtonPadding,
+              onTap: () => context.analysisCubit.analyzeEndpoints(),
+            ),
+        );
   }
 
   List<DataGridColumn<NetworkConnection, Object?>> _networkConnectionColumns(
@@ -93,6 +94,7 @@ class ConnectionOverviewTable extends StatelessWidget {
       DataGridColumn<NetworkConnection, String>(
           name: "Domain",
           width: 220,
+          getCell: (c) => Optional.tooltip(tooltip: c.endpoint.hostname?? "", show: c.endpoint.hasHostname, child: Text(c.endpoint.domain ?? "Unknown")),
           getValue: (c) => c.endpoint.domain ?? "Unknown",
           compare: (a, b) {
             String aString = a as String;
@@ -109,65 +111,31 @@ class ConnectionOverviewTable extends StatelessWidget {
         name: "# Tests",
         width: 100,
         headerAlign: TextAlign.center,
+        getCell: (c) => Tooltip(message: c.testRuns.map((t) => t.directory.replaceFirst(context.settings.state.workingDirectory, "")).toList().distinct.join("\n"),child: Text(c.testRunCount.toString(), textAlign: TextAlign.center,)),
         getValue: (c) => c.testRunCount,
-        defaultCellTextAlign: TextAlign.center,
       ),
-      DataGridColumn<NetworkConnection, int>(
-        name: "Packets In",
-        width: 120,
+      DataGridColumn<NetworkConnection, String?>(
+        name: "Continent",
+        width: 100,
         headerAlign: TextAlign.center,
-        getValue: (c) => c.inCount,
+        getValue: (c) => c.endpoint.geolocation?.continent,
         defaultCellTextAlign: TextAlign.center,
       ),
-      DataGridColumn<NetworkConnection, int>(
-        name: "Packets Out",
-        width: 120,
+      DataGridColumn<NetworkConnection, String?>(
+        name: "Country",
+        width: 100,
         headerAlign: TextAlign.center,
-        getValue: (c) => c.outCount,
+        getValue: (c) => c.endpoint.geolocation?.country,
         defaultCellTextAlign: TextAlign.center,
       ),
-      DataGridColumn<NetworkConnection, int>(
-        name: "Packets Total",
-        width: 130,
+      DataGridColumn<NetworkConnection, String?>(
+        name: "City",
+        width: 100,
         headerAlign: TextAlign.center,
-        getValue: (c) => c.countTotal,
+        getValue: (c) => c.endpoint.geolocation?.city,
         defaultCellTextAlign: TextAlign.center,
       ),
-      DataGridColumn<NetworkConnection, int>(
-        name: "Packets Avg",
-        width: 120,
-        headerAlign: TextAlign.center,
-        getValue: (c) => c.countAvg.floor(),
-        defaultCellTextAlign: TextAlign.center,
-      ),
-      DataGridColumn<NetworkConnection, int>(
-        name: "Bytes In",
-        width: 110,
-        headerAlign: TextAlign.center,
-        getValue: (c) => c.inBytes,
-        defaultCellTextAlign: TextAlign.center,
-      ),
-      DataGridColumn<NetworkConnection, int>(
-        name: "Bytes Out",
-        width: 110,
-        headerAlign: TextAlign.center,
-        getValue: (c) => c.outBytes,
-        defaultCellTextAlign: TextAlign.center,
-      ),
-      DataGridColumn<NetworkConnection, int>(
-        name: "Bytes Total",
-        width: 120,
-        headerAlign: TextAlign.center,
-        getValue: (c) => c.bytesTotal,
-        defaultCellTextAlign: TextAlign.center,
-      ),
-      DataGridColumn<NetworkConnection, int>(
-        name: "Bytes Avg",
-        width: 110,
-        headerAlign: TextAlign.center,
-        getValue: (c) => c.bytesAvg.floor(),
-        defaultCellTextAlign: TextAlign.center,
-      ),
+      ..._commonColumns<NetworkConnection>(context, state),
     ];
   }
 
@@ -179,6 +147,7 @@ class ConnectionOverviewTable extends StatelessWidget {
       DataGridColumn<ConnectionGroup, String?>(
         name: "IP Range",
         width: 120,
+        getCell: (c) => Optional.tooltip(tooltip: c.endpoint.endpoints.map((e) => e.ip).toList().sorted.join("\n"), show: c.endpoint.endpoints.length > 1, child: Text(c.endpoint.ipRange)),
         getValue: (c) => c.endpoint.ipRange,
       ),
       DataGridColumn<ConnectionGroup, int>(
@@ -195,6 +164,7 @@ class ConnectionOverviewTable extends StatelessWidget {
       DataGridColumn<ConnectionGroup, String>(
           name: "Domain",
           width: 220,
+          getCell: (c) => Optional.tooltip(tooltip: c.endpoint.endpoints.map((e) => e.hostname).nonNulls.toList().sorted.join("\n"), show: c.endpoint.hasHostname, child: Text(c.endpoint.domain ?? "Unknown")),
           getValue: (c) => c.endpoint.domain ?? "Unknown",
           compare: (a, b) {
             String aString = a as String;
@@ -211,64 +181,73 @@ class ConnectionOverviewTable extends StatelessWidget {
         name: "# Tests",
         width: 100,
         headerAlign: TextAlign.center,
-        getValue: (c) => state.testRunCount(c),
-        defaultCellTextAlign: TextAlign.center,
+        getCell: (c) => Tooltip(message: c.testRuns.map((t) => t.directory.replaceFirst(context.settings.state.workingDirectory, "")).toList().distinct.join("\n"),child: Text(c.testRunCount.toString(), textAlign: TextAlign.center,)),
+        getValue: (c) => c.testRunCount,
       ),
-      DataGridColumn<ConnectionGroup, int>(
+      ..._commonColumns<ConnectionGroup>(context, state),
+    ];
+  }
+
+  List<DataGridColumn<T, Object?>> _commonColumns<T extends INetworkConnection>(
+      BuildContext context,
+      AnalysisState state,
+      ) {
+    return [
+      DataGridColumn<T, int>(
         name: "Packets In",
         width: 120,
         headerAlign: TextAlign.center,
         getValue: (c) => c.inCount,
         defaultCellTextAlign: TextAlign.center,
       ),
-      DataGridColumn<ConnectionGroup, int>(
+      DataGridColumn<T, int>(
         name: "Packets Out",
         width: 120,
         headerAlign: TextAlign.center,
         getValue: (c) => c.outCount,
         defaultCellTextAlign: TextAlign.center,
       ),
-      DataGridColumn<ConnectionGroup, int>(
+      DataGridColumn<T, int>(
         name: "Packets Total",
         width: 130,
         headerAlign: TextAlign.center,
         getValue: (c) => c.countTotal,
         defaultCellTextAlign: TextAlign.center,
       ),
-      DataGridColumn<ConnectionGroup, int>(
+      DataGridColumn<T, int>(
         name: "Packets Avg",
         width: 120,
         headerAlign: TextAlign.center,
         getValue: (c) => c.countAvg.floor(),
         defaultCellTextAlign: TextAlign.center,
       ),
-      DataGridColumn<ConnectionGroup, int>(
+      DataGridColumn<T, int>(
         name: "Bytes In",
         width: 110,
         headerAlign: TextAlign.center,
+        getCell: (c) => Text(c.inBytes.readableFileSize(base1024: false), textAlign: TextAlign.center,),
         getValue: (c) => c.inBytes,
-        defaultCellTextAlign: TextAlign.center,
       ),
-      DataGridColumn<ConnectionGroup, int>(
+      DataGridColumn<T, int>(
         name: "Bytes Out",
         width: 110,
         headerAlign: TextAlign.center,
+        getCell: (c) => Text(c.outBytes.readableFileSize(base1024: false), textAlign: TextAlign.center,),
         getValue: (c) => c.outBytes,
-        defaultCellTextAlign: TextAlign.center,
       ),
-      DataGridColumn<ConnectionGroup, int>(
+      DataGridColumn<T, int>(
         name: "Bytes Total",
         width: 120,
         headerAlign: TextAlign.center,
+        getCell: (c) => Text(c.bytesTotal.readableFileSize(base1024: false), textAlign: TextAlign.center,),
         getValue: (c) => c.bytesTotal,
-        defaultCellTextAlign: TextAlign.center,
       ),
-      DataGridColumn<ConnectionGroup, int>(
+      DataGridColumn<T, int>(
         name: "Bytes Avg",
         width: 110,
         headerAlign: TextAlign.center,
+        getCell: (c) => Text(c.bytesAvg.floor().readableFileSize(base1024: false), textAlign: TextAlign.center,),
         getValue: (c) => c.bytesAvg.floor(),
-        defaultCellTextAlign: TextAlign.center,
       ),
     ];
   }

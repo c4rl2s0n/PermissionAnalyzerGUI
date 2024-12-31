@@ -14,7 +14,8 @@ abstract class INetworkConnection {
 
   INetworkConnection get copy;
 
-  int get testRunCount;
+  List<TestRun> get testRuns;
+  int get testRunCount => testRuns.length;
   List<NetworkPacket> get packets;
 
   // packet count
@@ -77,14 +78,14 @@ abstract class INetworkConnection {
 
 }
 
-@Embedded(ignore: {'endpoint', 'copy'})
+@Embedded(ignore: {'endpoint', 'copy', 'testRuns'})
 class NetworkConnection extends INetworkConnection{
   NetworkConnection({
     this.ip = "0.0.0.0",
     this.port,
     NetworkEndpoint? endpoint,
     this.packets = const [],
-    this.testRunCount = 1,
+    this.testRuns = const [],
   }) {
     this.endpoint = endpoint ?? NetworkEndpoint(ip: ip);
     analyzePackets();
@@ -95,7 +96,7 @@ class NetworkConnection extends INetworkConnection{
     required this.port,
     required this.endpoint,
     required this.packets,
-    required this.testRunCount,
+    required this.testRuns,
     required this.protocols,
     required this.outCount,
     required this.inCount,
@@ -116,7 +117,8 @@ class NetworkConnection extends INetworkConnection{
   late List<String> protocols;
 
   @override
-  int testRunCount;
+  @ignore
+  List<TestRun> testRuns;
 
 
   @override
@@ -162,7 +164,7 @@ class NetworkConnection extends INetworkConnection{
       ip: ip,
       port: port,
       endpoint: endpoint,
-      testRunCount: testRunCount,
+      testRuns: testRuns,
       protocols: protocols,
       outCount: outCount,
       inCount: inCount,

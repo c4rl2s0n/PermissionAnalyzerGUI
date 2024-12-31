@@ -18,20 +18,8 @@ class TrafficAnalyzer {
         if(endpoints.any((e) => e.id == endpoint.id)) continue;
         endpoints.add(endpoint);
       }
-      // if (group.connections is List<ConnectionGroup>) {
-      //   endpoints.addAll(getEndpointsFromConnectionGroups(
-      //     group.connections as List<ConnectionGroup>,
-      //     filtered: filtered,
-      //   ).where((ce) => !endpoints.any((e) => e.id == ce.id)));
-      // } else if (group.connections is List<NetworkConnection>) {
-      //   endpoints.addAll(getEndpointsFromConnections(
-      //     group.connections as List<NetworkConnection>,
-      //     filtered: filtered,
-      //   ).where((ce) => !endpoints.any((e) => e.id == ce.id)));
-      // }
     }
     return endpoints;
-    return endpoints.distinct;
   }
 
   static List<NetworkEndpoint> getEndpointsFromConnections(
@@ -77,16 +65,16 @@ class TrafficAnalyzer {
   }) {
     Map<String, INetworkConnection> connections = {};
     for (var group in groups) {
-      // get all connections
+      // get all (distinct) connections; aggregate network packets when connected in multiple tests
       for (var connection in group.connections) {
-
-        String key = connection.endpoint.id; // "${connection.endpoint.ip}_${connection.protocols}";
+        String key = connection.endpoint.id;
         if (!connections.containsKey(key)) {
           connections[key] = connection.copy;
         } else {
           if (connections[key]! is NetworkConnection) {
             NetworkConnection con = connections[key]! as NetworkConnection;
-            con.testRunCount += connection.testRunCount;
+
+            con.testRuns.addAll(connection.testRuns.where((tr) => !con.testRuns.any((ctr) => ctr.id == tr.id)));
             con.packets.addAll(connection.packets);
           }
         }
@@ -109,11 +97,14 @@ class TrafficAnalyzer {
         if (!connectionsMap.containsKey(connection.flow)) {
           // create copy of connection
           connectionsMap[connection.flow] = connection.copy;
+          connectionsMap[connection.flow]!.testRuns = [test];
         } else {
           // aggregate connection
           NetworkConnection tc = connectionsMap[connection.flow]!;
-          tc.packets.addAll(test.packets ?? []);
-          tc.testRunCount++;
+          tc.packets.addAll(test.packets);
+          if(!tc.testRuns.any((tr) => tr.id == test.id)) {
+            tc.testRuns.add(test);
+          }
         }
       }
     }
@@ -193,6 +184,7 @@ class TrafficAnalyzer {
 
   static List<NetworkConnection> getConnectionsFromPackets(
     List<NetworkPacket> packets, {
+    TestRun? testRun,
     bool filtered = true,
   }) {
     Map<String, NetworkConnection> connections = {};
@@ -202,6 +194,7 @@ class TrafficAnalyzer {
           ip: packet.ipDst,
           port: packet.portDst,
           packets: [],
+          testRuns: testRun != null? [testRun] : []
         );
       }
       if (!connections.containsKey(packet.src)) {
@@ -209,6 +202,7 @@ class TrafficAnalyzer {
           ip: packet.ipSrc,
           port: packet.portSrc,
           packets: [],
+          testRuns: testRun != null? [testRun] : []
         );
       }
 

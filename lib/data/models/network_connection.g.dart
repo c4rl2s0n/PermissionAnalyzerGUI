@@ -212,7 +212,6 @@ NetworkConnection _networkConnectionDeserialize(
         ) ??
         const [],
     port: reader.readLongOrNull(offsets[16]),
-    testRunCount: reader.readLongOrNull(offsets[20]) ?? 1,
   );
   object.inBytes = reader.readLong(offsets[5]);
   object.inCount = reader.readLong(offsets[7]);
@@ -276,7 +275,7 @@ P _networkConnectionDeserializeProp<P>(
     case 19:
       return (reader.readString(offset)) as P;
     case 20:
-      return (reader.readLongOrNull(offset) ?? 1) as P;
+      return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }

@@ -1,6 +1,4 @@
-
 import 'package:isar/isar.dart';
-import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
 part 'test_run.g.dart';
@@ -9,6 +7,7 @@ part 'test_run.g.dart';
 class TestRun {
   TestRun({
     this.index = 0,
+    this.directory = "",
     this.screenRecordPath,
     this.pcapPath,
     this.startTimeInMs = 0,
@@ -20,6 +19,7 @@ class TestRun {
   Id id = Isar.autoIncrement;
   int index;
 
+  String directory;
   String? screenRecordPath;
   String? pcapPath;
   // TODO: Add startTime + Duration; make Analysis-Page for TestRuns

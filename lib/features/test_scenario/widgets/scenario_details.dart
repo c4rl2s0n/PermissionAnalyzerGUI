@@ -148,6 +148,8 @@ class ScenarioDetails extends StatelessWidget {
             if (!inputDevices.any((i) => i.path == state.deviceInput.path)) {
               inputDevices.insert(0, state.deviceInput);
             }
+            inputDevices.sort((a, b) => a.name.compareTo(b.name));
+
             // Dropdown widget here
             return SizedBox(
               width: leftColumnWidth,

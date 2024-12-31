@@ -9,6 +9,8 @@ class PageComponentFactory {
     bool withPadding = true,
   }) {
     return SelectionArea(
+      // hide contextMenu
+      contextMenuBuilder: (_,__) => const SizedBox.shrink(),
       child: Scaffold(
         backgroundColor: context.colors.background,
         appBar: appBar,

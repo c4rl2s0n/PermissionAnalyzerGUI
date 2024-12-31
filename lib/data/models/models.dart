@@ -1,4 +1,5 @@
 export 'android_input_device.dart';
+export 'geolocation.dart';
 export 'permission_setting.dart';
 export 'settings.dart';
 export 'test_application.dart';

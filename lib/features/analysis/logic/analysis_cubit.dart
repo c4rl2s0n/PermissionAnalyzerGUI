@@ -117,7 +117,7 @@ class AnalysisCubit extends Cubit<AnalysisState> {
     group.updateGroupFromChildren();
   }
 
-  Future analyzeEndpoints() async {
+  Future analyzeEndpoints({bool force=false}) async {
     emit(state.copyWith(analyzingEndpoints: true));
     List<INetworkEndpoint> groupEndpoints =
         _getEndpointsFromGroups(_enabledGroups);
@@ -127,11 +127,16 @@ class AnalysisCubit extends Cubit<AnalysisState> {
       if (endpoint is NetworkEndpoint) endpoints.add(endpoint);
       if (endpoint is EndpointGroup) endpoints.addAll(endpoint.endpoints);
     }
+    List<String> locationLookupIps = endpoints.where((e) => force || !e.analyzed).map((e) => e.ip).toList();
+    Map<String, Geolocation> geolocations = await EndpointAnalyzer.lookupGeolocations(locationLookupIps);
     // analyze each single endpoint
     for (var endpoint in endpoints) {
-      if (endpoint.analyzed) continue;
+      if (endpoint.analyzed && !force) continue;
       // perform all hostname-analysis here!
       endpoint.hostname = await EndpointAnalyzer.lookupHostname(endpoint.ip);
+      if(geolocations.containsKey(endpoint.ip)){
+        endpoint.geolocation = geolocations[endpoint.ip]!;
+      }
       endpoint.analyzed = true;
     }
     networkEndpointRepository.updateAll(endpoints);
