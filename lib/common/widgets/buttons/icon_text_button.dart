@@ -7,6 +7,7 @@ class IconTextButton extends StatelessWidget {
     this.icon,
     this.text,
     this.textStyle,
+    this.enabled = true,
     this.onTap,
     this.loading = false,
     this.color,
@@ -17,6 +18,7 @@ class IconTextButton extends StatelessWidget {
   final Icon? icon;
   final String? text;
   final TextStyle? textStyle;
+  final bool enabled;
   final Function()? onTap;
   final bool loading;
   final Color? color;
@@ -24,13 +26,13 @@ class IconTextButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color color = onTap == null
+    Color color = onTap == null || !enabled
         ? context.colors.disabled
         : this.color ?? context.colors.highlight;
     TextStyle? usedTextStyle =
         textStyle ?? context.textTheme.labelMedium?.copyWith(color: color);
     return TapContainer(
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       splashColor: color.withOpacity(context.constants.strongColorOpacity),
       backgroundColor: Colors.transparent,
       child: Container(

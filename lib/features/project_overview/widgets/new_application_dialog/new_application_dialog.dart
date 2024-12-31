@@ -76,14 +76,32 @@ class NewApplicationDialog extends StatelessWidget {
     return BlocBuilder<NewApplicationDialogCubit, NewApplicationDialogState>(
       buildWhen: (oldState, state) =>
           oldState.searching != state.searching ||
+          oldState.adbDevice != state.adbDevice ||
           oldState.applicationId != state.applicationId ||
           oldState.name != state.name ||
           oldState.iconPath != state.iconPath,
       builder: (context, state) {
-        return IconTextButton(
-          text: "Create",
-          icon: Icon(context.icons.add),
-          onTap: () => context.navigator.pop(state.application),
+        bool isEnabled = !state.searching &&
+            state.adbDevice.isNotEmpty &&
+            state.applicationId.isNotEmpty &&
+            state.name.isNotEmpty;
+        return Optional.tooltip(
+          tooltip: state.searching
+              ? "Wait for icon lookup to finish..."
+              : state.adbDevice.isEmpty
+                  ? "No device is selected."
+                  : state.applicationId.isEmpty
+                      ? "No application selected."
+                      : state.name.isEmpty
+                          ? "Please enter a name for the application."
+                          : "",
+          show: !isEnabled,
+          child: IconTextButton(
+            text: "Create",
+            enabled: isEnabled,
+            icon: Icon(context.icons.add),
+            onTap: () => context.navigator.pop(state.application),
+          ),
         );
       },
     );
@@ -174,8 +192,9 @@ class NewApplicationDialog extends StatelessWidget {
     if (context.mounted) {
       return showDialog<TestApplication?>(
           context: context,
-          builder: (context) =>
-              NewApplicationDialog(existingApplications: existingApplications.map((a) => a.id).toList()));
+          builder: (context) => NewApplicationDialog(
+              existingApplications:
+                  existingApplications.map((a) => a.id).toList()));
     }
     return null;
   }

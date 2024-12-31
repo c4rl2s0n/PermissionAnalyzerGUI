@@ -1,9 +1,11 @@
 import 'package:isar/isar.dart';
 
+part 'geolocation.g.dart';
+
 @embedded
 class Geolocation {
   Geolocation({
-    required this.ip,
+    this.ip = "0.0.0.0",
     this.continent,
     this.continentCode,
     this.country,

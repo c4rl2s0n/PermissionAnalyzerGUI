@@ -7,19 +7,25 @@ part 'test_run.g.dart';
 class TestRun {
   TestRun({
     this.index = 0,
-    this.directory = "",
+    String name = "",
     this.screenRecordPath,
     this.pcapPath,
     this.startTimeInMs = 0,
     this.durationInMs = 0,
     this.packets = const [],
     this.connections = const [],
-  });
+  }){
+    if(name.isEmpty){
+      this.name = "TestRun_$index";
+    }else{
+      this.name = name;
+    }
+  }
 
   Id id = Isar.autoIncrement;
   int index;
 
-  String directory;
+  late String name;
   String? screenRecordPath;
   String? pcapPath;
   // TODO: Add startTime + Duration; make Analysis-Page for TestRuns

@@ -61,10 +61,10 @@ extension TestScenarioExecutor on TestScenarioCubit {
     _storeScenario();
   }
 
-  Future _runTest(TestConstellation constellation, String fileDirectory, int index) async {
+  Future _runTest(TestConstellation constellation, String fileDirectory, int index, String testName) async {
     String loadingInfoSuffix =
-        "${constellation.abbreviation} - ${basename(fileDirectory)}";
-    String pcapFilename = "traffic.pcap";
+        "${constellation.abbreviation} - $index";
+    String pcapFilename = "traffic_${index.toString().padLeft(3, "0")}.pcap";
     // setup working directory to store capture files
     if (state.recordScreen || state.captureTraffic) {
       await Directory(fileDirectory).create(recursive: true);
@@ -115,7 +115,11 @@ extension TestScenarioExecutor on TestScenarioCubit {
     ]);
 
     // let test run through
-    await sleep(state.duration);
+    for(int i=0; i<state.duration.inSeconds; i++){
+      int remaining = state.duration.inSeconds - i;
+      _emit(state.copyWith(loadingInfo: "$loadingInfoSuffix:\nRunning the test\n$remaining seconds remaining..."));
+      await sleepSec(1);
+    }
     await userInputProcess.exitCode;
     DateTime testRunEndTime = DateTime.timestamp();
 
@@ -128,7 +132,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
     // Fetch all the generated files and store them in fileDirectory and db
     TestRun testRun = TestRun(
       index: index,
-      directory: fileDirectory,
+      name: testName,
       startTimeInMs: testStart,
       durationInMs: durationInMs,
     );
@@ -152,7 +156,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
       }
 
       // get the screenrecord video from the device
-      testRun.screenRecordPath = join(fileDirectory, "screenrecord.mp4");
+      testRun.screenRecordPath = join(fileDirectory, "screenrecord_${index.toString().padLeft(3, "0")}.mp4");
       await _adb.pullFile(
         _videoStoragePathOnDevice,
         testRun.screenRecordPath!,
@@ -208,11 +212,13 @@ extension TestScenarioExecutor on TestScenarioCubit {
         if (i == 0) {
           _writePermissionTxt(constellation, fileDirectory);
         }
+        String testName = "${testScenario.applicationName}.${testScenario.name}.${constellation.abbreviation}.$index";
         // run the current test
         await _runTest(
           constellation,
-          join(fileDirectory, "(${index.toString().padLeft(3, "0")})"),
-          index
+          fileDirectory,
+          index,
+          testName,
         );
       }
     }

@@ -5,11 +5,11 @@ import 'models.dart';
 part 'network_endpoint.g.dart';
 
 abstract class INetworkEndpoint{
-  INetworkEndpoint({this.hostname, this.geolocation});
+  INetworkEndpoint({this.hostname, this.geolocations = const []});
   String get ipRange;
   String get ip;
   String? hostname;
-  Geolocation? geolocation;
+  List<Geolocation> geolocations;
   bool get hasHostname => hostname != null && hostname!.isNotEmpty;
   String get id;
 
@@ -30,7 +30,7 @@ class NetworkEndpoint extends INetworkEndpoint{
     this.ip = "",
     this.analyzed = false,
     super.hostname,
-    super.geolocation,
+    super.geolocations,
   });
 
   Id isarId = Isar.autoIncrement;

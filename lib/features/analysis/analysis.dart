@@ -79,14 +79,15 @@ class _AnalysisState extends State<Analysis> {
         getView: (c) => const EndpointGraph(),
         noPadding: true,
       ),
-      // _NavigationRailEntry(
-      //   destination: _getNavigationRailDestination(
-      //     context,
-      //     label: "Tests",
-      //     icon: context.icons.tests,
-      //   ),
-      //   getView: (c) => const TestRunAnalysis(),
-      // ),
+      _NavigationRailEntry(
+        destination: _getNavigationRailDestination(
+          context,
+          label: "Geolocation",
+          icon: context.icons.map,
+        ),
+        getView: (c) => const EndpointMap(),
+        noPadding: true,
+      ),
     ];
   }
 

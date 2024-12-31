@@ -27,28 +27,34 @@ const NetworkEndpointSchema = CollectionSchema(
       name: r'domain',
       type: IsarType.string,
     ),
-    r'hasHostname': PropertySchema(
+    r'geolocations': PropertySchema(
       id: 2,
+      name: r'geolocations',
+      type: IsarType.objectList,
+      target: r'Geolocation',
+    ),
+    r'hasHostname': PropertySchema(
+      id: 3,
       name: r'hasHostname',
       type: IsarType.bool,
     ),
     r'hostname': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'hostname',
       type: IsarType.string,
     ),
     r'id': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'id',
       type: IsarType.string,
     ),
     r'ip': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'ip',
       type: IsarType.string,
     ),
     r'ipRange': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'ipRange',
       type: IsarType.string,
     )
@@ -74,7 +80,7 @@ const NetworkEndpointSchema = CollectionSchema(
     )
   },
   links: {},
-  embeddedSchemas: {},
+  embeddedSchemas: {r'Geolocation': GeolocationSchema},
   getId: _networkEndpointGetId,
   getLinks: _networkEndpointGetLinks,
   attach: _networkEndpointAttach,
@@ -91,6 +97,14 @@ int _networkEndpointEstimateSize(
     final value = object.domain;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
+    }
+  }
+  bytesCount += 3 + object.geolocations.length * 3;
+  {
+    final offsets = allOffsets[Geolocation]!;
+    for (var i = 0; i < object.geolocations.length; i++) {
+      final value = object.geolocations[i];
+      bytesCount += GeolocationSchema.estimateSize(value, offsets, allOffsets);
     }
   }
   {
@@ -113,11 +127,17 @@ void _networkEndpointSerialize(
 ) {
   writer.writeBool(offsets[0], object.analyzed);
   writer.writeString(offsets[1], object.domain);
-  writer.writeBool(offsets[2], object.hasHostname);
-  writer.writeString(offsets[3], object.hostname);
-  writer.writeString(offsets[4], object.id);
-  writer.writeString(offsets[5], object.ip);
-  writer.writeString(offsets[6], object.ipRange);
+  writer.writeObjectList<Geolocation>(
+    offsets[2],
+    allOffsets,
+    GeolocationSchema.serialize,
+    object.geolocations,
+  );
+  writer.writeBool(offsets[3], object.hasHostname);
+  writer.writeString(offsets[4], object.hostname);
+  writer.writeString(offsets[5], object.id);
+  writer.writeString(offsets[6], object.ip);
+  writer.writeString(offsets[7], object.ipRange);
 }
 
 NetworkEndpoint _networkEndpointDeserialize(
@@ -128,8 +148,15 @@ NetworkEndpoint _networkEndpointDeserialize(
 ) {
   final object = NetworkEndpoint(
     analyzed: reader.readBoolOrNull(offsets[0]) ?? false,
-    hostname: reader.readStringOrNull(offsets[3]),
-    ip: reader.readStringOrNull(offsets[5]) ?? "",
+    geolocations: reader.readObjectList<Geolocation>(
+          offsets[2],
+          GeolocationSchema.deserialize,
+          allOffsets,
+          Geolocation(),
+        ) ??
+        const [],
+    hostname: reader.readStringOrNull(offsets[4]),
+    ip: reader.readStringOrNull(offsets[6]) ?? "",
   );
   object.isarId = id;
   return object;
@@ -147,14 +174,22 @@ P _networkEndpointDeserializeProp<P>(
     case 1:
       return (reader.readStringOrNull(offset)) as P;
     case 2:
-      return (reader.readBool(offset)) as P;
+      return (reader.readObjectList<Geolocation>(
+            offset,
+            GeolocationSchema.deserialize,
+            allOffsets,
+            Geolocation(),
+          ) ??
+          const []) as P;
     case 3:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 4:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 5:
-      return (reader.readStringOrNull(offset) ?? "") as P;
+      return (reader.readString(offset)) as P;
     case 6:
+      return (reader.readStringOrNull(offset) ?? "") as P;
+    case 7:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -517,6 +552,95 @@ extension NetworkEndpointQueryFilter
         property: r'domain',
         value: '',
       ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      geolocationsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'geolocations',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      geolocationsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'geolocations',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      geolocationsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'geolocations',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      geolocationsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'geolocations',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      geolocationsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'geolocations',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      geolocationsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'geolocations',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 
@@ -1150,7 +1274,14 @@ extension NetworkEndpointQueryFilter
 }
 
 extension NetworkEndpointQueryObject
-    on QueryBuilder<NetworkEndpoint, NetworkEndpoint, QFilterCondition> {}
+    on QueryBuilder<NetworkEndpoint, NetworkEndpoint, QFilterCondition> {
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      geolocationsElement(FilterQuery<Geolocation> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'geolocations');
+    });
+  }
+}
 
 extension NetworkEndpointQueryLinks
     on QueryBuilder<NetworkEndpoint, NetworkEndpoint, QFilterCondition> {}
@@ -1427,6 +1558,13 @@ extension NetworkEndpointQueryProperty
   QueryBuilder<NetworkEndpoint, String?, QQueryOperations> domainProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'domain');
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, List<Geolocation>, QQueryOperations>
+      geolocationsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'geolocations');
     });
   }
 

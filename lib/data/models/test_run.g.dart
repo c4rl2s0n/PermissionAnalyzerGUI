@@ -38,24 +38,29 @@ const TestRunSchema = CollectionSchema(
       name: r'index',
       type: IsarType.long,
     ),
-    r'packets': PropertySchema(
+    r'name': PropertySchema(
       id: 4,
+      name: r'name',
+      type: IsarType.string,
+    ),
+    r'packets': PropertySchema(
+      id: 5,
       name: r'packets',
       type: IsarType.objectList,
       target: r'NetworkPacket',
     ),
     r'pcapPath': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'pcapPath',
       type: IsarType.string,
     ),
     r'screenRecordPath': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'screenRecordPath',
       type: IsarType.string,
     ),
     r'startTimeInMs': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'startTimeInMs',
       type: IsarType.long,
     )
@@ -92,6 +97,7 @@ int _testRunEstimateSize(
           NetworkConnectionSchema.estimateSize(value, offsets, allOffsets);
     }
   }
+  bytesCount += 3 + object.name.length * 3;
   bytesCount += 3 + object.packets.length * 3;
   {
     final offsets = allOffsets[NetworkPacket]!;
@@ -131,15 +137,16 @@ void _testRunSerialize(
   writer.writeLong(offsets[1], object.durationInMs);
   writer.writeBool(offsets[2], object.hasData);
   writer.writeLong(offsets[3], object.index);
+  writer.writeString(offsets[4], object.name);
   writer.writeObjectList<NetworkPacket>(
-    offsets[4],
+    offsets[5],
     allOffsets,
     NetworkPacketSchema.serialize,
     object.packets,
   );
-  writer.writeString(offsets[5], object.pcapPath);
-  writer.writeString(offsets[6], object.screenRecordPath);
-  writer.writeLong(offsets[7], object.startTimeInMs);
+  writer.writeString(offsets[6], object.pcapPath);
+  writer.writeString(offsets[7], object.screenRecordPath);
+  writer.writeLong(offsets[8], object.startTimeInMs);
 }
 
 TestRun _testRunDeserialize(
@@ -158,16 +165,17 @@ TestRun _testRunDeserialize(
         const [],
     durationInMs: reader.readLongOrNull(offsets[1]) ?? 0,
     index: reader.readLongOrNull(offsets[3]) ?? 0,
+    name: reader.readStringOrNull(offsets[4]) ?? "",
     packets: reader.readObjectList<NetworkPacket>(
-          offsets[4],
+          offsets[5],
           NetworkPacketSchema.deserialize,
           allOffsets,
           NetworkPacket(),
         ) ??
         const [],
-    pcapPath: reader.readStringOrNull(offsets[5]),
-    screenRecordPath: reader.readStringOrNull(offsets[6]),
-    startTimeInMs: reader.readLongOrNull(offsets[7]) ?? 0,
+    pcapPath: reader.readStringOrNull(offsets[6]),
+    screenRecordPath: reader.readStringOrNull(offsets[7]),
+    startTimeInMs: reader.readLongOrNull(offsets[8]) ?? 0,
   );
   object.id = id;
   return object;
@@ -195,6 +203,8 @@ P _testRunDeserializeProp<P>(
     case 3:
       return (reader.readLongOrNull(offset) ?? 0) as P;
     case 4:
+      return (reader.readStringOrNull(offset) ?? "") as P;
+    case 5:
       return (reader.readObjectList<NetworkPacket>(
             offset,
             NetworkPacketSchema.deserialize,
@@ -202,11 +212,11 @@ P _testRunDeserializeProp<P>(
             NetworkPacket(),
           ) ??
           const []) as P;
-    case 5:
-      return (reader.readStringOrNull(offset)) as P;
     case 6:
       return (reader.readStringOrNull(offset)) as P;
     case 7:
+      return (reader.readStringOrNull(offset)) as P;
+    case 8:
       return (reader.readLongOrNull(offset) ?? 0) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -554,6 +564,136 @@ extension TestRunQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> nameEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> nameGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> nameLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> nameBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'name',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> nameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> nameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> nameContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'name',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> nameMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'name',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> nameIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'name',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterFilterCondition> nameIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'name',
+        value: '',
       ));
     });
   }
@@ -1054,6 +1194,18 @@ extension TestRunQuerySortBy on QueryBuilder<TestRun, TestRun, QSortBy> {
     });
   }
 
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.desc);
+    });
+  }
+
   QueryBuilder<TestRun, TestRun, QAfterSortBy> sortByPcapPath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'pcapPath', Sort.asc);
@@ -1141,6 +1293,18 @@ extension TestRunQuerySortThenBy
     });
   }
 
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.asc);
+    });
+  }
+
+  QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'name', Sort.desc);
+    });
+  }
+
   QueryBuilder<TestRun, TestRun, QAfterSortBy> thenByPcapPath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'pcapPath', Sort.asc);
@@ -1198,6 +1362,13 @@ extension TestRunQueryWhereDistinct
     });
   }
 
+  QueryBuilder<TestRun, TestRun, QDistinct> distinctByName(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<TestRun, TestRun, QDistinct> distinctByPcapPath(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1250,6 +1421,12 @@ extension TestRunQueryProperty
   QueryBuilder<TestRun, int, QQueryOperations> indexProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'index');
+    });
+  }
+
+  QueryBuilder<TestRun, String, QQueryOperations> nameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'name');
     });
   }
 

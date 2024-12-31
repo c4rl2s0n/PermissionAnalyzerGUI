@@ -135,7 +135,7 @@ class AnalysisCubit extends Cubit<AnalysisState> {
       // perform all hostname-analysis here!
       endpoint.hostname = await EndpointAnalyzer.lookupHostname(endpoint.ip);
       if(geolocations.containsKey(endpoint.ip)){
-        endpoint.geolocation = geolocations[endpoint.ip]!;
+        endpoint.geolocations = [geolocations[endpoint.ip]!];
       }
       endpoint.analyzed = true;
     }

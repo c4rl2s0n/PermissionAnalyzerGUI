@@ -66,7 +66,7 @@ class AppEntry extends StatelessWidget {
   void _onAppSelect(BuildContext context)async{
     // select the correct device for the application, if connected
     if(context.session.state.deviceConnected(application.device)){
-      await context.session.setAdbDevice(application.device);
+      context.session.setAdbDevice(application.device);
     }
     if(context.mounted) {
       context.navigator.navigateTo(

@@ -3,7 +3,6 @@ import 'package:permission_analyzer_gui/data/data.dart';
 class EndpointGroup extends INetworkEndpoint{
   EndpointGroup({
     super.hostname,
-    super.geolocation,
     this.endpoints = const [],
   });
 
@@ -42,6 +41,8 @@ class EndpointGroup extends INetworkEndpoint{
 
   @override
   String get name => hostname ?? ipRange; // ip range or hostname
+  @override
+  List<Geolocation> get geolocations => endpoints.fold([], (all, ep) => [...all, ...ep.geolocations]);
   List<NetworkEndpoint> endpoints;
 
 }

@@ -31,6 +31,8 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
     this.toggle = Icons.switch_access_shortcut,
     this.analysis = Icons.monitor_heart_outlined,
     this.graph = Icons.hub_outlined,
+    this.map = Icons.travel_explore,
+    this.mapMarker = Icons.cell_tower,
     this.overview = Icons.featured_play_list_outlined,
     this.connections = Icons.cable_outlined,
     this.show = Icons.visibility_outlined,
@@ -71,6 +73,8 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
   final IconData toggle;
   final IconData analysis;
   final IconData graph;
+  final IconData map;
+  final IconData mapMarker;
   final IconData overview;
   final IconData connections;
   final IconData show;
