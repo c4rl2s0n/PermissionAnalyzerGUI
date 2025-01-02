@@ -27,6 +27,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
     await _adb.startApp(state.applicationId);
 
     await sleepSec(_startAppDelay);
+    DateTime startTime = DateTime.now();
 
     // record the input events
     _emit(state.copyWith(loadingInfo: "Recording user input..."));
@@ -34,6 +35,23 @@ extension TestScenarioExecutor on TestScenarioCubit {
       devicePath: state.deviceInput.path,
       duration: state.duration,
     );
+    List<String> eventLines = [];
+    getEvents.outLines.listen((data) {
+      List<String> lines = data.split("\n");
+      if(lines.firstOrNull?.startsWith("[") ?? false) {
+        String line = lines.first;
+        if(eventLines.isEmpty) {
+          Duration initialOffset = DateTime.now().difference(startTime);
+          String timestampPart = line.split("]").first.split("[")[1].trim();
+          double currentEventTimestamp = double.parse(timestampPart);
+          double initialEventTimestamp = currentEventTimestamp - (initialOffset.inMicroseconds / 1000000);
+          eventLines.add("[    $initialEventTimestamp] 0 0 0");
+          //eventLines.add("[$initialEventTimestamp] ${state.deviceInput.path} 0 0 0");
+        }
+        eventLines.addAll(lines.where((l) => l.startsWith("[")));
+      }
+
+    });
     for (int i = 0; i < state.duration.inSeconds; i++) {
       _emit(
         state.copyWith(
@@ -51,7 +69,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
 
     // store the collected information (input events)
     _emit(state.copyWith(loadingInfo: "Storing the results"));
-    testScenario.userInputRecord = await getEvents.outText;
+    testScenario.userInputRecord = eventLines.join("\n");//await getEvents.outText;
 
     _emit(state.copyWith(
       loading: false,

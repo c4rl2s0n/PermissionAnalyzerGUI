@@ -27,34 +27,40 @@ const NetworkEndpointSchema = CollectionSchema(
       name: r'domain',
       type: IsarType.string,
     ),
-    r'geolocations': PropertySchema(
+    r'geolocation': PropertySchema(
       id: 2,
+      name: r'geolocation',
+      type: IsarType.object,
+      target: r'Geolocation',
+    ),
+    r'geolocations': PropertySchema(
+      id: 3,
       name: r'geolocations',
       type: IsarType.objectList,
       target: r'Geolocation',
     ),
     r'hasHostname': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'hasHostname',
       type: IsarType.bool,
     ),
     r'hostname': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'hostname',
       type: IsarType.string,
     ),
     r'id': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'id',
       type: IsarType.string,
     ),
     r'ip': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'ip',
       type: IsarType.string,
     ),
     r'ipRange': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'ipRange',
       type: IsarType.string,
     )
@@ -99,6 +105,14 @@ int _networkEndpointEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.geolocation;
+    if (value != null) {
+      bytesCount += 3 +
+          GeolocationSchema.estimateSize(
+              value, allOffsets[Geolocation]!, allOffsets);
+    }
+  }
   bytesCount += 3 + object.geolocations.length * 3;
   {
     final offsets = allOffsets[Geolocation]!;
@@ -127,17 +141,23 @@ void _networkEndpointSerialize(
 ) {
   writer.writeBool(offsets[0], object.analyzed);
   writer.writeString(offsets[1], object.domain);
-  writer.writeObjectList<Geolocation>(
+  writer.writeObject<Geolocation>(
     offsets[2],
+    allOffsets,
+    GeolocationSchema.serialize,
+    object.geolocation,
+  );
+  writer.writeObjectList<Geolocation>(
+    offsets[3],
     allOffsets,
     GeolocationSchema.serialize,
     object.geolocations,
   );
-  writer.writeBool(offsets[3], object.hasHostname);
-  writer.writeString(offsets[4], object.hostname);
-  writer.writeString(offsets[5], object.id);
-  writer.writeString(offsets[6], object.ip);
-  writer.writeString(offsets[7], object.ipRange);
+  writer.writeBool(offsets[4], object.hasHostname);
+  writer.writeString(offsets[5], object.hostname);
+  writer.writeString(offsets[6], object.id);
+  writer.writeString(offsets[7], object.ip);
+  writer.writeString(offsets[8], object.ipRange);
 }
 
 NetworkEndpoint _networkEndpointDeserialize(
@@ -148,15 +168,13 @@ NetworkEndpoint _networkEndpointDeserialize(
 ) {
   final object = NetworkEndpoint(
     analyzed: reader.readBoolOrNull(offsets[0]) ?? false,
-    geolocations: reader.readObjectList<Geolocation>(
-          offsets[2],
-          GeolocationSchema.deserialize,
-          allOffsets,
-          Geolocation(),
-        ) ??
-        const [],
-    hostname: reader.readStringOrNull(offsets[4]),
-    ip: reader.readStringOrNull(offsets[6]) ?? "",
+    geolocation: reader.readObjectOrNull<Geolocation>(
+      offsets[2],
+      GeolocationSchema.deserialize,
+      allOffsets,
+    ),
+    hostname: reader.readStringOrNull(offsets[5]),
+    ip: reader.readStringOrNull(offsets[7]) ?? "",
   );
   object.isarId = id;
   return object;
@@ -174,22 +192,28 @@ P _networkEndpointDeserializeProp<P>(
     case 1:
       return (reader.readStringOrNull(offset)) as P;
     case 2:
+      return (reader.readObjectOrNull<Geolocation>(
+        offset,
+        GeolocationSchema.deserialize,
+        allOffsets,
+      )) as P;
+    case 3:
       return (reader.readObjectList<Geolocation>(
             offset,
             GeolocationSchema.deserialize,
             allOffsets,
             Geolocation(),
           ) ??
-          const []) as P;
-    case 3:
-      return (reader.readBool(offset)) as P;
+          []) as P;
     case 4:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 5:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 6:
-      return (reader.readStringOrNull(offset) ?? "") as P;
+      return (reader.readString(offset)) as P;
     case 7:
+      return (reader.readStringOrNull(offset) ?? "") as P;
+    case 8:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -551,6 +575,24 @@ extension NetworkEndpointQueryFilter
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'domain',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      geolocationIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'geolocation',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      geolocationIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'geolocation',
       ));
     });
   }
@@ -1276,6 +1318,13 @@ extension NetworkEndpointQueryFilter
 extension NetworkEndpointQueryObject
     on QueryBuilder<NetworkEndpoint, NetworkEndpoint, QFilterCondition> {
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      geolocation(FilterQuery<Geolocation> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'geolocation');
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
       geolocationsElement(FilterQuery<Geolocation> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'geolocations');
@@ -1558,6 +1607,13 @@ extension NetworkEndpointQueryProperty
   QueryBuilder<NetworkEndpoint, String?, QQueryOperations> domainProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'domain');
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, Geolocation?, QQueryOperations>
+      geolocationProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'geolocation');
     });
   }
 

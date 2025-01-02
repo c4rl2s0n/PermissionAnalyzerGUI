@@ -42,7 +42,7 @@ class EndpointGroup extends INetworkEndpoint{
   @override
   String get name => hostname ?? ipRange; // ip range or hostname
   @override
-  List<Geolocation> get geolocations => endpoints.fold([], (all, ep) => [...all, ...ep.geolocations]);
+  List<Geolocation> get geolocations => endpoints.map((e) => e.geolocation).nonNulls.toList();
   List<NetworkEndpoint> endpoints;
 
 }
