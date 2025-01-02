@@ -92,7 +92,7 @@ class TestScenario extends StatelessWidget {
   Widget _rightSide(BuildContext context) {
     return _layoutSide(context, children: [
       const Expanded(child: PermissionSelector()),
-      const RecordingOptions(),
+      //const RecordingOptions(),
     ]);
   }
 

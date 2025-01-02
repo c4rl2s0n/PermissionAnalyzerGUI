@@ -40,12 +40,13 @@ extension TestScenarioExecutor on TestScenarioCubit {
       List<String> lines = data.split("\n");
       if(lines.firstOrNull?.startsWith("[") ?? false) {
         String line = lines.first;
+        String eventPath = line.split("]")[1].split(":")[0].trim();
         if(eventLines.isEmpty) {
           Duration initialOffset = DateTime.now().difference(startTime);
           String timestampPart = line.split("]").first.split("[")[1].trim();
           double currentEventTimestamp = double.parse(timestampPart);
           double initialEventTimestamp = currentEventTimestamp - (initialOffset.inMicroseconds / 1000000);
-          eventLines.add("[    $initialEventTimestamp] 0 0 0");
+          eventLines.add("[    $initialEventTimestamp] $eventPath: 0 0 0");
           //eventLines.add("[$initialEventTimestamp] ${state.deviceInput.path} 0 0 0");
         }
         eventLines.addAll(lines.where((l) => l.startsWith("[")));
@@ -128,7 +129,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
     // replay user input
     Process userInputProcess = await _adb.shellProc([
       _settings.recorderDestinationPath,
-      state.deviceInput.path,
+      //state.deviceInput.path,
       _settings.inputRecordDestinationPath,
     ]);
 
@@ -138,7 +139,8 @@ extension TestScenarioExecutor on TestScenarioCubit {
       _emit(state.copyWith(loadingInfo: "$loadingInfoSuffix:\nRunning the test\n$remaining seconds remaining..."));
       await sleepSec(1);
     }
-    await userInputProcess.exitCode;
+    userInputProcess.kill();
+
     DateTime testRunEndTime = DateTime.timestamp();
 
     int durationInMs = DateTime.now().millisecondsSinceEpoch - testStart;

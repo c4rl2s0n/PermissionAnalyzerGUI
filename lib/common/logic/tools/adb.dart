@@ -115,7 +115,8 @@ class Adb {
     required Duration duration,
   }) async {
     return await shellProc(
-      ["getevent", "-t", devicePath],
+      //["getevent", "-t", devicePath],
+      ["getevent", "-t"],
       timeout: duration,
     );
   }

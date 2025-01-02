@@ -8,7 +8,7 @@ import '../logic/logic.dart';
 class ScenarioDetails extends StatelessWidget {
   const ScenarioDetails({super.key});
 
-  final double textFieldWidth = 200;
+  final double textFieldWidth = 240;
   final double dropDownWidth = 330;
   final double leftColumnWidth = 350;
 
@@ -30,23 +30,36 @@ class ScenarioDetails extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   _scenarioName(),
-                  _inputDeviceSelection(),
+                  //_inputDeviceSelection(),
                   _networkInterfaceSelection(),
                   _hasUserInputRecordedIndicator(),
+                  Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _duration(),
+                      _numTestRuns(),
+                    ],
+                  ),
                 ].insertBetweenItems(
                   () => Margin.vertical(context.constants.spacing),
                 ),
               ),
             ),
             Margin.horizontal(context.constants.largeSpacing),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                _appId(),
-                _appName(),
-                _duration(),
-                _numTestRuns(),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  _appId(),
+                  _appName(),
+                  // _duration(),
+                  // _numTestRuns(),
+                  //RecordingOptions(),
+                  _recordingOptions(context),
+                ],
+              ),
             )
           ],
         ),
@@ -282,7 +295,7 @@ class ScenarioDetails extends StatelessWidget {
       builder: (context, state) {
         bool isEnabled = !state.hasInputRecord && !state.hasTests;
         return SizedBox(
-          width: textFieldWidth,
+          width: textFieldWidth * 2 / 3,
           child: Alternative(
             buildA: (child) => Optional.tooltip(
               tooltip:
@@ -334,7 +347,7 @@ class ScenarioDetails extends StatelessWidget {
         }
 
         return SizedBox(
-          width: textFieldWidth,
+          width: textFieldWidth * 2 / 3,
           child: SimpleTextField(
             initialValue: state.numTestRuns.toString(),
             validate: validateNumTestRuns,
@@ -368,7 +381,12 @@ class ScenarioDetails extends StatelessWidget {
                   child: IconButton(
                     onPressed: state.hasInputRecord && !state.hasTests
                         ? () async {
-                            if (await ConfirmationDialog.ask(
+                            if (state.hasTests) {
+                              await InfoDialog.showInfo(context,
+                                  title: "Tests exist",
+                                  content:
+                                      "Tests have already been performed.\nCannot delete recorded user input.");
+                            } else if (await ConfirmationDialog.ask(
                                   context,
                                   content:
                                       "Do you want to reset the recorded user input?",
@@ -389,6 +407,91 @@ class ScenarioDetails extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  /// #####################
+  /// ## Recording Options
+  /// #####################
+
+  Widget _recordingOptions(BuildContext context) {
+    return SizedBox(
+      width: textFieldWidth,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Recording Options",
+              style: context.textTheme.labelMedium?.copyWith(
+                  color: context.textTheme.labelMedium?.color
+                      ?.withOpacity(context.constants.subtleColorOpacity))),
+          SizedBox(width: textFieldWidth, child: _recordScreen(context)),
+          SizedBox(
+              width: textFieldWidth, child: _captureNetworkTraffic(context)),
+        ],
+      ),
+    );
+  }
+
+  Widget _recordScreen(BuildContext context) {
+    return BlocBuilder<TestScenarioCubit, TestScenarioState>(
+      buildWhen: (oldState, state) =>
+          oldState.recordScreen != state.recordScreen,
+      builder: (context, state) {
+        return _boolSetting(
+          context,
+          name: "Record Screen",
+          value: state.recordScreen,
+          onToggle: () => context.testScenarioCubit.toggleRecordScreen(),
+        );
+      },
+    );
+  }
+
+  Widget _captureNetworkTraffic(BuildContext context) {
+    return BlocBuilder<SettingsCubit, SettingsState>(
+      builder: (context, settings) =>
+          BlocBuilder<TestScenarioCubit, TestScenarioState>(
+        buildWhen: (oldState, state) =>
+            oldState.captureTraffic != state.captureTraffic,
+        builder: (context, state) {
+          bool isEnabled = settings.tsharkPath.isNotEmpty;
+          return Optional.tooltip(
+            tooltip:
+                "The path of the TShark executable needs to be defined in the settings.",
+            show: !isEnabled,
+            child: _boolSetting(
+              context,
+              name: "Capture Network Traffic",
+              value: state.captureTraffic,
+              onToggle: () => context.testScenarioCubit.toggleCaptureTraffic(),
+              enabled: isEnabled,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _boolSetting(
+    BuildContext context, {
+    required String name,
+    required bool value,
+    void Function()? onToggle,
+    bool enabled = true,
+  }) {
+    return TapContainer(
+      backgroundColor: Colors.transparent,
+      onTap: onToggle,
+      enabled: enabled,
+      padding: EdgeInsets.symmetric(horizontal: context.constants.smallSpacing),
+      child: Row(
+        children: [
+          Expanded(child: Text(name)),
+          Icon(value
+              ? context.icons.checkboxSelected
+              : context.icons.checkboxDeselected),
+        ],
+      ),
     );
   }
 }

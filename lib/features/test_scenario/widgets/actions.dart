@@ -71,7 +71,8 @@ class TestScenarioActions extends StatelessWidget {
           state.inputRecordDestinationPath,
       builder: (context, settings) =>
           BlocBuilder<TestScenarioCubit, TestScenarioState>(
-        buildWhen: (oldState, state) => oldState.hasTests != state.hasTests,
+        buildWhen: (oldState, state) => oldState.hasTests != state.hasTests
+            || oldState.loading != state.loading,
         builder: (context, state) {
           bool isEnabled = !state.hasTests && settings.recorderPath.isNotEmpty;
           return Optional.tooltip(
@@ -82,9 +83,8 @@ class TestScenarioActions extends StatelessWidget {
                     : "",
             show: !isEnabled,
             child: IconTextButton(
-              onTap: isEnabled
-                  ? () => context.testScenarioCubit.recordScenario()
-                  : null,
+              onTap: () => context.testScenarioCubit.recordScenario(),
+              enabled: isEnabled,
               text: "Record Scenario",
               icon: Icon(context.icons.record),
             ),

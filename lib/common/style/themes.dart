@@ -23,6 +23,8 @@ ThemeData getTheme(bool dark) {
         defaultTextStyle.copyWith(fontSize: 24, fontWeight: FontWeight.w700),
     titleMedium:
         defaultTextStyle.copyWith(fontSize: 20, fontWeight: FontWeight.w700),
+    titleSmall:
+        defaultTextStyle.copyWith(fontSize: 14, fontWeight: FontWeight.w700),
     headlineSmall:
         defaultTextStyle.copyWith(fontWeight: FontWeight.bold, fontSize: 19),
     labelLarge:
