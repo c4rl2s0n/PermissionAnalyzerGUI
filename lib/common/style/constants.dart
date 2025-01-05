@@ -9,7 +9,8 @@ class ThemeConstants extends ThemeExtension<ThemeConstants> {
     this.spacing = 12,
     this.smallSpacing = 8,
     this.infoContainerActionButtonPadding = 2,
-    this.subtleColorOpacity = 0.7,
+    this.lightColorOpacity = 0.7,
+    this.mediumColorOpacity = 0.5,
     this.strongColorOpacity = 0.3,
     this.statusMarkerSize = 20,
     this.listTileHeight = 60,
@@ -22,7 +23,8 @@ class ThemeConstants extends ThemeExtension<ThemeConstants> {
   final double spacing;
   final double smallSpacing;
   final double infoContainerActionButtonPadding;
-  final double subtleColorOpacity;
+  final double lightColorOpacity;
+  final double mediumColorOpacity;
   final double strongColorOpacity;
   final double statusMarkerSize;
   final double listTileHeight;
@@ -51,7 +53,7 @@ class ThemeConstants extends ThemeExtension<ThemeConstants> {
       spacing: spacing ?? this.spacing,
       smallSpacing: smallSpacing ?? this.smallSpacing,
       infoContainerActionButtonPadding: infoContainerActionButtonPadding ?? this.infoContainerActionButtonPadding,
-      subtleColorOpacity: subtleColorOpacity ?? this.subtleColorOpacity,
+      lightColorOpacity: subtleColorOpacity ?? this.lightColorOpacity,
       strongColorOpacity: strongColorOpacity ?? this.strongColorOpacity,
       statusMarkerSize: statusMarkerSize ?? this.statusMarkerSize,
       listTileHeight: listTileHeight ?? this.listTileHeight,
@@ -73,8 +75,8 @@ class ThemeConstants extends ThemeExtension<ThemeConstants> {
       largeSpacing: lerpDouble(other.largeSpacing, largeSpacing, t)!,
       spacing: lerpDouble(other.spacing, spacing, t)!,
       smallSpacing: lerpDouble(other.smallSpacing, smallSpacing, t)!,
-      subtleColorOpacity:
-          lerpDouble(other.subtleColorOpacity, subtleColorOpacity, t)!,
+      lightColorOpacity:
+          lerpDouble(other.lightColorOpacity, lightColorOpacity, t)!,
       strongColorOpacity:
           lerpDouble(other.strongColorOpacity, strongColorOpacity, t)!,
       statusMarkerSize:

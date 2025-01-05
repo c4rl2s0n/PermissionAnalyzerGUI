@@ -82,7 +82,7 @@ class RecordingOptions extends StatelessWidget {
   }) {
     return TapContainer(
       backgroundColor: Colors.transparent,
-      onTap: onToggle,
+      onTap: onToggle != null ? (_) => onToggle() : null,
       enabled: enabled,
       padding: EdgeInsets.symmetric(horizontal: context.constants.smallSpacing),
       child: Row(

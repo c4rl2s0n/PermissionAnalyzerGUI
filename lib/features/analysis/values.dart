@@ -12,3 +12,11 @@ Map<String, Color> tagColors = {
   tUnique: Colors.yellow,
   tCommon: Colors.greenAccent,
 };
+
+List<Color> trafficGroupColors = [
+  Colors.green,
+  Colors.red,
+  Colors.blue,
+  Colors.orange,
+  Colors.purpleAccent
+];

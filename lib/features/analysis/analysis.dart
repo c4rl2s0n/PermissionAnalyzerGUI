@@ -124,7 +124,7 @@ class _AnalysisState extends State<Analysis> {
               selectedLabelTextStyle: context.textTheme.labelSmall,
               unselectedLabelTextStyle: context.textTheme.labelSmall?.copyWith(
                   color: context.textTheme.labelSmall?.color
-                      ?.withOpacity(context.constants.subtleColorOpacity)),
+                      ?.withOpacity(context.constants.lightColorOpacity)),
               labelType: NavigationRailLabelType.all,
               selectedIndex: selectedIndex,
               onDestinationSelected: (i) => setState(() {

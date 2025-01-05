@@ -180,9 +180,9 @@ class DataListTile extends StatelessWidget {
             DefaultTextStyle(
               style: context.textTheme.labelSmall!.copyWith(
                 color: textColor
-                        ?.withOpacity(context.constants.subtleColorOpacity) ??
+                        ?.withOpacity(context.constants.lightColorOpacity) ??
                     context.colors.onBackground
-                        .withOpacity(context.constants.subtleColorOpacity),
+                        .withOpacity(context.constants.lightColorOpacity),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

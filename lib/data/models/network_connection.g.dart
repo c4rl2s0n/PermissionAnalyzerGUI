@@ -23,101 +23,112 @@ const NetworkConnectionSchema = Schema(
       name: r'bytesTotal',
       type: IsarType.long,
     ),
-    r'countAvg': PropertySchema(
+    r'connections': PropertySchema(
       id: 2,
+      name: r'connections',
+      type: IsarType.objectList,
+      target: r'NetworkConnection',
+    ),
+    r'countAvg': PropertySchema(
+      id: 3,
       name: r'countAvg',
       type: IsarType.double,
     ),
     r'countTotal': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'countTotal',
       type: IsarType.long,
     ),
     r'flow': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'flow',
       type: IsarType.string,
     ),
     r'inBytes': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'inBytes',
       type: IsarType.long,
     ),
     r'inBytesAvg': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'inBytesAvg',
       type: IsarType.double,
     ),
     r'inCount': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'inCount',
       type: IsarType.long,
     ),
     r'inCountAvg': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'inCountAvg',
       type: IsarType.double,
     ),
     r'ip': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'ip',
       type: IsarType.string,
     ),
     r'ips': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'ips',
       type: IsarType.stringList,
     ),
     r'outBytes': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'outBytes',
       type: IsarType.long,
     ),
     r'outBytesAvg': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'outBytesAvg',
       type: IsarType.double,
     ),
     r'outCount': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'outCount',
       type: IsarType.long,
     ),
     r'outCountAvg': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'outCountAvg',
       type: IsarType.double,
     ),
     r'packets': PropertySchema(
-      id: 15,
+      id: 16,
       name: r'packets',
       type: IsarType.objectList,
       target: r'NetworkPacket',
     ),
     r'port': PropertySchema(
-      id: 16,
+      id: 17,
       name: r'port',
       type: IsarType.long,
     ),
     r'ports': PropertySchema(
-      id: 17,
+      id: 18,
       name: r'ports',
       type: IsarType.longList,
     ),
     r'protocols': PropertySchema(
-      id: 18,
+      id: 19,
       name: r'protocols',
       type: IsarType.stringList,
     ),
     r'protocolsString': PropertySchema(
-      id: 19,
+      id: 20,
       name: r'protocolsString',
       type: IsarType.string,
     ),
     r'testRunCount': PropertySchema(
-      id: 20,
+      id: 21,
       name: r'testRunCount',
       type: IsarType.long,
+    ),
+    r'wiresharkFilter': PropertySchema(
+      id: 22,
+      name: r'wiresharkFilter',
+      type: IsarType.string,
     )
   },
   estimateSize: _networkConnectionEstimateSize,
@@ -132,6 +143,15 @@ int _networkConnectionEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  bytesCount += 3 + object.connections.length * 3;
+  {
+    final offsets = allOffsets[NetworkConnection]!;
+    for (var i = 0; i < object.connections.length; i++) {
+      final value = object.connections[i];
+      bytesCount +=
+          NetworkConnectionSchema.estimateSize(value, offsets, allOffsets);
+    }
+  }
   bytesCount += 3 + object.flow.length * 3;
   bytesCount += 3 + object.ip.length * 3;
   bytesCount += 3 + object.ips.length * 3;
@@ -159,6 +179,7 @@ int _networkConnectionEstimateSize(
     }
   }
   bytesCount += 3 + object.protocolsString.length * 3;
+  bytesCount += 3 + object.wiresharkFilter.length * 3;
   return bytesCount;
 }
 
@@ -170,30 +191,37 @@ void _networkConnectionSerialize(
 ) {
   writer.writeDouble(offsets[0], object.bytesAvg);
   writer.writeLong(offsets[1], object.bytesTotal);
-  writer.writeDouble(offsets[2], object.countAvg);
-  writer.writeLong(offsets[3], object.countTotal);
-  writer.writeString(offsets[4], object.flow);
-  writer.writeLong(offsets[5], object.inBytes);
-  writer.writeDouble(offsets[6], object.inBytesAvg);
-  writer.writeLong(offsets[7], object.inCount);
-  writer.writeDouble(offsets[8], object.inCountAvg);
-  writer.writeString(offsets[9], object.ip);
-  writer.writeStringList(offsets[10], object.ips);
-  writer.writeLong(offsets[11], object.outBytes);
-  writer.writeDouble(offsets[12], object.outBytesAvg);
-  writer.writeLong(offsets[13], object.outCount);
-  writer.writeDouble(offsets[14], object.outCountAvg);
+  writer.writeObjectList<NetworkConnection>(
+    offsets[2],
+    allOffsets,
+    NetworkConnectionSchema.serialize,
+    object.connections,
+  );
+  writer.writeDouble(offsets[3], object.countAvg);
+  writer.writeLong(offsets[4], object.countTotal);
+  writer.writeString(offsets[5], object.flow);
+  writer.writeLong(offsets[6], object.inBytes);
+  writer.writeDouble(offsets[7], object.inBytesAvg);
+  writer.writeLong(offsets[8], object.inCount);
+  writer.writeDouble(offsets[9], object.inCountAvg);
+  writer.writeString(offsets[10], object.ip);
+  writer.writeStringList(offsets[11], object.ips);
+  writer.writeLong(offsets[12], object.outBytes);
+  writer.writeDouble(offsets[13], object.outBytesAvg);
+  writer.writeLong(offsets[14], object.outCount);
+  writer.writeDouble(offsets[15], object.outCountAvg);
   writer.writeObjectList<NetworkPacket>(
-    offsets[15],
+    offsets[16],
     allOffsets,
     NetworkPacketSchema.serialize,
     object.packets,
   );
-  writer.writeLong(offsets[16], object.port);
-  writer.writeLongList(offsets[17], object.ports);
-  writer.writeStringList(offsets[18], object.protocols);
-  writer.writeString(offsets[19], object.protocolsString);
-  writer.writeLong(offsets[20], object.testRunCount);
+  writer.writeLong(offsets[17], object.port);
+  writer.writeLongList(offsets[18], object.ports);
+  writer.writeStringList(offsets[19], object.protocols);
+  writer.writeString(offsets[20], object.protocolsString);
+  writer.writeLong(offsets[21], object.testRunCount);
+  writer.writeString(offsets[22], object.wiresharkFilter);
 }
 
 NetworkConnection _networkConnectionDeserialize(
@@ -203,21 +231,21 @@ NetworkConnection _networkConnectionDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = NetworkConnection(
-    ip: reader.readStringOrNull(offsets[9]) ?? "0.0.0.0",
+    ip: reader.readStringOrNull(offsets[10]) ?? "0.0.0.0",
     packets: reader.readObjectList<NetworkPacket>(
-          offsets[15],
+          offsets[16],
           NetworkPacketSchema.deserialize,
           allOffsets,
           NetworkPacket(),
         ) ??
         const [],
-    port: reader.readLongOrNull(offsets[16]),
+    port: reader.readLongOrNull(offsets[17]),
   );
-  object.inBytes = reader.readLong(offsets[5]);
-  object.inCount = reader.readLong(offsets[7]);
-  object.outBytes = reader.readLong(offsets[11]);
-  object.outCount = reader.readLong(offsets[13]);
-  object.protocols = reader.readStringList(offsets[18]) ?? [];
+  object.inBytes = reader.readLong(offsets[6]);
+  object.inCount = reader.readLong(offsets[8]);
+  object.outBytes = reader.readLong(offsets[12]);
+  object.outCount = reader.readLong(offsets[14]);
+  object.protocols = reader.readStringList(offsets[19]) ?? [];
   return object;
 }
 
@@ -233,32 +261,40 @@ P _networkConnectionDeserializeProp<P>(
     case 1:
       return (reader.readLong(offset)) as P;
     case 2:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readObjectList<NetworkConnection>(
+            offset,
+            NetworkConnectionSchema.deserialize,
+            allOffsets,
+            NetworkConnection(),
+          ) ??
+          []) as P;
     case 3:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 4:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 5:
-      return (reader.readLong(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 6:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 7:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 8:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 9:
-      return (reader.readStringOrNull(offset) ?? "0.0.0.0") as P;
+      return (reader.readDouble(offset)) as P;
     case 10:
-      return (reader.readStringList(offset) ?? []) as P;
+      return (reader.readStringOrNull(offset) ?? "0.0.0.0") as P;
     case 11:
-      return (reader.readLong(offset)) as P;
+      return (reader.readStringList(offset) ?? []) as P;
     case 12:
-      return (reader.readDouble(offset)) as P;
-    case 13:
       return (reader.readLong(offset)) as P;
-    case 14:
+    case 13:
       return (reader.readDouble(offset)) as P;
+    case 14:
+      return (reader.readLong(offset)) as P;
     case 15:
+      return (reader.readDouble(offset)) as P;
+    case 16:
       return (reader.readObjectList<NetworkPacket>(
             offset,
             NetworkPacketSchema.deserialize,
@@ -266,16 +302,18 @@ P _networkConnectionDeserializeProp<P>(
             NetworkPacket(),
           ) ??
           const []) as P;
-    case 16:
-      return (reader.readLongOrNull(offset)) as P;
     case 17:
-      return (reader.readLongList(offset) ?? []) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 18:
-      return (reader.readStringList(offset) ?? []) as P;
+      return (reader.readLongList(offset) ?? []) as P;
     case 19:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringList(offset) ?? []) as P;
     case 20:
+      return (reader.readString(offset)) as P;
+    case 21:
       return (reader.readLong(offset)) as P;
+    case 22:
+      return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -402,6 +440,95 @@ extension NetworkConnectionQueryFilter
         upper: upper,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      connectionsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'connections',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      connectionsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'connections',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      connectionsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'connections',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      connectionsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'connections',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      connectionsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'connections',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      connectionsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'connections',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 
@@ -2236,10 +2363,153 @@ extension NetworkConnectionQueryFilter
       ));
     });
   }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      wiresharkFilterEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'wiresharkFilter',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      wiresharkFilterGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'wiresharkFilter',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      wiresharkFilterLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'wiresharkFilter',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      wiresharkFilterBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'wiresharkFilter',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      wiresharkFilterStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'wiresharkFilter',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      wiresharkFilterEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'wiresharkFilter',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      wiresharkFilterContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'wiresharkFilter',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      wiresharkFilterMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'wiresharkFilter',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      wiresharkFilterIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'wiresharkFilter',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      wiresharkFilterIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'wiresharkFilter',
+        value: '',
+      ));
+    });
+  }
 }
 
 extension NetworkConnectionQueryObject
     on QueryBuilder<NetworkConnection, NetworkConnection, QFilterCondition> {
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      connectionsElement(FilterQuery<NetworkConnection> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'connections');
+    });
+  }
+
   QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
       packetsElement(FilterQuery<NetworkPacket> q) {
     return QueryBuilder.apply(this, (query) {

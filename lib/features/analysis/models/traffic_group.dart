@@ -71,6 +71,8 @@ class TrafficGroup {
   late List<INetworkConnection> connections;
   late List<INetworkEndpoint> endpoints;
 
+  List<NetworkConnection> get networkConnections => connections.fold(<NetworkConnection>[], (all, con) => [...all, ...con.connections]).distinct;
+
   List<INetworkEndpoint> get _endpoints =>
       connections.map((c) => c.endpoint).toList().distinct;
 

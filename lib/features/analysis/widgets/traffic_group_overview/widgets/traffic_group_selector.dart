@@ -40,13 +40,51 @@ class TrafficGroupSelector extends StatelessWidget {
     );
   }
 
+  List<TreeNode> _getAllNodes(INode node) {
+    List<TreeNode> nodes = [];
+    Iterable<TreeNode> children = node.childrenAsList.whereType<TreeNode>();
+    nodes.addAll(children);
+    for (var child in children) {
+      nodes.addAll(_getAllNodes(child));
+    }
+    return nodes;
+  }
+
   // expand the tree until there are multiple node on a level. Set them to show=true
-  void _onTreeReady(TreeViewController controller){
-    void showNode(TreeNode node, bool show){
-      if(node.data is AnalysisTrafficGroupCubit){
+  void _onTreeReady(TreeViewController controller) {
+    bool showAny = false;
+    List<TreeNode> allNodes = _getAllNodes(controller.tree.root);
+
+    for (var node in allNodes) {
+      if (node.data is! AnalysisTrafficGroupCubit) continue;
+      AnalysisTrafficGroupCubit data = node.data as AnalysisTrafficGroupCubit;
+      if (!data.state.show) continue;
+      showAny = true;
+      List<TreeNode> branch = [];
+      // expand the whole path to this node
+      while (node.parent is TreeNode) {
+        node = node.parent as TreeNode;
+        branch.add(node);
+      }
+      for (var n in branch.reversed) {
+        if (!n.isExpanded) {
+          controller.expandNode(n);
+        }
+      }
+    }
+    if (!showAny) {
+      _showFirstNonSingleTreeLevel(controller);
+    }
+  }
+
+  // expand the tree until there are multiple node on a level. Set them to show=true
+  void _showFirstNonSingleTreeLevel(TreeViewController controller) {
+    void showNode(TreeNode node, bool show) {
+      if (node.data is AnalysisTrafficGroupCubit) {
         (node.data as AnalysisTrafficGroupCubit).setShow(show);
       }
     }
+
     try {
       TreeNode node = controller.tree.root as TreeNode;
       while (true) {
@@ -56,22 +94,21 @@ class TrafficGroupSelector extends StatelessWidget {
           // no more nodes, so show this one
           showNode(node, true);
           break;
-        }
-        else if (children.length > 1) {
+        } else if (children.length > 1) {
           // if there are multiple child-nodes, expand them and set all to show=true
           //controller.expandAllChildren(node);
           controller.expandNode(node);
-          for(var child in children){
+          for (var child in children) {
             showNode(child, true);
           }
           break;
-        }else{
+        } else {
           // only one node, go to the next
           controller.expandNode(node);
           node = children.first;
         }
       }
-    }catch(_){
+    } catch (_) {
       controller.expandAllChildren(controller.tree);
     }
   }
@@ -115,20 +152,24 @@ class TrafficGroupSelector extends StatelessWidget {
             icon: Icon(icon),
           );
           Widget trailing = GestureDetector(
-            onSecondaryTap: () =>
-                context.analysisTrafficGroupCubit.toggleShow(),
+            onSecondaryTap: state.isSelected
+                ? () => context.analysisTrafficGroupCubit.toggleShow()
+                : null,
             child: IconButton(
-              onPressed: () => _toggleShow(node),
+              onPressed:
+                  state.isSelected ? () => _toggleShow(node) : null,
               icon: Icon(state.show ? context.icons.show : context.icons.hide),
             ),
           );
           return Card(
-            color: color,
+            color: state.isSelected
+                ? color
+                : color.withOpacity(context.constants.mediumColorOpacity),
             child: ListTile(
               leading: leading,
               title: Text(group.name),
-              subtitle: group.state.parent != null
-                  ? Text(group.state.parent!.name)
+              subtitle: state.parent != null
+                  ? Text(state.parent!.name)
                   : null,
               trailing: trailing,
             ),
@@ -138,8 +179,8 @@ class TrafficGroupSelector extends StatelessWidget {
     );
   }
 
-  void _toggleShow(TreeNode node){
-    if(node.data is! AnalysisTrafficGroupCubit) return;
+  void _toggleShow(TreeNode node) {
+    if (node.data is! AnalysisTrafficGroupCubit) return;
 
     AnalysisTrafficGroupCubit cubit = node.data as AnalysisTrafficGroupCubit;
     bool show = cubit.state.show;
@@ -150,17 +191,19 @@ class TrafficGroupSelector extends StatelessWidget {
     }
 
     // otherwise, disable show on all groups before setting the selected group + siblings to show=true
-    Iterable<TreeNode> applications = node.root.childrenAsList.whereType<TreeNode>();
+    Iterable<TreeNode> applications =
+        node.root.childrenAsList.whereType<TreeNode>();
     for (TreeNode application in applications) {
       var cubit = application.data as AnalysisTrafficGroupCubit;
       cubit.setShowChildren(false);
     }
 
     // set show=true for selected node and siblings
-    Iterable<TreeNode> siblings = node.parent?.childrenAsList
-        .whereType<TreeNode>() ?? [];
+    Iterable<TreeNode> siblings =
+        node.parent?.childrenAsList.whereType<TreeNode>() ?? [];
     for (TreeNode n in siblings) {
       var cubit = n.data as AnalysisTrafficGroupCubit;
+      if (!cubit.state.isSelected) continue;
       cubit.setShow(true);
     }
   }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:permission_analyzer_gui/common/widgets/factories/context_menu_factory.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/features.dart' as feature;
 import 'package:permission_analyzer_gui/features/project_overview/logic/context_extension.dart';
@@ -27,7 +28,7 @@ class AppEntry extends StatelessWidget {
         width: width,
         height: height,
         child: TapContainer(
-          onTap: () => _onAppSelect(context),
+          onTap: (_) => _onAppSelect(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
@@ -78,18 +79,11 @@ class AppEntry extends StatelessWidget {
         'Delete': (context) =>
             context.projectOverviewCubit.delete(application)
       };
-      showMenu(
-        context: context,
-        position: RelativeRect.fromLTRB(
-          details.globalPosition.dx,
-          details.globalPosition.dy,
-          details.globalPosition.dx,
-          details.globalPosition.dy,
-        ),
-        items: options.keys
-            .map((name) => PopupMenuItem(
-          child: Text(name),
-          onTap: () => options[name]!(context),
+      ContextMenuFactory.showContextMenuOnTap(context, details, options.keys
+            .map((name) => ContextMenuItem(
+          name: name,
+          onTap: (context) => options[name]!(context),
+        icon: Icon(context.icons.remove, color: context.colors.error,)
         ))
             .toList(),
       );

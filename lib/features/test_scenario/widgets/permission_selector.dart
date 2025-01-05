@@ -22,7 +22,7 @@ class PermissionSelector extends StatelessWidget {
                 .map(
                   (p) => TapContainer(
                     backgroundColor: Colors.transparent,
-                    onTap: () => context.testScenarioCubit
+                    onTap: (_) => context.testScenarioCubit
                             .togglePermissionState(p.permission),
                     padding: EdgeInsets.symmetric(
                         horizontal: context.constants.smallSpacing),

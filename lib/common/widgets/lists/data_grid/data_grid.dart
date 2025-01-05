@@ -9,6 +9,7 @@ class DataGrid<T> extends StatefulWidget {
     required this.columns,
     required this.data,
     this.onDataTap,
+    this.onDataSecondaryTap,
     this.onDataSelected,
     this.initialSelectedEntry,
     this.rowActions,
@@ -22,7 +23,8 @@ class DataGrid<T> extends StatefulWidget {
   final List<DataGridColumn<T, Object?>> columns;
   final DataGridActionColumn<T>? rowActions;
   final List<T> data;
-  final Function(T)? onDataTap;
+  final Function(T, [Offset?])? onDataTap;
+  final Function(T, [Offset?])? onDataSecondaryTap;
   final Function(T?, int?)? onDataSelected;
   final T? initialSelectedEntry;
 
@@ -251,7 +253,7 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
       width += DataGrid._sortIconSize;
     }
     Widget header = TapContainer(
-      onTap: column.canSort ? () => _sort(column) : null,
+      onTap: column.canSort ? (_) => _sort(column) : null,
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -291,10 +293,11 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
         padding: EdgeInsets.symmetric(vertical: context.constants.smallSpacing/2),
         child: TapContainer(
           onTap: widget.onDataTap != null
-              ? () => widget.onDataTap!(entry)
+              ? (_) => widget.onDataTap!(entry)
               : widget.onDataSelected != null
-                  ? () => _selectItem(entry)
+                  ? (_) => _selectItem(entry)
                   : null,
+          onSecondaryTap: widget.onDataSecondaryTap != null ? (p) => widget.onDataSecondaryTap!(entry, p) : null,
           backgroundColor: entry == selectedItem
                   ? context.colors.highlight.withOpacity(0.3)
                   : context.colors.onBackground.withOpacity(0.1),

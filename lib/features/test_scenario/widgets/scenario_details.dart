@@ -423,7 +423,7 @@ class ScenarioDetails extends StatelessWidget {
           Text("Recording Options",
               style: context.textTheme.labelMedium?.copyWith(
                   color: context.textTheme.labelMedium?.color
-                      ?.withOpacity(context.constants.subtleColorOpacity))),
+                      ?.withOpacity(context.constants.lightColorOpacity))),
           SizedBox(width: textFieldWidth, child: _recordScreen(context)),
           SizedBox(
               width: textFieldWidth, child: _captureNetworkTraffic(context)),
@@ -481,7 +481,7 @@ class ScenarioDetails extends StatelessWidget {
   }) {
     return TapContainer(
       backgroundColor: Colors.transparent,
-      onTap: onToggle,
+      onTap: onToggle != null ? (_) => onToggle() : null,
       enabled: enabled,
       padding: EdgeInsets.symmetric(horizontal: context.constants.smallSpacing),
       child: Row(

@@ -26,6 +26,8 @@ mixin _$AnalysisState {
   bool get analyzingTraffic => throw _privateConstructorUsedError;
   bool get analyzingEndpoints => throw _privateConstructorUsedError;
   bool get connectionsGrouped => throw _privateConstructorUsedError;
+  bool get showTestsInGroupTable => throw _privateConstructorUsedError;
+  bool get trafficLoadInPackets => throw _privateConstructorUsedError;
 
   /// Create a copy of AnalysisState
   /// with the given fields replaced by the non-null parameter values.
@@ -47,7 +49,9 @@ abstract class $AnalysisStateCopyWith<$Res> {
       List<AnalysisTrafficGroupCubit> enabledGroups,
       bool analyzingTraffic,
       bool analyzingEndpoints,
-      bool connectionsGrouped});
+      bool connectionsGrouped,
+      bool showTestsInGroupTable,
+      bool trafficLoadInPackets});
 }
 
 /// @nodoc
@@ -72,6 +76,8 @@ class _$AnalysisStateCopyWithImpl<$Res, $Val extends AnalysisState>
     Object? analyzingTraffic = null,
     Object? analyzingEndpoints = null,
     Object? connectionsGrouped = null,
+    Object? showTestsInGroupTable = null,
+    Object? trafficLoadInPackets = null,
   }) {
     return _then(_value.copyWith(
       endpoints: null == endpoints
@@ -102,6 +108,14 @@ class _$AnalysisStateCopyWithImpl<$Res, $Val extends AnalysisState>
           ? _value.connectionsGrouped
           : connectionsGrouped // ignore: cast_nullable_to_non_nullable
               as bool,
+      showTestsInGroupTable: null == showTestsInGroupTable
+          ? _value.showTestsInGroupTable
+          : showTestsInGroupTable // ignore: cast_nullable_to_non_nullable
+              as bool,
+      trafficLoadInPackets: null == trafficLoadInPackets
+          ? _value.trafficLoadInPackets
+          : trafficLoadInPackets // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -121,7 +135,9 @@ abstract class _$$AnalysisStateImplCopyWith<$Res>
       List<AnalysisTrafficGroupCubit> enabledGroups,
       bool analyzingTraffic,
       bool analyzingEndpoints,
-      bool connectionsGrouped});
+      bool connectionsGrouped,
+      bool showTestsInGroupTable,
+      bool trafficLoadInPackets});
 }
 
 /// @nodoc
@@ -144,6 +160,8 @@ class __$$AnalysisStateImplCopyWithImpl<$Res>
     Object? analyzingTraffic = null,
     Object? analyzingEndpoints = null,
     Object? connectionsGrouped = null,
+    Object? showTestsInGroupTable = null,
+    Object? trafficLoadInPackets = null,
   }) {
     return _then(_$AnalysisStateImpl(
       endpoints: null == endpoints
@@ -174,6 +192,14 @@ class __$$AnalysisStateImplCopyWithImpl<$Res>
           ? _value.connectionsGrouped
           : connectionsGrouped // ignore: cast_nullable_to_non_nullable
               as bool,
+      showTestsInGroupTable: null == showTestsInGroupTable
+          ? _value.showTestsInGroupTable
+          : showTestsInGroupTable // ignore: cast_nullable_to_non_nullable
+              as bool,
+      trafficLoadInPackets: null == trafficLoadInPackets
+          ? _value.trafficLoadInPackets
+          : trafficLoadInPackets // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -188,7 +214,9 @@ class _$AnalysisStateImpl extends _AnalysisState {
       required final List<AnalysisTrafficGroupCubit> enabledGroups,
       required this.analyzingTraffic,
       required this.analyzingEndpoints,
-      required this.connectionsGrouped})
+      required this.connectionsGrouped,
+      required this.showTestsInGroupTable,
+      required this.trafficLoadInPackets})
       : _endpoints = endpoints,
         _connections = connections,
         _groups = groups,
@@ -233,10 +261,14 @@ class _$AnalysisStateImpl extends _AnalysisState {
   final bool analyzingEndpoints;
   @override
   final bool connectionsGrouped;
+  @override
+  final bool showTestsInGroupTable;
+  @override
+  final bool trafficLoadInPackets;
 
   @override
   String toString() {
-    return 'AnalysisState(endpoints: $endpoints, connections: $connections, groups: $groups, enabledGroups: $enabledGroups, analyzingTraffic: $analyzingTraffic, analyzingEndpoints: $analyzingEndpoints, connectionsGrouped: $connectionsGrouped)';
+    return 'AnalysisState(endpoints: $endpoints, connections: $connections, groups: $groups, enabledGroups: $enabledGroups, analyzingTraffic: $analyzingTraffic, analyzingEndpoints: $analyzingEndpoints, connectionsGrouped: $connectionsGrouped, showTestsInGroupTable: $showTestsInGroupTable, trafficLoadInPackets: $trafficLoadInPackets)';
   }
 
   @override
@@ -256,7 +288,11 @@ class _$AnalysisStateImpl extends _AnalysisState {
             (identical(other.analyzingEndpoints, analyzingEndpoints) ||
                 other.analyzingEndpoints == analyzingEndpoints) &&
             (identical(other.connectionsGrouped, connectionsGrouped) ||
-                other.connectionsGrouped == connectionsGrouped));
+                other.connectionsGrouped == connectionsGrouped) &&
+            (identical(other.showTestsInGroupTable, showTestsInGroupTable) ||
+                other.showTestsInGroupTable == showTestsInGroupTable) &&
+            (identical(other.trafficLoadInPackets, trafficLoadInPackets) ||
+                other.trafficLoadInPackets == trafficLoadInPackets));
   }
 
   @override
@@ -268,7 +304,9 @@ class _$AnalysisStateImpl extends _AnalysisState {
       const DeepCollectionEquality().hash(_enabledGroups),
       analyzingTraffic,
       analyzingEndpoints,
-      connectionsGrouped);
+      connectionsGrouped,
+      showTestsInGroupTable,
+      trafficLoadInPackets);
 
   /// Create a copy of AnalysisState
   /// with the given fields replaced by the non-null parameter values.
@@ -287,7 +325,9 @@ abstract class _AnalysisState extends AnalysisState {
       required final List<AnalysisTrafficGroupCubit> enabledGroups,
       required final bool analyzingTraffic,
       required final bool analyzingEndpoints,
-      required final bool connectionsGrouped}) = _$AnalysisStateImpl;
+      required final bool connectionsGrouped,
+      required final bool showTestsInGroupTable,
+      required final bool trafficLoadInPackets}) = _$AnalysisStateImpl;
   const _AnalysisState._() : super._();
 
   @override
@@ -304,6 +344,10 @@ abstract class _AnalysisState extends AnalysisState {
   bool get analyzingEndpoints;
   @override
   bool get connectionsGrouped;
+  @override
+  bool get showTestsInGroupTable;
+  @override
+  bool get trafficLoadInPackets;
 
   /// Create a copy of AnalysisState
   /// with the given fields replaced by the non-null parameter values.

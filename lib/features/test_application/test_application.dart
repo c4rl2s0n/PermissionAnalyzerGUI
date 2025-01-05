@@ -131,7 +131,7 @@ class TestApplication extends StatelessWidget {
             ),
           ],
           data: state.scenarios,
-          onDataTap: (ts) => context.navigator.navigateTo(TestScenario(ts)),
+          onDataTap: (ts, [_]) => context.navigator.navigateTo(TestScenario(ts)),
           provideHorizontalScrollbarSpace: false,
         ),
       ),

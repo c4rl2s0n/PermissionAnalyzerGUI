@@ -35,6 +35,7 @@ class AnalysisTrafficGroupCubit extends Cubit<AnalysisTrafficGroupState> {
 
   TrafficGroup group;
   String get name => state.group.name;
+  String get fullName => "${path.isNotEmpty ? "$path." : ""}${state.group.name}";
   String? get info => state.group.info;
   List<String> get tags => state.group.tags;
   int get testRuns => state.group.testRuns;
@@ -61,7 +62,8 @@ class AnalysisTrafficGroupCubit extends Cubit<AnalysisTrafficGroupState> {
     for (var child in state.children) {
       child.setSelected(selected);
     }
-    emit(state.copyWith(selected: selected));
+    bool show = selected == SelectionState.deselected ? false : state.show;
+    emit(state.copyWith(selected: selected, show: show));
   }
 
   void toggleSelected() {

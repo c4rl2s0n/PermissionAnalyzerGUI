@@ -36,8 +36,6 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
         state.name,
       );
 
-  // TODO: Think about making it a variable configurable for each scenario/app
-  int get _startAppDelay => 0;
   String get _videoStoragePathOnDevice => "/data/local/tmp/out.mp4";
 
   final SystemProcess _process = SystemProcess();

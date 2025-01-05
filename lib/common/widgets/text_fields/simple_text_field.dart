@@ -91,7 +91,7 @@ class _SimpleTextFieldState extends State<SimpleTextField> {
           focusedErrorBorder: getErrorTextBoxBorder(context),
           labelStyle: theme.textTheme.labelMedium?.copyWith(
               color: theme.textTheme.labelMedium?.color
-                  ?.withOpacity(context.constants.subtleColorOpacity)),
+                  ?.withOpacity(context.constants.lightColorOpacity)),
           labelText: widget.labelText,
           hintText: widget.hintText,
           errorText: _errorText,

@@ -9,8 +9,10 @@ abstract class INetworkConnection {
   List<String> get ips;
   List<int> get ports;
   List<String> get protocols;
+  String get wiresharkFilter => ips.map((ip) => "ip.addr == $ip").join(" or ");
   String get protocolsString => _protocolsString;
   String get flow => "(${endpoint.ip}; ${ports.join(",")}; ${protocolsString.replaceAll("\n", ",")})";
+  List<NetworkConnection> get connections;
 
   INetworkConnection get copy;
 
@@ -116,6 +118,7 @@ class NetworkConnection extends INetworkConnection{
   @override
   late List<String> protocols;
 
+
   @override
   @ignore
   List<TestRun> testRuns;
@@ -173,4 +176,7 @@ class NetworkConnection extends INetworkConnection{
       packets: [...packets],
     );
   }
+
+  @override
+  List<NetworkConnection> get connections => [this];
 }

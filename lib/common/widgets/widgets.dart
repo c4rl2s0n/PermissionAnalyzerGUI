@@ -4,5 +4,6 @@ export 'dialogs/dialogs.dart';
 export 'factories/factories.dart';
 export 'lists/lists.dart';
 export 'misc/misc.dart';
+export 'switches/switches.dart';
 export 'text_fields/dropdown_text_field.dart';
 export 'text_fields/text_fields.dart';

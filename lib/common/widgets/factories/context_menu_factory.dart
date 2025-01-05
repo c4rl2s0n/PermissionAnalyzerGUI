@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:permission_analyzer_gui/common/common.dart';
 
 class ContextMenuItem {
   ContextMenuItem({
@@ -30,6 +31,22 @@ class ContextMenuFactory {
         entries,
       );
 
+  static void showContextMenuOnPosition(
+    BuildContext context,
+    Offset position,
+    List<ContextMenuItem> entries,
+  ) =>
+      showContextMenu(
+        context,
+        RelativeRect.fromLTRB(
+          position.dx,
+          position.dy,
+          position.dx,
+          position.dy,
+        ),
+        entries,
+      );
+
   static void showContextMenu(
     BuildContext context,
     RelativeRect position,
@@ -42,8 +59,14 @@ class ContextMenuFactory {
             .map((e) => PopupMenuItem(
                   child: Row(
                     children: [
+                      if (e.icon != null)...[
+                        IconTheme(
+                          data: context.iconTheme.copyWith(color: e.icon!.color ?? context.colors.onSecondary),
+                          child: e.icon!,
+                        ),
+                        Margin.horizontal(context.constants.smallSpacing),
+                      ],
                       Text(e.name),
-                      if (e.icon != null) e.icon!,
                     ],
                   ),
                   onTap: () => e.onTap(context),

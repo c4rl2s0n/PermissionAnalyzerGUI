@@ -32,7 +32,7 @@ class IconTextButton extends StatelessWidget {
     TextStyle? usedTextStyle =
         textStyle ?? context.textTheme.labelMedium?.copyWith(color: color);
     return TapContainer(
-      onTap: enabled ? onTap : null,
+      onTap: onTap != null && enabled ? (_) => onTap!() : null,
       splashColor: color.withOpacity(context.constants.strongColorOpacity),
       backgroundColor: Colors.transparent,
       child: Container(

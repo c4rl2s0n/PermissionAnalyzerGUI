@@ -26,7 +26,6 @@ extension TestScenarioExecutor on TestScenarioCubit {
     await _adb.stopApp(state.applicationId);
     await _adb.startApp(state.applicationId);
 
-    await sleepSec(_startAppDelay);
     DateTime startTime = DateTime.now();
 
     // record the input events
@@ -101,8 +100,6 @@ extension TestScenarioExecutor on TestScenarioCubit {
     await _adb.stopApp(state.applicationId);
     await _adb.startApp(state.applicationId);
 
-    // await application to start
-    await sleepSec(_startAppDelay);
     int testStart = DateTime.now().millisecondsSinceEpoch;
 
     _emit(state.copyWith(loadingInfo: "$loadingInfoSuffix:\nRunning the test"));

@@ -45,7 +45,7 @@ class CustomColors extends ThemeExtension<CustomColors> {
   Color get onHighlight => _onBright;
   Color get onBackground => _onDark;
   Color get onSurface => _onDark;
-  Color get divider => _onDark.withOpacity(_themeConstants.subtleColorOpacity);
+  Color get divider => _onDark.withOpacity(_themeConstants.lightColorOpacity);
   Color get border =>
       onBackground.withOpacity(_themeConstants.strongColorOpacity);
   Color get error => negative;

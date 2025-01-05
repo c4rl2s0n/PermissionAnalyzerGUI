@@ -18,7 +18,6 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$ConnectionOverviewState {
   List<INetworkConnection> get connections =>
       throw _privateConstructorUsedError;
-  List<NetworkPacket> get packets => throw _privateConstructorUsedError;
   int? get selectedIndex => throw _privateConstructorUsedError;
 
   /// Create a copy of ConnectionOverviewState
@@ -34,10 +33,7 @@ abstract class $ConnectionOverviewStateCopyWith<$Res> {
           $Res Function(ConnectionOverviewState) then) =
       _$ConnectionOverviewStateCopyWithImpl<$Res, ConnectionOverviewState>;
   @useResult
-  $Res call(
-      {List<INetworkConnection> connections,
-      List<NetworkPacket> packets,
-      int? selectedIndex});
+  $Res call({List<INetworkConnection> connections, int? selectedIndex});
 }
 
 /// @nodoc
@@ -57,7 +53,6 @@ class _$ConnectionOverviewStateCopyWithImpl<$Res,
   @override
   $Res call({
     Object? connections = null,
-    Object? packets = null,
     Object? selectedIndex = freezed,
   }) {
     return _then(_value.copyWith(
@@ -65,10 +60,6 @@ class _$ConnectionOverviewStateCopyWithImpl<$Res,
           ? _value.connections
           : connections // ignore: cast_nullable_to_non_nullable
               as List<INetworkConnection>,
-      packets: null == packets
-          ? _value.packets
-          : packets // ignore: cast_nullable_to_non_nullable
-              as List<NetworkPacket>,
       selectedIndex: freezed == selectedIndex
           ? _value.selectedIndex
           : selectedIndex // ignore: cast_nullable_to_non_nullable
@@ -86,10 +77,7 @@ abstract class _$$ConnectionOverviewStateImplCopyWith<$Res>
       __$$ConnectionOverviewStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {List<INetworkConnection> connections,
-      List<NetworkPacket> packets,
-      int? selectedIndex});
+  $Res call({List<INetworkConnection> connections, int? selectedIndex});
 }
 
 /// @nodoc
@@ -108,7 +96,6 @@ class __$$ConnectionOverviewStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? connections = null,
-    Object? packets = null,
     Object? selectedIndex = freezed,
   }) {
     return _then(_$ConnectionOverviewStateImpl(
@@ -116,10 +103,6 @@ class __$$ConnectionOverviewStateImplCopyWithImpl<$Res>
           ? _value._connections
           : connections // ignore: cast_nullable_to_non_nullable
               as List<INetworkConnection>,
-      packets: null == packets
-          ? _value._packets
-          : packets // ignore: cast_nullable_to_non_nullable
-              as List<NetworkPacket>,
       selectedIndex: freezed == selectedIndex
           ? _value.selectedIndex
           : selectedIndex // ignore: cast_nullable_to_non_nullable
@@ -132,11 +115,8 @@ class __$$ConnectionOverviewStateImplCopyWithImpl<$Res>
 
 class _$ConnectionOverviewStateImpl extends _ConnectionOverviewState {
   const _$ConnectionOverviewStateImpl(
-      {required final List<INetworkConnection> connections,
-      required final List<NetworkPacket> packets,
-      this.selectedIndex})
+      {required final List<INetworkConnection> connections, this.selectedIndex})
       : _connections = connections,
-        _packets = packets,
         super._();
 
   final List<INetworkConnection> _connections;
@@ -147,20 +127,12 @@ class _$ConnectionOverviewStateImpl extends _ConnectionOverviewState {
     return EqualUnmodifiableListView(_connections);
   }
 
-  final List<NetworkPacket> _packets;
-  @override
-  List<NetworkPacket> get packets {
-    if (_packets is EqualUnmodifiableListView) return _packets;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_packets);
-  }
-
   @override
   final int? selectedIndex;
 
   @override
   String toString() {
-    return 'ConnectionOverviewState(connections: $connections, packets: $packets, selectedIndex: $selectedIndex)';
+    return 'ConnectionOverviewState(connections: $connections, selectedIndex: $selectedIndex)';
   }
 
   @override
@@ -170,17 +142,13 @@ class _$ConnectionOverviewStateImpl extends _ConnectionOverviewState {
             other is _$ConnectionOverviewStateImpl &&
             const DeepCollectionEquality()
                 .equals(other._connections, _connections) &&
-            const DeepCollectionEquality().equals(other._packets, _packets) &&
             (identical(other.selectedIndex, selectedIndex) ||
                 other.selectedIndex == selectedIndex));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(_connections),
-      const DeepCollectionEquality().hash(_packets),
-      selectedIndex);
+  int get hashCode => Object.hash(runtimeType,
+      const DeepCollectionEquality().hash(_connections), selectedIndex);
 
   /// Create a copy of ConnectionOverviewState
   /// with the given fields replaced by the non-null parameter values.
@@ -195,14 +163,11 @@ class _$ConnectionOverviewStateImpl extends _ConnectionOverviewState {
 abstract class _ConnectionOverviewState extends ConnectionOverviewState {
   const factory _ConnectionOverviewState(
       {required final List<INetworkConnection> connections,
-      required final List<NetworkPacket> packets,
       final int? selectedIndex}) = _$ConnectionOverviewStateImpl;
   const _ConnectionOverviewState._() : super._();
 
   @override
   List<INetworkConnection> get connections;
-  @override
-  List<NetworkPacket> get packets;
   @override
   int? get selectedIndex;
 

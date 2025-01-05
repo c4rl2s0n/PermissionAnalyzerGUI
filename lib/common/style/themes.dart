@@ -57,7 +57,7 @@ ThemeData getTheme(bool dark) {
     inputDecorationTheme: InputDecorationTheme(
       labelStyle: textTheme.labelMedium?.copyWith(
           color: textTheme.labelMedium?.color
-              ?.withOpacity(constants.subtleColorOpacity)),
+              ?.withOpacity(constants.lightColorOpacity)),
       suffixIconColor: colors.onBackground,
       fillColor: colors.surface,
       hoverColor: colors.highlight,
@@ -80,7 +80,7 @@ ThemeData getTheme(bool dark) {
     thickness: const WidgetStatePropertyAll(10),
     radius: constants.roundedCornerRadius,
     thumbColor: WidgetStatePropertyAll(
-        colors.onBackground.withOpacity(constants.subtleColorOpacity)),
+        colors.onBackground.withOpacity(constants.lightColorOpacity)),
     trackColor: WidgetStatePropertyAll(
         colors.onBackground.withOpacity(constants.strongColorOpacity)),
   );

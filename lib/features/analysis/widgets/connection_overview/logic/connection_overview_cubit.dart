@@ -5,14 +5,13 @@ import 'package:permission_analyzer_gui/data/data.dart';
 part 'connection_overview_cubit.freezed.dart';
 
 class ConnectionOverviewCubit extends Cubit<ConnectionOverviewState> {
-  ConnectionOverviewCubit(this.connections, this.packets)
+  ConnectionOverviewCubit(this.connections, {int? selectedIndex})
       : super(ConnectionOverviewState(
           connections: connections,
-          packets: packets,
+          selectedIndex: selectedIndex,
         ));
 
   List<INetworkConnection> connections;
-  List<NetworkPacket> packets;
 
   void updateSelection(INetworkConnection? entry) {
     emit(state.copyWith(
@@ -29,7 +28,6 @@ class ConnectionOverviewState with _$ConnectionOverviewState {
 
   const factory ConnectionOverviewState({
     required List<INetworkConnection> connections,
-    required List<NetworkPacket> packets,
     int? selectedIndex,
   }) = _ConnectionOverviewState;
 

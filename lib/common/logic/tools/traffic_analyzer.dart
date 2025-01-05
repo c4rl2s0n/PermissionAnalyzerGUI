@@ -14,8 +14,8 @@ class TrafficAnalyzer {
     List<INetworkEndpoint> endpoints = [];
     for (var group in groups) {
       // get all connections
-      for(var endpoint in group.endpoints){
-        if(endpoints.any((e) => e.id == endpoint.id)) continue;
+      for (var endpoint in group.endpoints) {
+        if (endpoints.any((e) => e.id == endpoint.id)) continue;
         endpoints.add(endpoint);
       }
     }
@@ -74,7 +74,8 @@ class TrafficAnalyzer {
           if (connections[key]! is NetworkConnection) {
             NetworkConnection con = connections[key]! as NetworkConnection;
 
-            con.testRuns.addAll(connection.testRuns.where((tr) => !con.testRuns.any((ctr) => ctr.id == tr.id)));
+            con.testRuns.addAll(connection.testRuns
+                .where((tr) => !con.testRuns.any((ctr) => ctr.id == tr.id)));
             con.packets.addAll(connection.packets);
           }
         }
@@ -102,7 +103,7 @@ class TrafficAnalyzer {
           // aggregate connection
           NetworkConnection tc = connectionsMap[connection.flow]!;
           tc.packets.addAll(test.packets);
-          if(!tc.testRuns.any((tr) => tr.id == test.id)) {
+          if (!tc.testRuns.any((tr) => tr.id == test.id)) {
             tc.testRuns.add(test);
           }
         }
@@ -162,7 +163,8 @@ class TrafficAnalyzer {
         }
       } else {
         // group by ipRange
-        var ipRange = getIpRange(connection.endpoint.ip, nGroupedOctets: nGroupedOctets);
+        var ipRange =
+            getIpRange(connection.endpoint.ip, nGroupedOctets: nGroupedOctets);
         // create the ConnectionGroup if not yet exists
         if (!connectionGroups.containsKey(ipRange)) {
           connectionGroups[ipRange] = ConnectionGroup(
@@ -191,19 +193,17 @@ class TrafficAnalyzer {
     for (var packet in packets) {
       if (!connections.containsKey(packet.dst)) {
         connections[packet.dst] = NetworkConnection(
-          ip: packet.ipDst,
-          port: packet.portDst,
-          packets: [],
-          testRuns: testRun != null? [testRun] : []
-        );
+            ip: packet.ipDst,
+            port: packet.portDst,
+            packets: [],
+            testRuns: testRun != null ? [testRun] : []);
       }
       if (!connections.containsKey(packet.src)) {
         connections[packet.src] = NetworkConnection(
-          ip: packet.ipSrc,
-          port: packet.portSrc,
-          packets: [],
-          testRuns: testRun != null? [testRun] : []
-        );
+            ip: packet.ipSrc,
+            port: packet.portSrc,
+            packets: [],
+            testRuns: testRun != null ? [testRun] : []);
       }
 
       // incoming packets
@@ -306,19 +306,41 @@ class TrafficAnalyzer {
   /// #################
   /// Helper
   /// #################
-  static String getIpRange(String ip, {int nGroupedOctets=1}){
+  static String getIpRange(String ip, {int nGroupedOctets = 1}) {
     List<String> parts = ip.split(".");
     assert(parts.length == 4);
     String ipRange = "";
-    for(int i=0;i<parts.length-nGroupedOctets;i++){
+    for (int i = 0; i < parts.length - nGroupedOctets; i++) {
       ipRange += parts[i];
-      if(i < parts.length-1) ipRange += ".";
+      if (i < parts.length - 1) ipRange += ".";
     }
-    for(int i=0;i<nGroupedOctets;i++){
+    for (int i = 0; i < nGroupedOctets; i++) {
       ipRange += "0";
-      if(i<nGroupedOctets-1) ipRange += ".";
+      if (i < nGroupedOctets - 1) ipRange += ".";
     }
-    ipRange += "/${32-nGroupedOctets*8}";
+    ipRange += "/${32 - nGroupedOctets * 8}";
     return ipRange;
   }
+
+  static int getTrafficLoad(
+    List<INetworkConnection> connections, {
+    bool inPackets = false,
+  }) {
+    return connections.fold(
+      0,
+      (load, con) => load += inPackets ? con.countTotal : con.bytesTotal,
+    );
+  }
+  static List<NetworkConnection> flattenConnections(List<INetworkConnection> connections){
+    List<NetworkConnection> allConnections = [];
+    for (var con in connections) {
+      if (con is ConnectionGroup) {
+        allConnections.addAll(con.connections);
+      } else if (con is NetworkConnection) {
+        allConnections.add(con);
+      }
+    }
+    return allConnections;
+  }
+
 }

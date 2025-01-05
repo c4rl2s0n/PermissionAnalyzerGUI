@@ -151,6 +151,12 @@ class AnalysisCubit extends Cubit<AnalysisState> {
     }
     updateState();
   }
+  void setTrafficLoadInPackets(bool loadInPackets) {
+    emit(state.copyWith(trafficLoadInPackets: loadInPackets));
+  }
+  void setShowTestsInGroupTable(bool showTests) {
+    emit(state.copyWith(showTestsInGroupTable: showTests));
+  }
 
   /// get values for update
   List<AnalysisTrafficGroupCubit> _getGroups(
@@ -197,6 +203,8 @@ class AnalysisState with _$AnalysisState {
     required bool analyzingTraffic,
     required bool analyzingEndpoints,
     required bool connectionsGrouped,
+    required bool showTestsInGroupTable,
+    required bool trafficLoadInPackets,
   }) = _AnalysisState;
 
   factory AnalysisState.empty() => const AnalysisState(
@@ -207,6 +215,8 @@ class AnalysisState with _$AnalysisState {
         analyzingTraffic: false,
         analyzingEndpoints: false,
         connectionsGrouped: false,
+        showTestsInGroupTable: true,
+        trafficLoadInPackets: false,
       );
 
   List<AnalysisTrafficGroupCubit> get visibleGroups =>
