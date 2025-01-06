@@ -1,5 +1,6 @@
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
+import 'package:permission_analyzer_gui/features/analysis/logic/logic.dart';
 import 'package:permission_analyzer_gui/features/analysis/models/models.dart';
 
 class TrafficAnalyzer {
@@ -102,7 +103,7 @@ class TrafficAnalyzer {
         } else {
           // aggregate connection
           NetworkConnection tc = connectionsMap[connection.flow]!;
-          tc.packets.addAll(test.packets);
+          tc.packets.addAll(test.packets.where((p) => p.ipSrc == tc.ip || p.ipDst == tc.ip));
           if (!tc.testRuns.any((tr) => tr.id == test.id)) {
             tc.testRuns.add(test);
           }
@@ -121,12 +122,17 @@ class TrafficAnalyzer {
     List<T> connections,
   ) {
     return connections
-        .where(
-          (c) => !c.ips.any(
-              (ip) => ip.startsWith("10.0.") || ip.startsWith("127.0.0.1")),
-        )
+        .where((c) => !c.ips.any(_shouldFilterIp))
         .toList();
   }
+  static List<NetworkPacket> getFilteredPackets(
+    List<NetworkPacket> packets,
+  ) {
+    return packets
+        .where((p) => !(_shouldFilterIp(p.ipDst) && _shouldFilterIp(p.ipSrc)))
+        .toList();
+  }
+  static bool _shouldFilterIp(String ip) => ip.startsWith("10.0.") || ip.startsWith("127.0.0.1");
 
   static List<ConnectionGroup> getGroupedConnections(
     List<INetworkConnection> connections, {
@@ -323,7 +329,7 @@ class TrafficAnalyzer {
   }
 
   static int getTrafficLoad(
-    List<INetworkConnection> connections, {
+    Iterable<INetworkConnection> connections, {
     bool inPackets = false,
   }) {
     return connections.fold(
@@ -331,7 +337,9 @@ class TrafficAnalyzer {
       (load, con) => load += inPackets ? con.countTotal : con.bytesTotal,
     );
   }
-  static List<NetworkConnection> flattenConnections(List<INetworkConnection> connections){
+
+  static List<NetworkConnection> flattenConnections(
+      List<INetworkConnection> connections) {
     List<NetworkConnection> allConnections = [];
     for (var con in connections) {
       if (con is ConnectionGroup) {
@@ -343,4 +351,52 @@ class TrafficAnalyzer {
     return allConnections;
   }
 
+  static Map<AnalysisTrafficGroupCubit, int> getTrafficLoadByGroup(
+    List<AnalysisTrafficGroupCubit> trafficGroups,
+    List<NetworkConnection> connections,
+    bool loadInPackets,
+  ) {
+    Map<AnalysisTrafficGroupCubit, int> loadsByGroup = {};
+    for (var group in trafficGroups) {
+      loadsByGroup[group] = TrafficAnalyzer.getTrafficLoad(
+        getConnectionsWithinGroup(group.group, connections),
+        inPackets: loadInPackets,
+      );
+    }
+    return loadsByGroup;
+  }
+
+  static Map<String, int> getTrafficLoadByProtocol(
+    List<String> protocols,
+    List<NetworkConnection> connections,
+    bool loadInPackets,
+  ) {
+    Map<String, int> loadsByProtocol = {};
+    for (var protocol in protocols) {
+      int protocolLoad = connections.fold(
+          0,
+          (int load, con) => load += getFilteredPackets(con.packets
+              .where((p) => p.protocols == protocol).toList())
+              .map((p) => loadInPackets ? 1 : p.size)
+              .nonNulls
+              .toList()
+              .sum
+              .floor());
+      loadsByProtocol[protocol] = protocolLoad;
+    }
+    return loadsByProtocol;
+  }
+
+  static List<NetworkConnection> getConnectionsWithinGroup(
+    TrafficGroup group,
+    List<NetworkConnection> connections,
+  ) {
+    List<NetworkConnection> groupConnections = [];
+    for(var con in group.networkConnections){
+      if(connections.any((c) => c.ip == con.ip)) {
+        groupConnections.add(con);
+      }
+    }
+    return groupConnections;
+  }
 }

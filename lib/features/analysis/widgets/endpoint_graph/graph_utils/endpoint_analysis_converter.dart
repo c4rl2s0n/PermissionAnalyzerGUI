@@ -1,4 +1,5 @@
 import 'package:flutter_graph_view/flutter_graph_view.dart';
+import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_graph/graph_utils/utils.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_graph/models/models.dart';
 
 class EndpointAnalysisConverter extends DataConvertor<GraphVertex, GraphEdge> {
@@ -37,7 +38,7 @@ class EndpointAnalysisConverter extends DataConvertor<GraphVertex, GraphEdge> {
     Vertex vertex = Vertex()
       ..id = v.id
       ..tags = v.tags
-      ..radius = v.size * 10 + 3
+      ..radius = v.size * (maxVertexSize-minVertexSize) + minVertexSize
       ..tag = v.tags.firstOrNull ?? "vertex";
     return vertex;
   }

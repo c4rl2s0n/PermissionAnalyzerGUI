@@ -26,7 +26,7 @@ class TrafficGroupOverviewTable extends StatelessWidget {
     return Row(
       children: [
         _loadByPacketsSwitch(context, state),
-        Margin.horizontal(50),
+        const Margin.horizontal(50),
         _showTestsInTable(context, state),
       ],
     );
@@ -122,10 +122,10 @@ class TrafficGroupOverviewTable extends StatelessWidget {
           defaultCellTextAlign: TextAlign.center,
         ),
         DataGridColumn<AnalysisTrafficGroupCubit, int>(
-          name: "Packets Avg",
-          width: 120,
+          name: "Packets Avg (by Test)",
+          width: 140,
           headerAlign: TextAlign.center,
-          getValue: (g) => (g.state.group.connections.fold(0, (load, con) => load += con.countTotal) / g.state.group.networkConnections.length).floor(),
+          getValue: (g) => (g.state.group.connections.fold(0, (load, con) => load += con.countTotal) / g.state.group.testRuns).floor(),
           defaultCellTextAlign: TextAlign.center,
         ),
       ]else...[
@@ -135,7 +135,7 @@ class TrafficGroupOverviewTable extends StatelessWidget {
           width: 110,
           headerAlign: TextAlign.center,
           getCell: (g) => Text(
-            g.state.group.connections.fold(0, (load, con) => load += con.inCount).readableFileSize(base1024: false),
+            g.state.group.connections.fold(0, (load, con) => load += con.inBytes).readableFileSize(base1024: false),
             textAlign: TextAlign.center,
           ),
           getValue: (g) => g.state.group.connections.fold(0, (load, con) => load += con.inBytes),
@@ -161,14 +161,14 @@ class TrafficGroupOverviewTable extends StatelessWidget {
           getValue: (g) => g.state.group.connections.fold(0, (load, con) => load += con.bytesTotal),
         ),
         DataGridColumn<AnalysisTrafficGroupCubit, int>(
-          name: "Bytes Avg",
-          width: 110,
+          name: "Bytes Avg (by Test)",
+          width: 150,
           headerAlign: TextAlign.center,
           getCell: (g) => Text(
-            (g.state.group.connections.fold(0, (load, con) => load += con.bytesTotal) / g.state.group.networkConnections.length).floor().readableFileSize(base1024: false),
+            (g.state.group.connections.fold(0, (load, con) => load += con.bytesTotal) / g.state.group.testRuns).floor().readableFileSize(base1024: false),
             textAlign: TextAlign.center,
           ),
-          getValue: (g) => (g.state.group.connections.fold(0, (load, con) => load += con.bytesTotal) / g.state.group.networkConnections.length).floor(),
+          getValue: (g) => (g.state.group.connections.fold(0, (load, con) => load += con.bytesTotal) / g.state.group.testRuns).floor(),
         ),
       ],
     ];

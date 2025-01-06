@@ -4,3 +4,4 @@ export 'random_layout.dart';
 export 'repelling_center_decorator.dart';
 export 'tag_circle_layout.dart';
 export 'tag_decorator.dart';
+export 'values.dart';

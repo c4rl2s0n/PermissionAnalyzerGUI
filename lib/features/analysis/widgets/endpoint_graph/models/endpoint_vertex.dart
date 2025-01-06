@@ -5,7 +5,7 @@ import 'package:permission_analyzer_gui/data/data.dart';
 import 'models.dart';
 
 class EndpointVertex extends GraphVertex {
-  EndpointVertex({required super.id, required this.endpoint});
+  EndpointVertex({required super.id, required this.endpoint, required this.name,});
 
   INetworkEndpoint endpoint;
 
@@ -21,5 +21,5 @@ class EndpointVertex extends GraphVertex {
   get data => endpoint;
 
   @override
-  String get name => endpoint.name;
+  String name;
 }

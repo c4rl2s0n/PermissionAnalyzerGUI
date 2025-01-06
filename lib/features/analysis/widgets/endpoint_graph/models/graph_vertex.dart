@@ -1,7 +1,3 @@
-import 'package:permission_analyzer_gui/common/keys.dart';
-import 'package:permission_analyzer_gui/data/data.dart';
-import 'package:permission_analyzer_gui/features/analysis/models/models.dart';
-
 abstract class GraphVertex {
   GraphVertex({
     required this.id,

@@ -8,7 +8,6 @@ import 'package:latlong2/latlong.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/logic/logic.dart';
-import 'package:permission_analyzer_gui/features/analysis/models/traffic_group.dart';
 import 'package:permission_analyzer_gui/features/analysis/values.dart';
 
 const double maxClusterRadius = 120;
@@ -64,7 +63,7 @@ class _EndpointMapState extends State<EndpointMap> {
     // get markers from connections
     List<INetworkConnection> connections =
         TrafficAnalyzer.getConnectionsFromTrafficGroups(
-      state.visibleTrafficGroups,
+      state.visibleTrafficGroups
     );
     Map<Marker, NetworkConnection> markerMap = _getMarkers(connections);
     List<Marker> markers = markerMap.keys.toList();
@@ -305,13 +304,9 @@ class _EndpointMapState extends State<EndpointMap> {
     List<Color> gradientColors = [];
     List<double> colorStops = [];
     double previousStop = 0;
-    List<TrafficGroup> groups = trafficGroups.map((tg) => tg.group).toList();
-    for (int i = 0; i < groups.length; i++) {
-      TrafficGroup group = groups[i];
-      int groupTrafficLoad = TrafficAnalyzer.getTrafficLoad(
-        getConnectionsInGroup(group, connections),
-        inPackets: loadInPackets,
-      );
+    Map<AnalysisTrafficGroupCubit, int> loadByGroup = TrafficAnalyzer.getTrafficLoadByGroup(trafficGroups, connections, loadInPackets);
+    for (int i = 0; i < trafficGroups.length; i++) {
+      int groupTrafficLoad = loadByGroup[trafficGroups[i]] ?? 0;
       double stop = groupTrafficLoad / markerTrafficLoad;
       if (stop == 0) continue;
       // add values twice with little space to get clear edge
@@ -326,16 +321,5 @@ class _EndpointMapState extends State<EndpointMap> {
     return LinearGradient(colors: gradientColors, stops: colorStops,
       begin: Alignment.bottomCenter,
       end: Alignment.topCenter,);
-  }
-
-  static List<NetworkConnection> getConnectionsInGroup(
-      TrafficGroup group, List<NetworkConnection> connections) {
-    return group.connections.fold(
-        <NetworkConnection>[],
-        (all, con) => [
-              ...all,
-              ...con.connections
-                  .where((gc) => connections.any((c) => c.ip == gc.ip))
-            ]).distinct;
   }
 }

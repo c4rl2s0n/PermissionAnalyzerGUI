@@ -126,8 +126,8 @@ class TrafficGroupSelector extends StatelessWidget {
     AnalysisTrafficGroupCubit group = node.data as AnalysisTrafficGroupCubit;
     Color color = Colors.white70;
     for (var tag in group.tags) {
-      if (tagColors.containsKey(tag)) {
-        color = tagColors[tag]!;
+      if (graphTagColors.containsKey(tag)) {
+        color = graphTagColors[tag]!;
         break;
       }
     }

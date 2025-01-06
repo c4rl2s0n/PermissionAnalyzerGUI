@@ -17,8 +17,6 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$AnalysisState {
   List<INetworkEndpoint> get endpoints => throw _privateConstructorUsedError;
-  List<INetworkConnection> get connections =>
-      throw _privateConstructorUsedError;
   List<AnalysisTrafficGroupCubit> get groups =>
       throw _privateConstructorUsedError;
   List<AnalysisTrafficGroupCubit> get enabledGroups =>
@@ -44,7 +42,6 @@ abstract class $AnalysisStateCopyWith<$Res> {
   @useResult
   $Res call(
       {List<INetworkEndpoint> endpoints,
-      List<INetworkConnection> connections,
       List<AnalysisTrafficGroupCubit> groups,
       List<AnalysisTrafficGroupCubit> enabledGroups,
       bool analyzingTraffic,
@@ -70,7 +67,6 @@ class _$AnalysisStateCopyWithImpl<$Res, $Val extends AnalysisState>
   @override
   $Res call({
     Object? endpoints = null,
-    Object? connections = null,
     Object? groups = null,
     Object? enabledGroups = null,
     Object? analyzingTraffic = null,
@@ -84,10 +80,6 @@ class _$AnalysisStateCopyWithImpl<$Res, $Val extends AnalysisState>
           ? _value.endpoints
           : endpoints // ignore: cast_nullable_to_non_nullable
               as List<INetworkEndpoint>,
-      connections: null == connections
-          ? _value.connections
-          : connections // ignore: cast_nullable_to_non_nullable
-              as List<INetworkConnection>,
       groups: null == groups
           ? _value.groups
           : groups // ignore: cast_nullable_to_non_nullable
@@ -130,7 +122,6 @@ abstract class _$$AnalysisStateImplCopyWith<$Res>
   @useResult
   $Res call(
       {List<INetworkEndpoint> endpoints,
-      List<INetworkConnection> connections,
       List<AnalysisTrafficGroupCubit> groups,
       List<AnalysisTrafficGroupCubit> enabledGroups,
       bool analyzingTraffic,
@@ -154,7 +145,6 @@ class __$$AnalysisStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? endpoints = null,
-    Object? connections = null,
     Object? groups = null,
     Object? enabledGroups = null,
     Object? analyzingTraffic = null,
@@ -168,10 +158,6 @@ class __$$AnalysisStateImplCopyWithImpl<$Res>
           ? _value._endpoints
           : endpoints // ignore: cast_nullable_to_non_nullable
               as List<INetworkEndpoint>,
-      connections: null == connections
-          ? _value._connections
-          : connections // ignore: cast_nullable_to_non_nullable
-              as List<INetworkConnection>,
       groups: null == groups
           ? _value._groups
           : groups // ignore: cast_nullable_to_non_nullable
@@ -209,7 +195,6 @@ class __$$AnalysisStateImplCopyWithImpl<$Res>
 class _$AnalysisStateImpl extends _AnalysisState {
   const _$AnalysisStateImpl(
       {required final List<INetworkEndpoint> endpoints,
-      required final List<INetworkConnection> connections,
       required final List<AnalysisTrafficGroupCubit> groups,
       required final List<AnalysisTrafficGroupCubit> enabledGroups,
       required this.analyzingTraffic,
@@ -218,7 +203,6 @@ class _$AnalysisStateImpl extends _AnalysisState {
       required this.showTestsInGroupTable,
       required this.trafficLoadInPackets})
       : _endpoints = endpoints,
-        _connections = connections,
         _groups = groups,
         _enabledGroups = enabledGroups,
         super._();
@@ -229,14 +213,6 @@ class _$AnalysisStateImpl extends _AnalysisState {
     if (_endpoints is EqualUnmodifiableListView) return _endpoints;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_endpoints);
-  }
-
-  final List<INetworkConnection> _connections;
-  @override
-  List<INetworkConnection> get connections {
-    if (_connections is EqualUnmodifiableListView) return _connections;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_connections);
   }
 
   final List<AnalysisTrafficGroupCubit> _groups;
@@ -268,7 +244,7 @@ class _$AnalysisStateImpl extends _AnalysisState {
 
   @override
   String toString() {
-    return 'AnalysisState(endpoints: $endpoints, connections: $connections, groups: $groups, enabledGroups: $enabledGroups, analyzingTraffic: $analyzingTraffic, analyzingEndpoints: $analyzingEndpoints, connectionsGrouped: $connectionsGrouped, showTestsInGroupTable: $showTestsInGroupTable, trafficLoadInPackets: $trafficLoadInPackets)';
+    return 'AnalysisState(endpoints: $endpoints, groups: $groups, enabledGroups: $enabledGroups, analyzingTraffic: $analyzingTraffic, analyzingEndpoints: $analyzingEndpoints, connectionsGrouped: $connectionsGrouped, showTestsInGroupTable: $showTestsInGroupTable, trafficLoadInPackets: $trafficLoadInPackets)';
   }
 
   @override
@@ -278,8 +254,6 @@ class _$AnalysisStateImpl extends _AnalysisState {
             other is _$AnalysisStateImpl &&
             const DeepCollectionEquality()
                 .equals(other._endpoints, _endpoints) &&
-            const DeepCollectionEquality()
-                .equals(other._connections, _connections) &&
             const DeepCollectionEquality().equals(other._groups, _groups) &&
             const DeepCollectionEquality()
                 .equals(other._enabledGroups, _enabledGroups) &&
@@ -299,7 +273,6 @@ class _$AnalysisStateImpl extends _AnalysisState {
   int get hashCode => Object.hash(
       runtimeType,
       const DeepCollectionEquality().hash(_endpoints),
-      const DeepCollectionEquality().hash(_connections),
       const DeepCollectionEquality().hash(_groups),
       const DeepCollectionEquality().hash(_enabledGroups),
       analyzingTraffic,
@@ -320,7 +293,6 @@ class _$AnalysisStateImpl extends _AnalysisState {
 abstract class _AnalysisState extends AnalysisState {
   const factory _AnalysisState(
       {required final List<INetworkEndpoint> endpoints,
-      required final List<INetworkConnection> connections,
       required final List<AnalysisTrafficGroupCubit> groups,
       required final List<AnalysisTrafficGroupCubit> enabledGroups,
       required final bool analyzingTraffic,
@@ -332,8 +304,6 @@ abstract class _AnalysisState extends AnalysisState {
 
   @override
   List<INetworkEndpoint> get endpoints;
-  @override
-  List<INetworkConnection> get connections;
   @override
   List<AnalysisTrafficGroupCubit> get groups;
   @override

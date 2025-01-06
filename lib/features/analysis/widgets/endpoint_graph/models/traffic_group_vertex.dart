@@ -4,8 +4,8 @@ import 'package:permission_analyzer_gui/features/analysis/models/models.dart';
 
 import 'models.dart';
 
-class TestGroupVertex extends GraphVertex {
-  TestGroupVertex({required super.id, required this.group});
+class TrafficGroupVertex extends GraphVertex {
+  TrafficGroupVertex({required super.id, required this.group});
 
   TrafficGroup group;
 

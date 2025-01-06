@@ -19,11 +19,11 @@ class _ConnectionOverviewState extends State<ConnectionOverview> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AnalysisCubit, AnalysisState>(
-      buildWhen: (oldState, state) => oldState.connections != state.connections,
+      buildWhen: (oldState, state) => oldState.visibleConnections != state.visibleConnections,
       builder: (context, state) {
         return BlocProvider(
           create: (context) => ConnectionOverviewCubit(
-            state.connections,
+            state.visibleConnections,
             selectedIndex: lastSelected,
           ),
           child: _buildContent(context),
@@ -49,20 +49,17 @@ class _ConnectionOverviewState extends State<ConnectionOverview> {
           ),
           if (state.selectedConnection != null) ...[
             Margin.horizontal(context.constants.spacing),
-            Expanded(
-              flex: 1,
+            SizedBox(
+              width: 400,
               child: Column(
                 children: [
-                  Expanded(
-                    child: GroupSeparationDiagram(
-                      connection: state.selectedConnection!,
-                    ),
-                  ),
-                  Expanded(
-                    child: ConnectionTrafficOverview(
-                      state.selectedConnection!,
-                    ),
-                  ),
+                  TrafficDistributionChart(connection: state.selectedConnection!),
+                  ProtocolDistributionChart(connection: state.selectedConnection!),
+                  // Expanded(
+                  //   child: ConnectionTrafficOverview(
+                  //     state.selectedConnection!,
+                  //   ),
+                  // ),
                 ],
               ),
             ),

@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_graph_view/flutter_graph_view.dart';
+import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_graph/graph_utils/utils.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_graph/models/models.dart';
 
 class CustomEdgeLineShape extends EdgeLineShape {
@@ -9,11 +10,7 @@ class CustomEdgeLineShape extends EdgeLineShape {
   void setPaint(Edge edge) {
     GraphEdge data = edge.data as GraphEdge;
     var paint = edge.cpn!.paint;
-    paint.strokeWidth = edge.isHovered
-        ? 4
-        : data.common
-            ? 2.5
-            : 1.5;
+    paint.strokeWidth = _getStrokeWidth(edge);
     paint.strokeWidth /= edge.cpn!.game.camera.viewfinder.zoom;
     paint.style = PaintingStyle.stroke;
     var startPoint = Offset.zero;
@@ -39,6 +36,35 @@ class CustomEdgeLineShape extends EdgeLineShape {
         colors,
         colorStops,
       );
+    }
+  }
+
+  double _getStrokeWidth(Edge edge){
+    GraphEdge data = edge.data as GraphEdge;
+    double hoverStrokeWidth = minEdgeWidth + data.size * maxEdgeWidth;
+    if(edge.isHovered) hoverStrokeWidth *= 1.2;
+    return hoverStrokeWidth;
+  }
+  
+  @override
+  bool? hoverTest(Vector2 point, Edge edge, EdgeComponent edgeComponent) {
+    var offset = Offset(point.x, point.y);
+
+    double hoverStrokeWidth = _getStrokeWidth(edge);
+    
+    if (edge.isLoop) {
+      return edge.path!.contains(offset) &&
+          !loopPath(edge, hoverStrokeWidth).contains(offset);
+    } else {
+      if (edge.computeIndex == 0) {
+        return null;
+      }
+      Path? minusArea = edge.path?.shift(Offset(
+        0,
+        edge.computeIndex > 0 ? -hoverStrokeWidth : hoverStrokeWidth,
+      ));
+      return ((edge.path?.contains(offset) ?? false) &&
+          (!(minusArea?.contains(offset) ?? true)));
     }
   }
 }

@@ -156,6 +156,8 @@ class NetworkConnection extends INetworkConnection{
         // packets coming in from endpoint
         inCount++;
         inBytes += packet.size;
+      }else{
+        print("(IP: $ip) ${packet.src} -> ${packet.dst}");
       }
     }
     protocols.sort();

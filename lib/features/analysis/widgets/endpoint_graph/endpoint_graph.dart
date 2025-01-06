@@ -65,9 +65,10 @@ class EndpointGraph extends StatelessWidget {
           ..enableHit = false
           ..panelDelay = const Duration(milliseconds: 500)
           ..graphStyle = (GraphStyle()
-            ..vertexTextStyleGetter = ((_, __) => context.textTheme.labelSmall)
+            ..vertexTextStyleGetter = ((vertex, vertexShape) =>
+                _vertexTextStyleGetter(context, vertex, vertexShape))
             // tagColor is prior to tagColorByIndex. use vertex.tags to get color
-            ..tagColor = tagColors
+            ..tagColor = graphTagColors
             ..tagColorByIndex = [])
           ..edgePanelBuilder = ((edge, viewfinder) =>
               edgePanelBuilder(context, edge, viewfinder))
@@ -76,56 +77,107 @@ class EndpointGraph extends StatelessWidget {
           ..edgeShape = CustomEdgeLineShape() // default is EdgeLineShape.
           ..vertexShape = VertexCircleShape() // default is VertexCircleShape.
           ..textGetter = _vertexTextGetter,
-
       ),
     );
   }
 
-  String _vertexTextGetter(Vertex vertex){
-    if(vertex.data is! GraphVertex) return vertex.id;
+  String _vertexTextGetter(Vertex vertex) {
+    if (vertex.data is! GraphVertex) return vertex.id;
     GraphVertex gv = vertex.data as GraphVertex;
-    if(gv is EndpointVertex){
-      return gv.endpoint.name;
-    }else if(gv is TestGroupVertex){
-      return gv.name;
-    }
-    return vertex.id;
+    return gv.name;
   }
 
+  TextStyle? _vertexTextStyleGetter(BuildContext context,
+          Vertex<dynamic> vertex, VertexShape? vertexShape) =>
+      context.textTheme.labelSmall?.copyWith(
+          color:
+              context.textTheme.labelSmall?.color?.withOpacity(vertex.isHovered
+                  ? 1
+                  : vertex.neighbors.any((n) => n.isHovered)
+                      ? 0.9
+                      : 0.4));
+
   List<GraphVertex> _vertices(AnalysisState state) {
+    List<INetworkEndpoint> endpoints = state.endpoints;
+    List<TrafficGroup> trafficGroups = state.visibleTrafficGroups;
     List<GraphVertex> vertexes = [
-      ...state.endpoints.map((e) => EndpointVertex(id: e.id, endpoint: e)), //GraphVertex(endpoint: e, id: e.ip)),
-      ...state.visibleTrafficGroups.map((g) => TestGroupVertex(id: g.id, group: g)),// GraphVertex(group: g, id: g.id))
+      ...endpoints.map((e) => EndpointVertex(
+          id: e.id,
+          endpoint: e,
+          name: state.connectionsGrouped
+              ? e.name
+              : e.hostname ?? e.ip)), //GraphVertex(endpoint: e, id: e.ip)),
+      ...trafficGroups.map((g) => TrafficGroupVertex(
+          id: g.id, group: g)), // GraphVertex(group: g, id: g.id))
     ];
-    int totalGroups = state.visibleGroups.length;
+    int nTotalEndpoints = endpoints.length;
+    int nTotalGroups = trafficGroups.length;
     for (var vertex in vertexes) {
-      dynamic data = vertex.data;
-      if (data is INetworkEndpoint) {
-        int connectedGroups = state.visibleTrafficGroups
-            .where(
-                (g) => g.connections.any((gc) => gc.endpoint.id == data.id))
-            .length;
-        if (connectedGroups == 1) vertex.unique = true;
-        if (connectedGroups == totalGroups) vertex.common = true;
-        vertex.size = connectedGroups / totalGroups;
-        vertex.connectedGroups = connectedGroups;
+      if (vertex is EndpointVertex) {
+        _computeEndpointVertexAttributes(
+          state,
+          vertex,
+          nTotalGroups,
+          nTotalEndpoints,
+        );
+      } else if (vertex is TrafficGroupVertex) {
+        _computeTrafficGroupVertexAttributes(state, vertex, nTotalEndpoints);
       }
     }
     return vertexes;
   }
 
+  void _computeEndpointVertexAttributes(AnalysisState state,
+      EndpointVertex vertex, int nTotalGroups, int nTotalEndpoints) {
+    INetworkEndpoint endpoint = vertex.endpoint;
+    int connectedGroups = state.visibleTrafficGroups
+        .where((g) => g.connections.any((gc) => gc.endpoint.id == endpoint.id))
+        .length;
+    if (nTotalGroups != 1) {
+      vertex.unique = connectedGroups == 1;
+      vertex.common = connectedGroups == nTotalGroups;
+    }
+    if (endpoint is EndpointGroup) {
+      vertex.size = endpoint.endpoints.length / nTotalEndpoints;
+    } else {
+      // if connections are not grouped, vertex size represents the number of connected groups
+      vertex.size = connectedGroups / nTotalGroups;
+    }
+    vertex.connectedGroups = connectedGroups;
+  }
+
+  void _computeTrafficGroupVertexAttributes(
+      AnalysisState state, TrafficGroupVertex vertex, int nTotalEndpoints) {
+    TrafficGroup group = vertex.group;
+    int nEndpoints = group.endpoints.length;
+    vertex.size = nEndpoints / nTotalEndpoints;
+  }
+
   List<GraphEdge> _edges(AnalysisState state) {
     List<GraphEdge> edges = [];
-
+    INetworkConnection strongestConnection = state.visibleConnections
+        .sortedCopy((a, b) => state.trafficLoadInPackets
+            ? a.countTotal.compareTo(b.countTotal)
+            : a.bytesTotal.compareTo(b.bytesTotal))
+        .last;
+    int maxConnectionTrafficLoad = state.trafficLoadInPackets
+        ? strongestConnection.countTotal
+        : strongestConnection.bytesTotal;
     for (var group in state.visibleTrafficGroups) {
       for (var connection in group.connections) {
-        if (!state.endpoints
-            .any((e) => e.id == connection.endpoint.id)) {
+        if (!state.endpoints.any((e) => e.id == connection.endpoint.id)) {
           continue;
         }
+        //int totalTrafficLoad = TrafficAnalyzer.getTrafficLoad(state.visibleConnections.where((c) => c.endpoint.id == connection.endpoint.id), inPackets: state.trafficLoadInPackets,);
+        double trafficShare = TrafficAnalyzer.getTrafficLoad(
+              [connection],
+              inPackets: state.trafficLoadInPackets,
+            ) /
+            maxConnectionTrafficLoad;
         edges.add(GraphEdge(
           src: group,
           dst: connection,
+          size: trafficShare,
           common: state.testRunCount(connection) == group.testRuns,
         ));
       }
@@ -135,7 +187,27 @@ class EndpointGraph extends StatelessWidget {
 
   Widget edgePanelBuilder(
       BuildContext context, Edge edge, Viewfinder viewfinder) {
+    AnalysisState state = context.analysisCubit.state;
     GraphEdge edgeData = edge.data as GraphEdge;
+    String trafficLoadIn = "";
+    String trafficLoadOut = "";
+    if (state.trafficLoadInPackets) {
+      trafficLoadIn = "Count: ${edgeData.dst.inCount}";
+      trafficLoadOut = "Count: ${edgeData.dst.outCount}";
+    } else {
+      trafficLoadIn = "Volume: ${edgeData.dst.inBytes.readableFileSize()}";
+      trafficLoadOut = "Volume: ${edgeData.dst.outBytes.readableFileSize()}";
+    }
+    List<List<String>> entries = [
+      ["IN", trafficLoadIn],
+      ["Out", trafficLoadOut],
+      [
+        "Protocols",
+        ...edgeData.dst.protocols
+            .map((p) => p.replaceAll("sll:ethertype:ip:", ""))
+      ],
+      if (edgeData.common) ["Used in all tests"],
+    ];
     return _infoPanel(
       context,
       viewfinder,
@@ -143,7 +215,7 @@ class EndpointGraph extends StatelessWidget {
       child: _infoPanelContent(
         context,
         "${edgeData.src.name} -> ${"${edgeData.dst.endpoint.name}:${edgeData.dst.ports}"}",
-        "IN:\n\t\tPackets: ${edgeData.dst.inCount}\n\t\tBytes: ${edgeData.dst.inBytes}\nOUT:\n\t\tPackets: ${edgeData.dst.outCount}\n\t\tBytes: ${edgeData.dst.outBytes}\nProtocols: ${edgeData.dst.protocolsString}\nUsed in all tests: ${edgeData.common}",
+        entries, //"IN:\n$tab$trafficLoadIn\nOUT:\n$tab$trafficLoadOut\nProtocols:\n$protocols${edgeData.common ? "\nUsed in all tests" : ""}",
       ),
     );
   }
@@ -206,7 +278,7 @@ class EndpointGraph extends StatelessWidget {
   }
 
   Widget _infoPanelContent(
-          BuildContext context, String title, String content) =>
+          BuildContext context, String title, List<List<String>> entries) =>
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -214,31 +286,67 @@ class EndpointGraph extends StatelessWidget {
             title,
             style: context.textTheme.titleMedium,
           ),
-          Text(
-            content,
-            style: context.textTheme.bodyMedium,
-          ),
+          Margin.vertical(context.constants.largeSpacing),
+          ...entries
+              .map<Widget>(
+                (entry) => Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 100,
+                      child: Text(
+                        "${entry[0]}:",
+                        style: context.textTheme.labelMedium,
+                      ),
+                    ),
+                    if (entry.length > 1) ...[
+                      Margin.horizontal(context.constants.spacing),
+                      Text(
+                        entry.sublist(1).join("\n"),
+                        style: context.textTheme.bodyMedium,
+                      ),
+                    ],
+                  ],
+                ),
+              )
+              .toList()
+              .insertBetweenItems(
+                  () => Margin.vertical(context.constants.smallSpacing)),
         ],
       );
 
   Widget _endpointVertexPanelBuilder(BuildContext context, GraphVertex v) {
     INetworkEndpoint e = v.data as INetworkEndpoint;
-    if(e is NetworkEndpoint) {
+    AnalysisState state = context.analysisCubit.state;
+    if (e is NetworkEndpoint) {
+      List<List<String>> entries = [
+        ["IP", e.ip],
+        if (e.hasHostname) ["Hostname", e.hostname!],
+        ["# Connected Groups", v.connectedGroups.toString()],
+      ];
       return _infoPanelContent(
         context,
-        e.name,
-        'IP: ${e.ip}\n${e.hostname != null
-            ? "Hostname: ${e.hostname}\n"
-            : ""}# Connected Groups: ${v.connectedGroups}',
+        state.connectionsGrouped ? e.name : e.hostname ?? e.ip,
+        entries, //'IP: ${e.ip}\n${e.hostname != null ? "Hostname: ${e.hostname}\n" : ""}# Connected Groups: ${v.connectedGroups}',
       );
-    }else if(e is EndpointGroup){
+    } else if (e is EndpointGroup) {
+      List<List<String>> entries = [
+        ["IP", e.ip],
+        if (e.hasHostname) ["Domain", e.domain!],
+        [
+          "Endpoints",
+          ...e.endpoints
+              .map((ep) => ep.hostname ?? ep.ip)
+              .toList()
+              .sortedCopy((String a, String b) => compareHostnames(a, b))
+        ],
+        ["# Connected Groups", v.connectedGroups.toString()],
+      ];
       return _infoPanelContent(
         context,
         e.name,
-        'IP: ${e.ip}\n'
-            '${e.hasHostname
-            ? "Domain: ${e.domain}\nEndpoints: \n\t${e.endpoints.map<String>((ep) => ep.hostname ?? ep.ip).toList().sortedCopy((String a,String b) => compareHostnames(a,b)).join("\n\t")}\n"
-            : ""}# Connected Groups: ${v.connectedGroups}',
+        entries, //'IP: ${e.ip}\n${e.hasHostname ? "Domain: ${e.domain}\nEndpoints: \n\t${e.endpoints.map<String>((ep) => ep.hostname ?? ep.ip).toList().sortedCopy((String a, String b) => compareHostnames(a, b)).join("\n\t")}\n" : ""}# Connected Groups: ${v.connectedGroups}',
       );
     }
     return Text("Unknown");
@@ -248,6 +356,9 @@ class EndpointGraph extends StatelessWidget {
       _infoPanelContent(
         context,
         'Name: ${g.name}',
-        '# Connections: ${g.connections.length}${g.info != null ? "\n${g.info}" : ""}',
+        [
+          ["# Connections", g.connections.length.toString()],
+          if (g.info != null && g.info!.isNotEmpty) ["Info", g.info!],
+        ], //'# Connections: ${g.connections.length}${g.info != null ? "\n${g.info}" : ""}',
       );
 }

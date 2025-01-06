@@ -22,6 +22,7 @@ extension StringListExtensions on List<String>{
   List<String> get sorted => sortedCopy((a,b)=>a.compareTo(b));
 }
 extension NumberListExtensions<T extends num> on List<T>{
+  num get sum => isEmpty ? 0 : fold(0, (all, v) => all += v);
   num get min => isEmpty ? 0 : reduce(math.min);
   num get max => isEmpty ? 0 : reduce(math.max);
   double get avg => isEmpty ? 0 : fold(0.0, (total,v) => total+v)/length;

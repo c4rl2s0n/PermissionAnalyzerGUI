@@ -1,4 +1,6 @@
 // export widgets here
+
+export 'legend_entry.dart';
 export 'radar_chart.dart';
 
 export 'connection_overview/connection_overview.dart';

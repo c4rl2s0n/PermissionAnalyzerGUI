@@ -54,10 +54,12 @@ class AnalysisCubit extends Cubit<AnalysisState> {
                 children: scenario.testConstellations.map((tc) {
                   var constellationGroup = AnalysisTrafficGroupCubit(
                       group: TrafficGroup.fromConstellation(tc),
-                      children: tc.tests.map(
-                        (t) => AnalysisTrafficGroupCubit(
-                            group: TrafficGroup.fromTest(t)),
-                      ).toList());
+                      children: tc.tests
+                          .map(
+                            (t) => AnalysisTrafficGroupCubit(
+                                group: TrafficGroup.fromTest(t)),
+                          )
+                          .toList());
                   constellationGroups.add(constellationGroup);
                   return constellationGroup;
                 }).toList())) // update trafficGroup data for scenario
@@ -71,7 +73,6 @@ class AnalysisCubit extends Cubit<AnalysisState> {
     var enabledGroups = _enabledGroups;
     emit(state.copyWith(
       endpoints: _getEndpointsFromGroups(enabledGroups),
-      connections: _getFilteredConnectionsFromGroups(enabledGroups),
       enabledGroups: enabledGroups,
       groups: applicationGroups,
     ));
@@ -117,7 +118,7 @@ class AnalysisCubit extends Cubit<AnalysisState> {
     group.updateGroupFromChildren();
   }
 
-  Future analyzeEndpoints({bool force=false}) async {
+  Future analyzeEndpoints({bool force = false}) async {
     emit(state.copyWith(analyzingEndpoints: true));
     List<INetworkEndpoint> groupEndpoints =
         _getEndpointsFromGroups(_enabledGroups);
@@ -127,14 +128,16 @@ class AnalysisCubit extends Cubit<AnalysisState> {
       if (endpoint is NetworkEndpoint) endpoints.add(endpoint);
       if (endpoint is EndpointGroup) endpoints.addAll(endpoint.endpoints);
     }
-    List<String> locationLookupIps = endpoints.where((e) => force || !e.analyzed).map((e) => e.ip).toList();
-    Map<String, Geolocation> geolocations = await EndpointAnalyzer.lookupGeolocations(locationLookupIps);
+    List<String> locationLookupIps =
+        endpoints.where((e) => force || !e.analyzed).map((e) => e.ip).toList();
+    Map<String, Geolocation> geolocations =
+        await EndpointAnalyzer.lookupGeolocations(locationLookupIps);
     // analyze each single endpoint
     for (var endpoint in endpoints) {
       if (endpoint.analyzed && !force) continue;
       // perform all hostname-analysis here!
       endpoint.hostname = await EndpointAnalyzer.lookupHostname(endpoint.ip);
-      if(geolocations.containsKey(endpoint.ip)){
+      if (geolocations.containsKey(endpoint.ip)) {
         endpoint.geolocation = geolocations[endpoint.ip]!;
       }
       endpoint.analyzed = true;
@@ -151,9 +154,11 @@ class AnalysisCubit extends Cubit<AnalysisState> {
     }
     updateState();
   }
+
   void setTrafficLoadInPackets(bool loadInPackets) {
     emit(state.copyWith(trafficLoadInPackets: loadInPackets));
   }
+
   void setShowTestsInGroupTable(bool showTests) {
     emit(state.copyWith(showTestsInGroupTable: showTests));
   }
@@ -180,15 +185,6 @@ class AnalysisCubit extends Cubit<AnalysisState> {
       TrafficAnalyzer.getEndpointsFromGroups(
         groups.map((g) => g.group).toList(),
       );
-
-  List<INetworkConnection> _getFilteredConnectionsFromGroups(
-    List<AnalysisTrafficGroupCubit> groups,
-  ) =>
-      TrafficAnalyzer.getConnectionsFromTrafficGroups(
-        groups.map((g) => g.group).toList(),
-        filtered: true,
-        grouped: state.connectionsGrouped,
-      );
 }
 
 @freezed
@@ -197,7 +193,6 @@ class AnalysisState with _$AnalysisState {
 
   const factory AnalysisState({
     required List<INetworkEndpoint> endpoints,
-    required List<INetworkConnection> connections,
     required List<AnalysisTrafficGroupCubit> groups,
     required List<AnalysisTrafficGroupCubit> enabledGroups,
     required bool analyzingTraffic,
@@ -209,7 +204,6 @@ class AnalysisState with _$AnalysisState {
 
   factory AnalysisState.empty() => const AnalysisState(
         endpoints: [],
-        connections: [],
         groups: [],
         enabledGroups: [],
         analyzingTraffic: false,
@@ -224,6 +218,13 @@ class AnalysisState with _$AnalysisState {
 
   List<TrafficGroup> get visibleTrafficGroups =>
       visibleGroups.map((g) => g.group).toList();
+
+  List<INetworkConnection> get visibleConnections =>
+      TrafficAnalyzer.getConnectionsFromTrafficGroups(
+        visibleTrafficGroups,
+        filtered: true,
+        grouped: connectionsGrouped,
+      );
 
   List<NetworkPacket> get networkPackets => enabledGroups.fold(
       <NetworkPacket>[],
