@@ -38,7 +38,7 @@ class AnalysisCubit extends Cubit<AnalysisState> {
           name: scenario.applicationName,
           id: scenario.applicationName,
           info: "ID: ${scenario.applicationId}",
-          tags: [tApplication],
+          graphTags: [tApplication],
           data: scenario.applicationId,
         );
       }
@@ -64,16 +64,14 @@ class AnalysisCubit extends Cubit<AnalysisState> {
                   return constellationGroup;
                 }).toList())) // update trafficGroup data for scenario
             .toList(),
-      )..updateGroupFromChildren(), // update trafficGroup data for application
+      )..updateGroupFromChildren(connectionsGrouped: state.connectionsGrouped), // update trafficGroup data for application
     ));
     updateState();
   }
 
   void updateState() {
-    var enabledGroups = _enabledGroups;
     emit(state.copyWith(
-      endpoints: _getEndpointsFromGroups(enabledGroups),
-      enabledGroups: enabledGroups,
+      enabledGroups: _enabledGroups,
       groups: applicationGroups,
     ));
   }
@@ -85,9 +83,10 @@ class AnalysisCubit extends Cubit<AnalysisState> {
         for (var test in constellation.tests) {
           if (test.pcapPath == null) continue;
           test.packets = await TrafficAnalyzer.extractPackets(
-              Tshark(settingsCubit), test.pcapPath!);
-          test.connections =
-              TrafficAnalyzer.getConnectionsFromPackets(test.packets);
+            Tshark(settingsCubit),
+            test.pcapPath!,
+          );
+          test.connections = TrafficAnalyzer.getConnectionsFromPackets(test.packets);
           if (test.startTimeInMs == 0) {
             test.startTimeInMs = test.packets.firstOrNull?.timeInMs ?? 0;
           }
@@ -115,7 +114,7 @@ class AnalysisCubit extends Cubit<AnalysisState> {
     for (var child in group.state.children) {
       _reloadChildrenTrafficGroups(child);
     }
-    group.updateGroupFromChildren();
+    group.updateGroupFromChildren(connectionsGrouped: state.connectionsGrouped);
   }
 
   Future analyzeEndpoints({bool force = false}) async {
@@ -192,7 +191,6 @@ class AnalysisState with _$AnalysisState {
   const AnalysisState._();
 
   const factory AnalysisState({
-    required List<INetworkEndpoint> endpoints,
     required List<AnalysisTrafficGroupCubit> groups,
     required List<AnalysisTrafficGroupCubit> enabledGroups,
     required bool analyzingTraffic,
@@ -203,7 +201,6 @@ class AnalysisState with _$AnalysisState {
   }) = _AnalysisState;
 
   factory AnalysisState.empty() => const AnalysisState(
-        endpoints: [],
         groups: [],
         enabledGroups: [],
         analyzingTraffic: false,
@@ -225,6 +222,8 @@ class AnalysisState with _$AnalysisState {
         filtered: true,
         grouped: connectionsGrouped,
       );
+  List<INetworkEndpoint> get endpoints =>
+      TrafficAnalyzer.getEndpointsFromGroups(enabledGroups.map((g) => g.group).toList());
 
   List<NetworkPacket> get networkPackets => enabledGroups.fold(
       <NetworkPacket>[],

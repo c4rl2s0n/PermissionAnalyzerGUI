@@ -25,7 +25,7 @@ class TestRunTrafficOverviewTable extends StatelessWidget {
             columns: _columns(context),
             indexColumnWidth: 48,
             rowHeight: 35,
-            initialSelectedEntry: state.selectedPacket,
+            initialSelectedIndex: state.selectedPacket != null ? state.packets?.indexOf(state.selectedPacket!) : null,
             onDataSelected: (packet, _) => context.testRunAnalysisCubit.selectPacket(packet),
             data: packets,
           ),

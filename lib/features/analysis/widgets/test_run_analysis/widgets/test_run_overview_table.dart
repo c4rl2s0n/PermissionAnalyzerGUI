@@ -16,7 +16,7 @@ class TestRunOverviewTable extends StatelessWidget {
           columns: _columns(context),
           data: state.tests,
           onDataSelected: (entry, _) => context.testRunAnalysisCubit.selectTest(entry),
-          initialSelectedEntry: state.selectedTest,
+          initialSelectedIndex: state.selectedTest != null ? state.tests.indexOf(state.selectedTest!) : null,
         ),
       ),
     );
@@ -38,6 +38,16 @@ class TestRunOverviewTable extends StatelessWidget {
         name: "Constellation",
         width: 120,
         getValue: (c) => c.constellation.abbreviation,
+        getCell: (c) => Optional.tooltip(
+          tooltip: c.constellation.blockedEndpoints
+              ?.sortedCopy((a, b) => a.compareTo(b))
+              .map((e) => e.name)
+              .toList()
+              .join("\n") ??
+              "",
+          show: c.constellation.hasEndpoints,
+          child: Text(c.constellation.abbreviation, textAlign: TextAlign.center,),
+        ),
       ),
       DataGridColumn<TestRunDto, int>(
         name: "#Testrun",
@@ -47,7 +57,7 @@ class TestRunOverviewTable extends StatelessWidget {
       DataGridColumn<TestRunDto, int>(
         name: "# Packets",
         width: 100,
-        getValue: (c) => c.test.packets?.length ?? 0,
+        getValue: (c) => c.test.packets.length,
       ),
       //... TODO ...
       // Add information about the testrun(?)

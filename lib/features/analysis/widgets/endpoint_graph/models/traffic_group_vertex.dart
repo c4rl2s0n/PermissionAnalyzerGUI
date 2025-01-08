@@ -11,7 +11,7 @@ class TrafficGroupVertex extends GraphVertex {
 
   @override
   List<String> get tags => [
-    ...group.tags,
+    ...group.graphTags,
     tGroup,
     if (unique) tUnique,
     if (common) tCommon,

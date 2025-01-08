@@ -64,28 +64,11 @@ class TrafficAnalyzer {
     bool filtered = true,
     bool grouped = false,
   }) {
-    Map<String, INetworkConnection> connections = {};
-    for (var group in groups) {
-      // get all (distinct) connections; aggregate network packets when connected in multiple tests
-      for (var connection in group.connections) {
-        String key = connection.endpoint.id;
-        if (!connections.containsKey(key)) {
-          connections[key] = connection.copy;
-        } else {
-          if (connections[key]! is NetworkConnection) {
-            NetworkConnection con = connections[key]! as NetworkConnection;
-
-            con.testRuns.addAll(connection.testRuns
-                .where((tr) => !con.testRuns.any((ctr) => ctr.id == tr.id)));
-            con.packets.addAll(connection.packets);
-          }
-        }
-      }
+    List<TestRun> tests = [];
+    for(var group in groups){
+      tests.addAll(group.tests);
     }
-    List<INetworkConnection> conList =
-        _connectionMapToList(connections, filtered: filtered);
-    if (grouped) conList = getGroupedConnections(conList);
-    return conList;
+    return getConnectionsFromTestRuns(tests,filtered: filtered,grouped: grouped);
   }
 
   static List<INetworkConnection> getConnectionsFromTestRuns(
@@ -148,7 +131,7 @@ class TrafficAnalyzer {
     for (var connection in connections) {
       if (connection is ConnectionGroup) {
         // connection is already grouped
-        connectionGroups[connection.endpoint.name] = connection;
+        connectionGroups[connection.endpoint.displayName] = connection;
         continue;
       }
       connection as NetworkConnection;

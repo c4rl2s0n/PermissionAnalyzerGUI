@@ -1,4 +1,5 @@
 export 'buttons/buttons.dart';
+export 'charts/charts.dart';
 export 'container/container.dart';
 export 'dialogs/dialogs.dart';
 export 'factories/factories.dart';

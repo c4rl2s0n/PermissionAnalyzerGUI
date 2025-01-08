@@ -11,7 +11,7 @@ class DataGrid<T> extends StatefulWidget {
     this.onDataTap,
     this.onDataSecondaryTap,
     this.onDataSelected,
-    this.initialSelectedEntry,
+    this.initialSelectedIndex,
     this.rowActions,
     this.showIndex = true,
     this.provideHorizontalScrollbarSpace = true,
@@ -26,7 +26,7 @@ class DataGrid<T> extends StatefulWidget {
   final Function(T, [Offset?])? onDataTap;
   final Function(T, [Offset?])? onDataSecondaryTap;
   final Function(T?, int?)? onDataSelected;
-  final T? initialSelectedEntry;
+  final int? initialSelectedIndex;
 
   final bool showIndex;
   final bool provideHorizontalScrollbarSpace;
@@ -91,6 +91,13 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
     column.sortAsc = sortAsc;
   }
 
+  void _selectItemByIndex(int? index){
+    if(index == null || index < 0 || index >= widget.data.length) {
+      _selectItem(null);
+    } else {
+      _selectItem(widget.data[index]);
+    }
+  }
   void _selectItem(T? entry) {
     if(widget.onDataSelected == null) return;
     setState(() {
@@ -106,7 +113,7 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
   void didUpdateWidget(covariant DataGrid<T> oldGrid) {
     setupDataColumns();
     setupScrollControllers();
-    _selectItem(widget.initialSelectedEntry);
+    _selectItemByIndex(widget.initialSelectedIndex);
     super.didUpdateWidget(oldGrid);
   }
 
@@ -151,7 +158,7 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
   void initState() {
     setupDataColumns();
     setupScrollControllers();
-    _selectItem(widget.initialSelectedEntry);
+    _selectItemByIndex(widget.initialSelectedIndex);
     super.initState();
   }
 

@@ -11,6 +11,7 @@ class ConnectionGroup extends INetworkConnection {
 
   @override
   EndpointGroup endpoint;
+  @override
   List<NetworkConnection> connections;
 
   @override

@@ -44,14 +44,13 @@ class TestRunAnalysis extends StatelessWidget {
                     flex: 3,
                     child: TestRunOverviewTable(),
                   ),
-                  if (selectedTest != null &&
-                      selectedTest.test.packets != null) ...[
+                  if (selectedTest != null) ...[
                     Margin.horizontal(context.constants.spacing),
                     Expanded(
                       flex: 2,
                       child: TestRunTrafficOverviewTable(
                         test: selectedTest.test,
-                        packets: selectedTest.test.packets ?? [],
+                        packets: selectedTest.test.packets,
                       ),
                     ),
                   ],

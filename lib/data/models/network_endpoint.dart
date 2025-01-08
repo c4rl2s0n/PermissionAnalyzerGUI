@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'package:permission_analyzer_gui/common/helper.dart';
 
 import 'models.dart';
 
@@ -13,7 +14,10 @@ abstract class INetworkEndpoint{
   bool get hasHostname => hostname != null && hostname!.isNotEmpty;
   String get id;
 
-  String get name => domain ?? hostname ?? ip;
+  List<String> get tags;
+
+  String get name => hostname ?? ip;
+  String get displayName => domain ?? hostname ?? ip;
 
   String? get domain {
     if (hostname == null) return null;
@@ -22,14 +26,17 @@ abstract class INetworkEndpoint{
     List<String> rev = parts.reversed.toList();
     return "${rev[1]}.${rev[0]}";
   }
+  
+  int compareTo(NetworkEndpoint other) => hostname != null && other.hostname != null ? compareHostnames(hostname!, other.hostname!) : (hostname ?? ip).compareTo(other.hostname ?? other.ip);
 }
 
-@Collection(ignore: {'name'})
+@Collection(ignore: {'name', 'displayName'})
 class NetworkEndpoint extends INetworkEndpoint{
   NetworkEndpoint({
     this.ip = "",
     this.analyzed = false,
     this.geolocation,
+    this.tags = const [],
     super.hostname,
   });
 
@@ -46,4 +53,7 @@ class NetworkEndpoint extends INetworkEndpoint{
   @override
   List<Geolocation> get geolocations => geolocation != null ? [geolocation!] : [];
   Geolocation? geolocation;
+
+  @override
+  List<String> tags;
 }

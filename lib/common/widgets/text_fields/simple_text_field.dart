@@ -63,6 +63,7 @@ class _SimpleTextFieldState extends State<SimpleTextField> {
   void initState() {
     controller = TextEditingController(text: widget.initialValue);
     obscured = widget.isPassword;
+    _validate();
     super.initState();
   }
 

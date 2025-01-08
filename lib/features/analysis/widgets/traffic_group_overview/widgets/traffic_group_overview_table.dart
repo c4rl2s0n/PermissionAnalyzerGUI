@@ -125,7 +125,7 @@ class TrafficGroupOverviewTable extends StatelessWidget {
           name: "Packets Avg (by Test)",
           width: 140,
           headerAlign: TextAlign.center,
-          getValue: (g) => (g.state.group.connections.fold(0, (load, con) => load += con.countTotal) / g.state.group.testRuns).floor(),
+          getValue: (g) => _getAvgValue(g.state.group.connections.fold(0, (load, con) => load += con.countTotal), g.state.group.testRuns),
           defaultCellTextAlign: TextAlign.center,
         ),
       ]else...[
@@ -165,13 +165,17 @@ class TrafficGroupOverviewTable extends StatelessWidget {
           width: 150,
           headerAlign: TextAlign.center,
           getCell: (g) => Text(
-            (g.state.group.connections.fold(0, (load, con) => load += con.bytesTotal) / g.state.group.testRuns).floor().readableFileSize(base1024: false),
+            _getAvgValue(g.state.group.connections.fold(0, (load, con) => load += con.bytesTotal), g.state.group.testRuns).readableFileSize(base1024: false),
             textAlign: TextAlign.center,
           ),
-          getValue: (g) => (g.state.group.connections.fold(0, (load, con) => load += con.bytesTotal) / g.state.group.testRuns).floor(),
+          getValue: (g) => _getAvgValue(g.state.group.connections.fold(0, (load, con) => load += con.bytesTotal), g.state.group.testRuns),
         ),
       ],
     ];
 
+  }
+  int _getAvgValue(int sum, int count){
+    if(count == 0) return 0;
+    return (sum / count).floor();
   }
 }

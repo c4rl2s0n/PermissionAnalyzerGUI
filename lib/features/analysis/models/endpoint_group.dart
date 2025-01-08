@@ -7,7 +7,7 @@ class EndpointGroup extends INetworkEndpoint{
   });
 
   @override
-  String get id => name;
+  String get id => displayName;
   @override
   String get ipRange{
     // get the common netmask of the grouped endpoints
@@ -40,9 +40,11 @@ class EndpointGroup extends INetworkEndpoint{
   String get ip => ipRange;
 
   @override
-  String get name => hostname ?? ipRange; // ip range or hostname
+  String get displayName => hostname ?? ipRange; // ip range or hostname
   @override
   List<Geolocation> get geolocations => endpoints.map((e) => e.geolocation).nonNulls.toList();
   List<NetworkEndpoint> endpoints;
 
+  @override
+  List<String> get tags => endpoints.fold([], (all, e) => [...all, ...e.tags]);
 }

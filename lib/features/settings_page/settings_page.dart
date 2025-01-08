@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:permission_analyzer_gui/features/settings_page/behavior_settings.dart';
 import 'package:permission_analyzer_gui/features/settings_page/tool_settings.dart';
 
 import 'language_settings.dart';
@@ -19,6 +20,7 @@ class SettingsPage extends StatelessWidget {
           children: [
             const ThemeSettings(),
             // const LanguageSettings(),
+            // const BehaviorSettings(),
             const ToolSettings(),
           ].insertBetweenItems(() => const Divider()).insertBetweenItems(
               () => Margin.vertical(context.constants.largeSpacing)),

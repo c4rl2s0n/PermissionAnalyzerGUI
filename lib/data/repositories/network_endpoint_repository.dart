@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:isar/isar.dart';
 
@@ -47,5 +47,20 @@ class NetworkEndpointRepository extends INetworkEndpointRepository {
   @override
   List<NetworkEndpoint> get(List<int> ids) {
     return _isar.networkEndpoints.getAllSync(ids).nonNulls.toList();
+  }
+
+  @override
+  List<NetworkEndpoint> getByApplication(String applicationId){
+    var scenarios = TestScenarioRepository(_isar).getForApplication(applicationId);
+    List<NetworkEndpoint> endpoints = [];
+    for(var scenario in scenarios){
+      for(var constellation in scenario.testConstellations){
+        for(var test in constellation.tests){
+          endpoints.addAll(test.endpoints?.where((t) => !endpoints.any((e) => e.ip==t.ip)) ?? []);
+        }
+      }
+    }
+    endpoints.sort((a,b) => a.hostname != null && b.hostname != null ? compareHostnames(a.hostname!, b.hostname!) : (a.hostname ?? a.ip).compareTo(b.hostname ?? b.ip));
+    return endpoints;
   }
 }

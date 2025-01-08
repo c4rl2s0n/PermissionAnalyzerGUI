@@ -14,11 +14,14 @@ const Map<String, Color> graphTagColors = <String, Color>{
 };
 
 const List<Color> trafficGroupColors = [
-  Colors.green,
-  Colors.red,
-  Colors.blue,
-  Colors.orange,
-  Colors.purpleAccent,
-  Colors.brown,
-  Colors.indigo,
+  Color(0xff0c2aa2),
+  Color(0xffbb6207),
+  Color(0xFF264653),
+  Color(0xFFe9c46a),
+  Color(0xFF2a9d8f),
+  Color(0xFFa5be00),
+  Color(0xFFe76f51),
+  Color(0xFF8338ec),
+  Color(0xFF81b29a),
+  Color(0xFF9e2a2b),
 ];

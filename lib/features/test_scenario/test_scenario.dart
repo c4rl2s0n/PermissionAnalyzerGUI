@@ -74,6 +74,7 @@ class TestScenario extends StatelessWidget {
   Widget _layoutSide(BuildContext context, {required List<Widget> children}) {
     return Expanded(
       child: Column(
+        mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: children.insertBetweenItems(
           () => Margin.vertical(context.constants.spacing),
@@ -91,9 +92,11 @@ class TestScenario extends StatelessWidget {
 
   Widget _rightSide(BuildContext context) {
     return _layoutSide(context, children: [
-      const Expanded(child: PermissionSelector()),
-      //const RecordingOptions(),
-    ]);
+        const PermissionSelector(),
+        const Expanded(child: FirewallSelector()),
+        //const RecordingOptions(),
+      ]
+    );
   }
 
   void _onLoading(BuildContext context, TestScenarioState state) {

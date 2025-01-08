@@ -30,7 +30,7 @@ class TestApplicationCubit extends Cubit<TestApplicationState> {
     scenarioWatcher =
         testScenarioRepository.watchForApplication(state.id).listen(
       (scenarios) {
-        testScenarioRepository.loadTests(scenarios);
+        testScenarioRepository.loadExtraDataForScenarios(scenarios);
         emit(state.copyWith(scenarios: List.of(scenarios)));
       },
     );

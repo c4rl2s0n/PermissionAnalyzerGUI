@@ -37,7 +37,7 @@ class AnalysisTrafficGroupCubit extends Cubit<AnalysisTrafficGroupState> {
   String get name => state.group.name;
   String get fullName => "${path.isNotEmpty ? "$path." : ""}${state.group.name}";
   String? get info => state.group.info;
-  List<String> get tags => state.group.tags;
+  List<String> get tags => state.group.graphTags;
   int get testRuns => state.group.testRuns;
   AnalysisTrafficGroupCubit? get parent => state.parent;
   String get path => "${parent?.path ?? ""}${parent != null && parent!.path.isNotEmpty ? "." : ""}${parent?.name ?? ""}";
@@ -112,12 +112,12 @@ class AnalysisTrafficGroupCubit extends Cubit<AnalysisTrafficGroupState> {
     emit(state.copyWith(show: show));
   }
 
-  void updateGroupFromChildren() {
+  void updateGroupFromChildren({bool connectionsGrouped = false}) {
     if (state.children.isEmpty) return;
     List<AnalysisTrafficGroupCubit> children =
         state.children.where((c) => c.state.isSelected).toList();
     for(var child in children){
-      child.updateGroupFromChildren();
+      child.updateGroupFromChildren(connectionsGrouped: connectionsGrouped);
     }
     List<TestRun> tests = children.fold([], (all, child) => [...all, ...child.group.tests]);
 
@@ -125,10 +125,11 @@ class AnalysisTrafficGroupCubit extends Cubit<AnalysisTrafficGroupState> {
       name: state.group.name,
       info: state.group.info,
       id: state.group.id,
-      tags: state.group.tags,
+      graphTags: state.group.graphTags,
       data: state.group.data,
-      tests: tests,
+      tests: [],  // set tests separately to ensure grouped is applied correctly
     );
+    group.setTests(tests, grouped: connectionsGrouped);
     emit(state.copyWith(group: group));
   }
 

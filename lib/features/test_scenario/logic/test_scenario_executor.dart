@@ -31,7 +31,6 @@ extension TestScenarioExecutor on TestScenarioCubit {
     // record the input events
     _emit(state.copyWith(loadingInfo: "Recording user input..."));
     Process getEvents = await _adb.getEvents(
-      devicePath: state.deviceInput.path,
       duration: state.duration,
     );
     List<String> eventLines = [];
@@ -76,12 +75,12 @@ extension TestScenarioExecutor on TestScenarioCubit {
       userInputRecord: testScenario.userInputRecord,
     ));
 
-    _storeScenario();
+    storeScenario();
   }
 
-  Future _runTest(TestConstellation constellation, String fileDirectory, int index, String testName) async {
+  Future _runTest(TestConstellation constellation, String fileDirectory, int index, String testName,) async {
     String loadingInfoSuffix =
-        "${constellation.abbreviation} - $index";
+        "${constellation.abbreviation} ${constellation.blockedIPs.isNotEmpty ? "(${constellation.blockedIPs.length} blocked endpoints)" : ""} - $index";
     String pcapFilename = "traffic_${index.toString().padLeft(3, "0")}.pcap";
     // setup working directory to store capture files
     if (state.recordScreen || state.captureTraffic) {
@@ -93,6 +92,11 @@ extension TestScenarioExecutor on TestScenarioCubit {
     _emit(state.copyWith(
         loadingInfo: "$loadingInfoSuffix:\nAdjusting permissions"));
     await _setPermissions(constellation.permissions);
+
+    // block endpoints according to test constellation
+    _emit(state.copyWith(
+        loadingInfo: "$loadingInfoSuffix:\nSetup Firewall"));
+    await _setupFirewall(constellation.blockedIPs);
 
     _emit(state.copyWith(
         loadingInfo: "$loadingInfoSuffix:\nRestart application"));
@@ -124,11 +128,13 @@ extension TestScenarioExecutor on TestScenarioCubit {
     }
 
     // replay user input
-    Process userInputProcess = await _adb.shellProc([
-      _settings.recorderDestinationPath,
-      //state.deviceInput.path,
-      _settings.inputRecordDestinationPath,
-    ]);
+    Process? userInputProcess;
+    if(state.hasInputRecord) {
+      userInputProcess = await _adb.shellProc([
+        _settings.recorderDestinationPath,
+        _settings.inputRecordDestinationPath,
+      ]);
+    }
 
     // let test run through
     for(int i=0; i<state.duration.inSeconds; i++){
@@ -136,7 +142,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
       _emit(state.copyWith(loadingInfo: "$loadingInfoSuffix:\nRunning the test\n$remaining seconds remaining..."));
       await sleepSec(1);
     }
-    userInputProcess.kill();
+    userInputProcess?.kill();
 
     DateTime testRunEndTime = DateTime.timestamp();
 
@@ -149,7 +155,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
     // Fetch all the generated files and store them in fileDirectory and db
     TestRun testRun = TestRun(
       index: index,
-      name: testName,
+      name: testName, // TODO: Need identifier in adition to name (since constellations can have same name)
       startTimeInMs: testStart,
       durationInMs: durationInMs,
     );
@@ -184,7 +190,12 @@ extension TestScenarioExecutor on TestScenarioCubit {
       // No data to store...
       constellation.tests = <TestRun>[...constellation.tests, testRun];
     }
-    _storeScenario();
+
+    // allow endpoints according to test constellation after running the test
+    _emit(state.copyWith(loadingInfo: "$loadingInfoSuffix:\nRestore Firewall"));
+    await _restoreFirewall(constellation.blockedIPs);
+
+    storeScenario();
   }
 
   Future runTests() async {
@@ -198,19 +209,12 @@ extension TestScenarioExecutor on TestScenarioCubit {
     // make sure working directory exists
     await Directory(_workingDirectory).create(recursive: true);
 
-    // prepare the userinput_record file
-    String uiRecordFilePath = join(_workingDirectory, "record.txt");
-    File uiRecordFile = File(uiRecordFilePath);
-    if (!await uiRecordFile.exists()) await uiRecordFile.create();
-    uiRecordFile.writeAsString(state.userInputRecord);
-
     // ensure adb is in root mode
     await _adb.root();
-
-    // push ui-replay binary and record to device
-    await _adb.pushFile(
-        _settings.recorderPath, _settings.recorderDestinationPath);
-    await _adb.pushFile(uiRecordFilePath, _settings.inputRecordDestinationPath);
+    
+    if(state.hasInputRecord) {
+      _setupInputRecorder();
+    }
 
     _emit(state.copyWith(loadingInfo: "Run the tests"));
     // run the Test #numTestRuns times
@@ -223,13 +227,13 @@ extension TestScenarioExecutor on TestScenarioCubit {
 
         // get the file-directory for the constellation
         String fileDirectory =
-            join(_workingDirectory, constellation.abbreviation);
+            join(_workingDirectory, constellation.uniqueIdentifier);
 
         // write the permissions for the constellation to a file
         if (i == 0) {
-          _writePermissionTxt(constellation, fileDirectory);
+          _writeConstellationTxt(constellation, fileDirectory);
         }
-        String testName = "${testScenario.applicationName}.${testScenario.name}.${constellation.abbreviation}.$index";
+        String testName = "${testScenario.applicationName}.${testScenario.name}.${constellation.displayName}.$index";
         // run the current test
         await _runTest(
           constellation,
@@ -240,31 +244,49 @@ extension TestScenarioExecutor on TestScenarioCubit {
       }
     }
 
-    _emit(state.copyWith(
-      loadingInfo: "Preparing the environment for running the tests",
-    ));
+    _emit(state.copyWith(loadingInfo: "Finishing the tests"));
     _updateAnalysis();
     _emit(TestScenarioState.fromScenario(testScenario));
+    _loadAppEndpoints();
+  }
+
+  Future _setupInputRecorder() async{
+    // prepare the userinput_record file
+    String uiRecordFilePath = join(_workingDirectory, "record.txt");
+    File uiRecordFile = File(uiRecordFilePath);
+    if (!await uiRecordFile.exists()) await uiRecordFile.create();
+    uiRecordFile.writeAsString(state.userInputRecord);
+    await _adb.pushFile(uiRecordFilePath, _settings.inputRecordDestinationPath);
+
+    // push ui-replay binary to the device
+    ByteData data = await rootBundle.load("assets/sendevent/${_settings.recorderVersion}");
+    List<int> dataBytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    String tmpPath = "${(await getTemporaryDirectory()).path}/mysendevent";
+    await File(tmpPath).writeAsBytes(dataBytes, flush: true);
+    await _adb.pushFile(tmpPath, _settings.recorderDestinationPath);
   }
 
   void _updateAnalysis() {
     testScenario.testConstellations = List.of(testScenario.testConstellations);
-    _storeScenario();
+    storeScenario();
   }
 
-  Future _writePermissionTxt(
+  Future _writeConstellationTxt(
     TestConstellation constellation,
     String fileDirectory,
   ) async {
     // write the current permission constellation to a file
-    File permissionsTxt = File(join(fileDirectory, "permissions.txt"));
+    File permissionsTxt = File(join(fileDirectory, "constellation.txt"));
     if (!await permissionsTxt.exists()) {
       await permissionsTxt.create(recursive: true);
     }
-    String permissionString = constellation.permissions
+    String permissionString = "Granted Permissions:\n";
+    permissionString = constellation.permissions
         .where((p) => p.state == PermissionState.granted)
         .map((p) => p.permission)
         .join("\n");
+    permissionString += "\n\nBlocked Endpoints:\n";
+    permissionString += constellation.blockedEndpoints?.map((e) => e.name).join("\n") ?? "";
     await permissionsTxt.writeAsString(permissionString);
   }
 }

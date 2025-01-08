@@ -19,12 +19,13 @@ class _ConnectionOverviewState extends State<ConnectionOverview> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AnalysisCubit, AnalysisState>(
-      buildWhen: (oldState, state) => oldState.visibleConnections != state.visibleConnections,
+      buildWhen: (oldState, state) => oldState.connectionsGrouped != state.connectionsGrouped,
       builder: (context, state) {
         return BlocProvider(
+          key: Key("ConnectionOverviewCubitProvider_${state.connectionsGrouped}"),
           create: (context) => ConnectionOverviewCubit(
             state.visibleConnections,
-            selectedIndex: lastSelected,
+            //selectedIndex: lastSelected,
           ),
           child: _buildContent(context),
         );
@@ -34,8 +35,7 @@ class _ConnectionOverviewState extends State<ConnectionOverview> {
 
   Widget _buildContent(BuildContext context) {
     return BlocBuilder<ConnectionOverviewCubit, ConnectionOverviewState>(
-      buildWhen: (oldState, state) =>
-          oldState.selectedConnection != state.selectedConnection,
+      buildWhen: (oldState, state) => oldState.selectedConnection != state.selectedConnection,
       builder: (context, state) {
         lastSelected = state.selectedIndex;
         return Row(

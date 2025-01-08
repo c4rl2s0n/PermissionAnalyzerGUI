@@ -16,7 +16,6 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$AnalysisState {
-  List<INetworkEndpoint> get endpoints => throw _privateConstructorUsedError;
   List<AnalysisTrafficGroupCubit> get groups =>
       throw _privateConstructorUsedError;
   List<AnalysisTrafficGroupCubit> get enabledGroups =>
@@ -41,8 +40,7 @@ abstract class $AnalysisStateCopyWith<$Res> {
       _$AnalysisStateCopyWithImpl<$Res, AnalysisState>;
   @useResult
   $Res call(
-      {List<INetworkEndpoint> endpoints,
-      List<AnalysisTrafficGroupCubit> groups,
+      {List<AnalysisTrafficGroupCubit> groups,
       List<AnalysisTrafficGroupCubit> enabledGroups,
       bool analyzingTraffic,
       bool analyzingEndpoints,
@@ -66,7 +64,6 @@ class _$AnalysisStateCopyWithImpl<$Res, $Val extends AnalysisState>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? endpoints = null,
     Object? groups = null,
     Object? enabledGroups = null,
     Object? analyzingTraffic = null,
@@ -76,10 +73,6 @@ class _$AnalysisStateCopyWithImpl<$Res, $Val extends AnalysisState>
     Object? trafficLoadInPackets = null,
   }) {
     return _then(_value.copyWith(
-      endpoints: null == endpoints
-          ? _value.endpoints
-          : endpoints // ignore: cast_nullable_to_non_nullable
-              as List<INetworkEndpoint>,
       groups: null == groups
           ? _value.groups
           : groups // ignore: cast_nullable_to_non_nullable
@@ -121,8 +114,7 @@ abstract class _$$AnalysisStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {List<INetworkEndpoint> endpoints,
-      List<AnalysisTrafficGroupCubit> groups,
+      {List<AnalysisTrafficGroupCubit> groups,
       List<AnalysisTrafficGroupCubit> enabledGroups,
       bool analyzingTraffic,
       bool analyzingEndpoints,
@@ -144,7 +136,6 @@ class __$$AnalysisStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? endpoints = null,
     Object? groups = null,
     Object? enabledGroups = null,
     Object? analyzingTraffic = null,
@@ -154,10 +145,6 @@ class __$$AnalysisStateImplCopyWithImpl<$Res>
     Object? trafficLoadInPackets = null,
   }) {
     return _then(_$AnalysisStateImpl(
-      endpoints: null == endpoints
-          ? _value._endpoints
-          : endpoints // ignore: cast_nullable_to_non_nullable
-              as List<INetworkEndpoint>,
       groups: null == groups
           ? _value._groups
           : groups // ignore: cast_nullable_to_non_nullable
@@ -194,26 +181,16 @@ class __$$AnalysisStateImplCopyWithImpl<$Res>
 
 class _$AnalysisStateImpl extends _AnalysisState {
   const _$AnalysisStateImpl(
-      {required final List<INetworkEndpoint> endpoints,
-      required final List<AnalysisTrafficGroupCubit> groups,
+      {required final List<AnalysisTrafficGroupCubit> groups,
       required final List<AnalysisTrafficGroupCubit> enabledGroups,
       required this.analyzingTraffic,
       required this.analyzingEndpoints,
       required this.connectionsGrouped,
       required this.showTestsInGroupTable,
       required this.trafficLoadInPackets})
-      : _endpoints = endpoints,
-        _groups = groups,
+      : _groups = groups,
         _enabledGroups = enabledGroups,
         super._();
-
-  final List<INetworkEndpoint> _endpoints;
-  @override
-  List<INetworkEndpoint> get endpoints {
-    if (_endpoints is EqualUnmodifiableListView) return _endpoints;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_endpoints);
-  }
 
   final List<AnalysisTrafficGroupCubit> _groups;
   @override
@@ -244,7 +221,7 @@ class _$AnalysisStateImpl extends _AnalysisState {
 
   @override
   String toString() {
-    return 'AnalysisState(endpoints: $endpoints, groups: $groups, enabledGroups: $enabledGroups, analyzingTraffic: $analyzingTraffic, analyzingEndpoints: $analyzingEndpoints, connectionsGrouped: $connectionsGrouped, showTestsInGroupTable: $showTestsInGroupTable, trafficLoadInPackets: $trafficLoadInPackets)';
+    return 'AnalysisState(groups: $groups, enabledGroups: $enabledGroups, analyzingTraffic: $analyzingTraffic, analyzingEndpoints: $analyzingEndpoints, connectionsGrouped: $connectionsGrouped, showTestsInGroupTable: $showTestsInGroupTable, trafficLoadInPackets: $trafficLoadInPackets)';
   }
 
   @override
@@ -252,8 +229,6 @@ class _$AnalysisStateImpl extends _AnalysisState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$AnalysisStateImpl &&
-            const DeepCollectionEquality()
-                .equals(other._endpoints, _endpoints) &&
             const DeepCollectionEquality().equals(other._groups, _groups) &&
             const DeepCollectionEquality()
                 .equals(other._enabledGroups, _enabledGroups) &&
@@ -272,7 +247,6 @@ class _$AnalysisStateImpl extends _AnalysisState {
   @override
   int get hashCode => Object.hash(
       runtimeType,
-      const DeepCollectionEquality().hash(_endpoints),
       const DeepCollectionEquality().hash(_groups),
       const DeepCollectionEquality().hash(_enabledGroups),
       analyzingTraffic,
@@ -292,8 +266,7 @@ class _$AnalysisStateImpl extends _AnalysisState {
 
 abstract class _AnalysisState extends AnalysisState {
   const factory _AnalysisState(
-      {required final List<INetworkEndpoint> endpoints,
-      required final List<AnalysisTrafficGroupCubit> groups,
+      {required final List<AnalysisTrafficGroupCubit> groups,
       required final List<AnalysisTrafficGroupCubit> enabledGroups,
       required final bool analyzingTraffic,
       required final bool analyzingEndpoints,
@@ -302,8 +275,6 @@ abstract class _AnalysisState extends AnalysisState {
       required final bool trafficLoadInPackets}) = _$AnalysisStateImpl;
   const _AnalysisState._() : super._();
 
-  @override
-  List<INetworkEndpoint> get endpoints;
   @override
   List<AnalysisTrafficGroupCubit> get groups;
   @override

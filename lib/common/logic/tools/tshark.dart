@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
@@ -72,8 +73,10 @@ class Tshark {
     ProcessResult result = await run(arguments);
     try {
       return jsonDecode(result.outText);
-    } catch (e) {
-      print("Error: $e");
+    } on Error catch (e) {
+      Logger.root.warning("Error decoding pcap", e, e.stackTrace);
+    } on Exception catch (e){
+      Logger.root.warning("Exception decoding pcap", e);
     }
     return null;
   }

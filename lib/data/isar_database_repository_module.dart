@@ -1,5 +1,4 @@
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:isar/isar.dart';
 
 import 'package:permission_analyzer_gui/data/data.dart';
 

@@ -14,11 +14,10 @@ class ConnectionOverviewCubit extends Cubit<ConnectionOverviewState> {
   List<INetworkConnection> connections;
 
   void updateSelection(INetworkConnection? entry) {
-    emit(state.copyWith(
-      selectedIndex: entry == null
-          ? null
-          : state.connections.indexWhere((c) => c.flow == entry.flow),
-    ));
+    int? index = entry == null
+        ? null
+        : state.connections.indexWhere((c) => c.flow == entry.flow);
+    emit(state.copyWith(selectedIndex: index));
   }
 }
 

@@ -11,7 +11,7 @@ abstract class INetworkConnection {
   List<String> get protocols;
   String get wiresharkFilter => ips.map((ip) => "ip.addr == $ip").join(" or ");
   String get protocolsString => _protocolsString;
-  String get flow => "(${endpoint.ip}; ${ports.join(",")}; ${protocolsString.replaceAll("\n", ",")})";
+  String get flow => "(${endpoint.ip}; ${endpoint.name}; ${ports.join(",")}; ${protocolsString.replaceAll("\n", ",")})";
   List<NetworkConnection> get connections;
 
   INetworkConnection get copy;
@@ -80,7 +80,7 @@ abstract class INetworkConnection {
 
 }
 
-@Embedded(ignore: {'endpoint', 'copy', 'testRuns'})
+@Embedded(ignore: {'endpoint', 'copy', 'testRuns', 'connections', 'protocolsString'})
 class NetworkConnection extends INetworkConnection{
   NetworkConnection({
     this.ip = "0.0.0.0",
@@ -156,8 +156,6 @@ class NetworkConnection extends INetworkConnection{
         // packets coming in from endpoint
         inCount++;
         inBytes += packet.size;
-      }else{
-        print("(IP: $ip) ${packet.src} -> ${packet.dst}");
       }
     }
     protocols.sort();

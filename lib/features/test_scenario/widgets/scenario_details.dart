@@ -140,86 +140,6 @@ class ScenarioDetails extends StatelessWidget {
     );
   }
 
-  Widget _inputDeviceSelection() {
-    return BlocBuilder<SessionCubit, SessionState>(
-      buildWhen: (oldState, state) =>
-          oldState.adbDevices != state.adbDevices ||
-          oldState.adbDeviceEventInputs != state.adbDeviceEventInputs,
-      builder: (context, session) {
-        return BlocBuilder<TestScenarioCubit, TestScenarioState>(
-          buildWhen: (oldState, state) =>
-              oldState.deviceInput != state.deviceInput ||
-              oldState.hasTests != state.hasTests ||
-              oldState.hasInputRecord != state.hasInputRecord,
-          builder: (context, state) {
-            bool deviceConnected = session.deviceConnected(state.device);
-            bool dropdownEnabled =
-                !state.hasInputRecord && !state.hasTests && deviceConnected;
-
-            List<AndroidInputDevice> inputDevices =
-                List.of(session.adbDeviceEventInputs);
-            if (!inputDevices.any((i) => i.path == state.deviceInput.path)) {
-              inputDevices.insert(0, state.deviceInput);
-            }
-            inputDevices.sort((a, b) => a.name.compareTo(b.name));
-
-            // Dropdown widget here
-            return SizedBox(
-              width: leftColumnWidth,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Optional.tooltip(
-                    tooltip: state.hasInputRecord
-                        ? "Some input has already been recorded."
-                        : state.hasTests
-                            ? "Tests have already been recorded for this scenario."
-                            : !deviceConnected
-                                ? "The required device is not connected."
-                                : "",
-                    show: !dropdownEnabled,
-                    child: DropdownMenu<AndroidInputDevice>(
-                      key: const Key("InputDeviceSelection"),
-                      width: state.deviceInput.info.isNotEmpty
-                          ? leftColumnWidth - 50
-                          : leftColumnWidth,
-                      enabled: dropdownEnabled,
-                      enableSearch: false,
-                      label: const Text("Input Device"),
-                      onSelected: (i) => i == null
-                          ? null
-                          : context.testScenarioCubit.setEventInputDevice(i),
-                      initialSelection: state.deviceInput,
-                      requestFocusOnTap: false,
-                      dropdownMenuEntries: inputDevices
-                          .map((i) => DropDownMenuFactory.dropdownMenuEntry(
-                                context,
-                                value: i,
-                                label: i.name,
-                              ))
-                          .toList(),
-                    ),
-                  ),
-                  Optional.collapsed(
-                    collapse: state.deviceInput.info.isEmpty,
-                    child: IconButton(
-                      onPressed: () => InfoDialog.showInfo(
-                        context,
-                        title: "Input Device: ${state.deviceInput.name}",
-                        content: state.deviceInput.info,
-                      ),
-                      icon: Icon(context.icons.info),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
   Widget _networkInterfaceSelection() {
     return BlocBuilder<SettingsCubit, SettingsState>(
       buildWhen: (oldState, state) => oldState.tsharkPath != state.tsharkPath,
@@ -425,8 +345,8 @@ class ScenarioDetails extends StatelessWidget {
                   color: context.textTheme.labelMedium?.color
                       ?.withOpacity(context.constants.lightColorOpacity))),
           SizedBox(width: textFieldWidth, child: _recordScreen(context)),
-          SizedBox(
-              width: textFieldWidth, child: _captureNetworkTraffic(context)),
+          Margin.vertical(context.constants.smallSpacing),
+          SizedBox(width: textFieldWidth, child: _captureNetworkTraffic(context)),
         ],
       ),
     );
@@ -435,13 +355,18 @@ class ScenarioDetails extends StatelessWidget {
   Widget _recordScreen(BuildContext context) {
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
       buildWhen: (oldState, state) =>
-          oldState.recordScreen != state.recordScreen,
+          oldState.recordScreen != state.recordScreen || oldState.hasTests != state.hasTests,
       builder: (context, state) {
-        return _boolSetting(
-          context,
-          name: "Record Screen",
-          value: state.recordScreen,
-          onToggle: () => context.testScenarioCubit.toggleRecordScreen(),
+        return Optional.tooltip(
+          tooltip: "Tests have already been performed for this Scenario",
+          show: state.hasTests,
+          child: _boolSetting(
+            context,
+            enabled: !state.hasTests,
+            name: "Record Screen",
+            value: state.recordScreen,
+            onToggle: () => context.testScenarioCubit.toggleRecordScreen(),
+          ),
         );
       },
     );
@@ -452,11 +377,11 @@ class ScenarioDetails extends StatelessWidget {
       builder: (context, settings) =>
           BlocBuilder<TestScenarioCubit, TestScenarioState>(
         buildWhen: (oldState, state) =>
-            oldState.captureTraffic != state.captureTraffic,
+            oldState.captureTraffic != state.captureTraffic || oldState.hasTests != state.hasTests,
         builder: (context, state) {
-          bool isEnabled = settings.tsharkPath.isNotEmpty;
+          bool isEnabled = settings.tsharkPath.isNotEmpty && !state.hasTests;
           return Optional.tooltip(
-            tooltip:
+            tooltip: state.hasTests ? "Tests have already been recorded for this Scenario" :
                 "The path of the TShark executable needs to be defined in the settings.",
             show: !isEnabled,
             child: _boolSetting(

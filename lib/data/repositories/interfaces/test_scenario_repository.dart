@@ -7,5 +7,5 @@ abstract class ITestScenarioRepository {
   void deleteForApplication(String applicationId);
   void delete(int id);
   void update(TestScenario testScenario);
-  void loadTests(List<TestScenario> scenarios);
+  void loadExtraDataForScenarios(List<TestScenario> scenarios);
 }

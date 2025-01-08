@@ -34,6 +34,8 @@ mixin _$TestScenarioState {
   bool get captureTraffic => throw _privateConstructorUsedError;
   List<TestConstellation> get testConstellations =>
       throw _privateConstructorUsedError;
+  List<FirewallSetting> get firewallSettings =>
+      throw _privateConstructorUsedError;
 
   /// Create a copy of TestScenarioState
   /// with the given fields replaced by the non-null parameter values.
@@ -64,7 +66,8 @@ abstract class $TestScenarioStateCopyWith<$Res> {
       List<PermissionSetting> permissions,
       bool recordScreen,
       bool captureTraffic,
-      List<TestConstellation> testConstellations});
+      List<TestConstellation> testConstellations,
+      List<FirewallSetting> firewallSettings});
 }
 
 /// @nodoc
@@ -98,6 +101,7 @@ class _$TestScenarioStateCopyWithImpl<$Res, $Val extends TestScenarioState>
     Object? recordScreen = null,
     Object? captureTraffic = null,
     Object? testConstellations = null,
+    Object? firewallSettings = null,
   }) {
     return _then(_value.copyWith(
       loading: null == loading
@@ -164,6 +168,10 @@ class _$TestScenarioStateCopyWithImpl<$Res, $Val extends TestScenarioState>
           ? _value.testConstellations
           : testConstellations // ignore: cast_nullable_to_non_nullable
               as List<TestConstellation>,
+      firewallSettings: null == firewallSettings
+          ? _value.firewallSettings
+          : firewallSettings // ignore: cast_nullable_to_non_nullable
+              as List<FirewallSetting>,
     ) as $Val);
   }
 }
@@ -192,7 +200,8 @@ abstract class _$$TestScenarioStateImplCopyWith<$Res>
       List<PermissionSetting> permissions,
       bool recordScreen,
       bool captureTraffic,
-      List<TestConstellation> testConstellations});
+      List<TestConstellation> testConstellations,
+      List<FirewallSetting> firewallSettings});
 }
 
 /// @nodoc
@@ -224,6 +233,7 @@ class __$$TestScenarioStateImplCopyWithImpl<$Res>
     Object? recordScreen = null,
     Object? captureTraffic = null,
     Object? testConstellations = null,
+    Object? firewallSettings = null,
   }) {
     return _then(_$TestScenarioStateImpl(
       loading: null == loading
@@ -290,6 +300,10 @@ class __$$TestScenarioStateImplCopyWithImpl<$Res>
           ? _value._testConstellations
           : testConstellations // ignore: cast_nullable_to_non_nullable
               as List<TestConstellation>,
+      firewallSettings: null == firewallSettings
+          ? _value._firewallSettings
+          : firewallSettings // ignore: cast_nullable_to_non_nullable
+              as List<FirewallSetting>,
     ));
   }
 }
@@ -313,9 +327,11 @@ class _$TestScenarioStateImpl extends _TestScenarioState {
       required final List<PermissionSetting> permissions,
       required this.recordScreen,
       required this.captureTraffic,
-      required final List<TestConstellation> testConstellations})
+      required final List<TestConstellation> testConstellations,
+      required final List<FirewallSetting> firewallSettings})
       : _permissions = permissions,
         _testConstellations = testConstellations,
+        _firewallSettings = firewallSettings,
         super._();
 
   @override
@@ -363,9 +379,18 @@ class _$TestScenarioStateImpl extends _TestScenarioState {
     return EqualUnmodifiableListView(_testConstellations);
   }
 
+  final List<FirewallSetting> _firewallSettings;
+  @override
+  List<FirewallSetting> get firewallSettings {
+    if (_firewallSettings is EqualUnmodifiableListView)
+      return _firewallSettings;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_firewallSettings);
+  }
+
   @override
   String toString() {
-    return 'TestScenarioState(loading: $loading, loadingInfo: $loadingInfo, applicationId: $applicationId, applicationName: $applicationName, name: $name, fileDirectory: $fileDirectory, userInputRecord: $userInputRecord, device: $device, deviceInput: $deviceInput, networkInterface: $networkInterface, duration: $duration, numTestRuns: $numTestRuns, permissions: $permissions, recordScreen: $recordScreen, captureTraffic: $captureTraffic, testConstellations: $testConstellations)';
+    return 'TestScenarioState(loading: $loading, loadingInfo: $loadingInfo, applicationId: $applicationId, applicationName: $applicationName, name: $name, fileDirectory: $fileDirectory, userInputRecord: $userInputRecord, device: $device, deviceInput: $deviceInput, networkInterface: $networkInterface, duration: $duration, numTestRuns: $numTestRuns, permissions: $permissions, recordScreen: $recordScreen, captureTraffic: $captureTraffic, testConstellations: $testConstellations, firewallSettings: $firewallSettings)';
   }
 
   @override
@@ -401,7 +426,9 @@ class _$TestScenarioStateImpl extends _TestScenarioState {
             (identical(other.captureTraffic, captureTraffic) ||
                 other.captureTraffic == captureTraffic) &&
             const DeepCollectionEquality()
-                .equals(other._testConstellations, _testConstellations));
+                .equals(other._testConstellations, _testConstellations) &&
+            const DeepCollectionEquality()
+                .equals(other._firewallSettings, _firewallSettings));
   }
 
   @override
@@ -422,7 +449,8 @@ class _$TestScenarioStateImpl extends _TestScenarioState {
       const DeepCollectionEquality().hash(_permissions),
       recordScreen,
       captureTraffic,
-      const DeepCollectionEquality().hash(_testConstellations));
+      const DeepCollectionEquality().hash(_testConstellations),
+      const DeepCollectionEquality().hash(_firewallSettings));
 
   /// Create a copy of TestScenarioState
   /// with the given fields replaced by the non-null parameter values.
@@ -451,7 +479,8 @@ abstract class _TestScenarioState extends TestScenarioState {
           required final List<PermissionSetting> permissions,
           required final bool recordScreen,
           required final bool captureTraffic,
-          required final List<TestConstellation> testConstellations}) =
+          required final List<TestConstellation> testConstellations,
+          required final List<FirewallSetting> firewallSettings}) =
       _$TestScenarioStateImpl;
   const _TestScenarioState._() : super._();
 
@@ -487,6 +516,8 @@ abstract class _TestScenarioState extends TestScenarioState {
   bool get captureTraffic;
   @override
   List<TestConstellation> get testConstellations;
+  @override
+  List<FirewallSetting> get firewallSettings;
 
   /// Create a copy of TestScenarioState
   /// with the given fields replaced by the non-null parameter values.

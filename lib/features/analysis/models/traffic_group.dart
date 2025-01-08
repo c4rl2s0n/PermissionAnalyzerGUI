@@ -7,11 +7,11 @@ class TrafficGroup {
     this.name = "",
     this.info,
     this.id = "",
-    this.tags = const [],
+    this.graphTags = const [],
     List<TestRun> tests = const [],
     this.data,
   }) {
-    this.tests = tests;
+    setTests(tests);
   }
 
   TrafficGroup.fromScenario(TestScenario s)
@@ -19,17 +19,17 @@ class TrafficGroup {
           name: s.name,
           id: "${s.applicationId}_${s.name}",
           // TODO: Info/ID ?
-          tags: [tScenario],
+          graphTags: [tScenario],
           data: s,
         );
 
   TrafficGroup.fromConstellation(TestConstellation c)
       : this(
-          name: c.abbreviation,
-          id: c.abbreviation,
+          name: c.displayName,
+          id: c.uniqueIdentifier,
           data: c,
           info: c.info,
-          tags: [tConstellation],
+          graphTags: [tConstellation],
           tests: List.of(c.tests),
         );
 
@@ -38,7 +38,7 @@ class TrafficGroup {
           name: t.index.toString(),
           id: t.id.toString(),
           data: t,
-          tags: [tTest],
+          graphTags: [tTest],
           tests: [t],
         );
 
@@ -46,14 +46,14 @@ class TrafficGroup {
   String? info;
   String id;
   int testRuns = 0;
-  List<String> tags;
+  List<String> graphTags;
 
   late List<TestRun> _tests;
   List<TestRun> get tests => _tests;
-  set tests(List<TestRun> value) {
-    _tests = value;
+  void setTests(List<TestRun> values, {bool grouped = false}) {
+    _tests = values;
     testRuns = tests.length;
-    loadConnections();
+    loadConnections(grouped: grouped);
     countEndpoints();
   }
 

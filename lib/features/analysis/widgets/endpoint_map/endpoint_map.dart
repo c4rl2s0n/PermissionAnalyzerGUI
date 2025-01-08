@@ -318,8 +318,5 @@ class _EndpointMapState extends State<EndpointMap> {
       previousStop += stop;
     }
     return SweepGradient(colors: gradientColors, stops: colorStops);
-    return LinearGradient(colors: gradientColors, stops: colorStops,
-      begin: Alignment.bottomCenter,
-      end: Alignment.topCenter,);
   }
 }

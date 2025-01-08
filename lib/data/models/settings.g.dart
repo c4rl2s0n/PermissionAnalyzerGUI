@@ -22,38 +22,48 @@ const SettingsSchema = CollectionSchema(
       name: r'adbPath',
       type: IsarType.string,
     ),
-    r'inputRecordDestinationPath': PropertySchema(
+    r'ignoreLocalTraffic': PropertySchema(
       id: 1,
+      name: r'ignoreLocalTraffic',
+      type: IsarType.bool,
+    ),
+    r'inputRecordDestinationPath': PropertySchema(
+      id: 2,
       name: r'inputRecordDestinationPath',
       type: IsarType.string,
     ),
     r'isDarkMode': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'isDarkMode',
       type: IsarType.bool,
     ),
     r'language': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'language',
       type: IsarType.string,
     ),
     r'recorderDestinationPath': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'recorderDestinationPath',
       type: IsarType.string,
     ),
     r'recorderPath': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'recorderPath',
       type: IsarType.string,
     ),
+    r'recorderVersion': PropertySchema(
+      id: 7,
+      name: r'recorderVersion',
+      type: IsarType.string,
+    ),
     r'tsharkPath': PropertySchema(
-      id: 6,
+      id: 8,
       name: r'tsharkPath',
       type: IsarType.string,
     ),
     r'workingDirectory': PropertySchema(
-      id: 7,
+      id: 9,
       name: r'workingDirectory',
       type: IsarType.string,
     )
@@ -104,6 +114,12 @@ int _settingsEstimateSize(
     }
   }
   {
+    final value = object.recorderVersion;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.tsharkPath;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -125,13 +141,15 @@ void _settingsSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.adbPath);
-  writer.writeString(offsets[1], object.inputRecordDestinationPath);
-  writer.writeBool(offsets[2], object.isDarkMode);
-  writer.writeString(offsets[3], object.language);
-  writer.writeString(offsets[4], object.recorderDestinationPath);
-  writer.writeString(offsets[5], object.recorderPath);
-  writer.writeString(offsets[6], object.tsharkPath);
-  writer.writeString(offsets[7], object.workingDirectory);
+  writer.writeBool(offsets[1], object.ignoreLocalTraffic);
+  writer.writeString(offsets[2], object.inputRecordDestinationPath);
+  writer.writeBool(offsets[3], object.isDarkMode);
+  writer.writeString(offsets[4], object.language);
+  writer.writeString(offsets[5], object.recorderDestinationPath);
+  writer.writeString(offsets[6], object.recorderPath);
+  writer.writeString(offsets[7], object.recorderVersion);
+  writer.writeString(offsets[8], object.tsharkPath);
+  writer.writeString(offsets[9], object.workingDirectory);
 }
 
 Settings _settingsDeserialize(
@@ -142,13 +160,15 @@ Settings _settingsDeserialize(
 ) {
   final object = Settings(
     adbPath: reader.readStringOrNull(offsets[0]),
-    inputRecordDestinationPath: reader.readStringOrNull(offsets[1]),
-    isDarkMode: reader.readBoolOrNull(offsets[2]) ?? true,
-    language: reader.readStringOrNull(offsets[3]) ?? "en",
-    recorderDestinationPath: reader.readStringOrNull(offsets[4]),
-    recorderPath: reader.readStringOrNull(offsets[5]),
-    tsharkPath: reader.readStringOrNull(offsets[6]),
-    workingDirectory: reader.readStringOrNull(offsets[7]),
+    ignoreLocalTraffic: reader.readBoolOrNull(offsets[1]) ?? true,
+    inputRecordDestinationPath: reader.readStringOrNull(offsets[2]),
+    isDarkMode: reader.readBoolOrNull(offsets[3]) ?? true,
+    language: reader.readStringOrNull(offsets[4]) ?? "en",
+    recorderDestinationPath: reader.readStringOrNull(offsets[5]),
+    recorderPath: reader.readStringOrNull(offsets[6]),
+    recorderVersion: reader.readStringOrNull(offsets[7]),
+    tsharkPath: reader.readStringOrNull(offsets[8]),
+    workingDirectory: reader.readStringOrNull(offsets[9]),
   );
   object.id = id;
   return object;
@@ -164,18 +184,22 @@ P _settingsDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readStringOrNull(offset)) as P;
-    case 2:
       return (reader.readBoolOrNull(offset) ?? true) as P;
-    case 3:
-      return (reader.readStringOrNull(offset) ?? "en") as P;
-    case 4:
+    case 2:
       return (reader.readStringOrNull(offset)) as P;
+    case 3:
+      return (reader.readBoolOrNull(offset) ?? true) as P;
+    case 4:
+      return (reader.readStringOrNull(offset) ?? "en") as P;
     case 5:
       return (reader.readStringOrNull(offset)) as P;
     case 6:
       return (reader.readStringOrNull(offset)) as P;
     case 7:
+      return (reader.readStringOrNull(offset)) as P;
+    case 8:
+      return (reader.readStringOrNull(offset)) as P;
+    case 9:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -465,6 +489,16 @@ extension SettingsQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      ignoreLocalTrafficEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'ignoreLocalTraffic',
+        value: value,
       ));
     });
   }
@@ -1072,6 +1106,160 @@ extension SettingsQueryFilter
     });
   }
 
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      recorderVersionIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'recorderVersion',
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      recorderVersionIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'recorderVersion',
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      recorderVersionEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'recorderVersion',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      recorderVersionGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'recorderVersion',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      recorderVersionLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'recorderVersion',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      recorderVersionBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'recorderVersion',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      recorderVersionStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'recorderVersion',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      recorderVersionEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'recorderVersion',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      recorderVersionContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'recorderVersion',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      recorderVersionMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'recorderVersion',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      recorderVersionIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'recorderVersion',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      recorderVersionIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'recorderVersion',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<Settings, Settings, QAfterFilterCondition> tsharkPathIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -1394,6 +1582,19 @@ extension SettingsQuerySortBy on QueryBuilder<Settings, Settings, QSortBy> {
     });
   }
 
+  QueryBuilder<Settings, Settings, QAfterSortBy> sortByIgnoreLocalTraffic() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'ignoreLocalTraffic', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterSortBy>
+      sortByIgnoreLocalTrafficDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'ignoreLocalTraffic', Sort.desc);
+    });
+  }
+
   QueryBuilder<Settings, Settings, QAfterSortBy>
       sortByInputRecordDestinationPath() {
     return QueryBuilder.apply(this, (query) {
@@ -1458,6 +1659,18 @@ extension SettingsQuerySortBy on QueryBuilder<Settings, Settings, QSortBy> {
     });
   }
 
+  QueryBuilder<Settings, Settings, QAfterSortBy> sortByRecorderVersion() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'recorderVersion', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterSortBy> sortByRecorderVersionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'recorderVersion', Sort.desc);
+    });
+  }
+
   QueryBuilder<Settings, Settings, QAfterSortBy> sortByTsharkPath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'tsharkPath', Sort.asc);
@@ -1506,6 +1719,19 @@ extension SettingsQuerySortThenBy
   QueryBuilder<Settings, Settings, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterSortBy> thenByIgnoreLocalTraffic() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'ignoreLocalTraffic', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterSortBy>
+      thenByIgnoreLocalTrafficDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'ignoreLocalTraffic', Sort.desc);
     });
   }
 
@@ -1573,6 +1799,18 @@ extension SettingsQuerySortThenBy
     });
   }
 
+  QueryBuilder<Settings, Settings, QAfterSortBy> thenByRecorderVersion() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'recorderVersion', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterSortBy> thenByRecorderVersionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'recorderVersion', Sort.desc);
+    });
+  }
+
   QueryBuilder<Settings, Settings, QAfterSortBy> thenByTsharkPath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'tsharkPath', Sort.asc);
@@ -1604,6 +1842,12 @@ extension SettingsQueryWhereDistinct
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'adbPath', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QDistinct> distinctByIgnoreLocalTraffic() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'ignoreLocalTraffic');
     });
   }
 
@@ -1643,6 +1887,14 @@ extension SettingsQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Settings, Settings, QDistinct> distinctByRecorderVersion(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'recorderVersion',
+          caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Settings, Settings, QDistinct> distinctByTsharkPath(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1670,6 +1922,12 @@ extension SettingsQueryProperty
   QueryBuilder<Settings, String?, QQueryOperations> adbPathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'adbPath');
+    });
+  }
+
+  QueryBuilder<Settings, bool, QQueryOperations> ignoreLocalTrafficProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'ignoreLocalTraffic');
     });
   }
 
@@ -1702,6 +1960,12 @@ extension SettingsQueryProperty
   QueryBuilder<Settings, String?, QQueryOperations> recorderPathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'recorderPath');
+    });
+  }
+
+  QueryBuilder<Settings, String?, QQueryOperations> recorderVersionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'recorderVersion');
     });
   }
 

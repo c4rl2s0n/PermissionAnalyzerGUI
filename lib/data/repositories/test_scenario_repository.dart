@@ -9,9 +9,6 @@ class TestScenarioRepository extends ITestScenarioRepository {
   final Isar _isar;
   late final ITestRunRepository _testRunRepository;
 
-  void loadTests(List<TestScenario> scenarios) {
-    scenarios.forEach(_testRunRepository.loadForScenario);
-  }
   void _updateTests(List<TestScenario> scenarios) {
     scenarios.forEach(_testRunRepository.updateForScenario);
   }
@@ -20,10 +17,25 @@ class TestScenarioRepository extends ITestScenarioRepository {
     scenarios.forEach(_testRunRepository.deleteForScenario);
   }
 
+  void _loadBlockedEndpointsForScenario(TestScenario scenario) {
+    NetworkEndpointRepository repo = NetworkEndpointRepository(_isar);
+    for (var constellation in scenario.testConstellations) {
+      constellation.blockedEndpoints = repo.getAllByIp(constellation.blockedIPs);
+    }
+  }
+  
+  @override
+  void loadExtraDataForScenarios(List<TestScenario> scenarios){
+    for(var scenario in scenarios){
+      _loadBlockedEndpointsForScenario(scenario);
+      _testRunRepository.loadForScenario(scenario);
+    }
+  }
+
   @override
   List<TestScenario> getAll() {
     List<TestScenario> scenarios = _isar.testScenarios.where().findAllSync();
-    loadTests(scenarios);
+    loadExtraDataForScenarios(scenarios);
     return scenarios;
   }
 
@@ -33,7 +45,7 @@ class TestScenarioRepository extends ITestScenarioRepository {
         .where()
         .applicationIdEqualTo(applicationId)
         .findAllSync();
-    loadTests(scenarios);
+    loadExtraDataForScenarios(scenarios);
     return scenarios;
   }
 

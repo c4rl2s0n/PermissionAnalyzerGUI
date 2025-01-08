@@ -111,11 +111,9 @@ class Adb {
   }
 
   Future<Process> getEvents({
-    required String devicePath,
     required Duration duration,
   }) async {
     return await shellProc(
-      //["getevent", "-t", devicePath],
       ["getevent", "-t"],
       timeout: duration,
     );
@@ -145,8 +143,8 @@ class Adb {
         ["pm", granted ? "grant" : "revoke", applicationId, permission]);
   }
 
-  Future<List<String>> getApplicationPermissions(String applicaitonId) async {
-    var dump = (await shell(["dumpsys", "package", applicaitonId])).outText;
+  Future<List<String>> getOptionalApplicationPermissions(String applicationId) async {
+    var dump = (await shell(["dumpsys", "package", applicationId])).outText;
     List<String> permissions = [];
     List<String> permissionDump =
         dump.split("runtime permissions:")[1].split("\n");
@@ -154,19 +152,6 @@ class Adb {
       if (line.isEmpty) continue;
       if (!line.contains(":") || !line.contains("granted")) break;
       permissions.add(line.split(":")[0].trim());
-    }
-    permissions.sort();
-    return permissions;
-  }
-  Future<List<String>> getApplicationPermissions_old(String applicaitonId) async {
-    var dump = (await shell(["dumpsys", "package", applicaitonId])).outText;
-    List<String> permissions = [];
-    List<String> permissionDump =
-        dump.split("requested permissions:")[1].split("\n");
-    for (var line in permissionDump) {
-      if (line.isEmpty) continue;
-      if (line.contains(":")) break;
-      permissions.add(line.trim());
     }
     permissions.sort();
     return permissions;
@@ -201,5 +186,18 @@ class Adb {
 
   Future<bool> applicationExists(String appId) async {
     return (await getApplications()).any((p) => p == appId);
+  }
+
+  /// ##########
+  /// # Firewall
+  /// ##########
+
+  Future blockIP({required String ip}) async {
+    await shell(["iptables", "-A", "INPUT", "-s", ip, "-j", "DROP"]);
+    await shell(["iptables", "-A", "OUTPUT", "-d", ip, "-j", "DROP"]);
+  }
+  Future allowIP({required String ip}) async {
+    await shell(["iptables", "-D", "INPUT", "-s", ip, "-j", "DROP"]);
+    await shell(["iptables", "-D", "OUTPUT", "-d", ip, "-j", "DROP"]);
   }
 }

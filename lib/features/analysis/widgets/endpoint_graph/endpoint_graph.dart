@@ -22,6 +22,12 @@ class EndpointGraph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AnalysisCubit, AnalysisState>(
+      buildWhen: (oldState, state) =>
+          oldState.connectionsGrouped != state.connectionsGrouped ||
+          oldState.enabledGroups != state.enabledGroups ||
+          oldState.endpoints != state.endpoints ||
+          oldState.visibleConnections != state.visibleConnections ||
+          oldState.visibleTrafficGroups != state.visibleTrafficGroups,
       builder: _graphWidget,
     );
   }
@@ -105,7 +111,7 @@ class EndpointGraph extends StatelessWidget {
           id: e.id,
           endpoint: e,
           name: state.connectionsGrouped
-              ? e.name
+              ? e.displayName
               : e.hostname ?? e.ip)), //GraphVertex(endpoint: e, id: e.ip)),
       ...trafficGroups.map((g) => TrafficGroupVertex(
           id: g.id, group: g)), // GraphVertex(group: g, id: g.id))
@@ -163,9 +169,11 @@ class EndpointGraph extends StatelessWidget {
     int maxConnectionTrafficLoad = state.trafficLoadInPackets
         ? strongestConnection.countTotal
         : strongestConnection.bytesTotal;
+
+    List<INetworkEndpoint> endpoints = state.endpoints;
     for (var group in state.visibleTrafficGroups) {
       for (var connection in group.connections) {
-        if (!state.endpoints.any((e) => e.id == connection.endpoint.id)) {
+        if (!endpoints.any((e) => e.id == connection.endpoint.id)) {
           continue;
         }
         //int totalTrafficLoad = TrafficAnalyzer.getTrafficLoad(state.visibleConnections.where((c) => c.endpoint.id == connection.endpoint.id), inPackets: state.trafficLoadInPackets,);
@@ -214,7 +222,7 @@ class EndpointGraph extends StatelessWidget {
       edge.position,
       child: _infoPanelContent(
         context,
-        "${edgeData.src.name} -> ${"${edgeData.dst.endpoint.name}:${edgeData.dst.ports}"}",
+        "${edgeData.src.name} -> ${"${edgeData.dst.endpoint.displayName}:${edgeData.dst.ports}"}",
         entries, //"IN:\n$tab$trafficLoadIn\nOUT:\n$tab$trafficLoadOut\nProtocols:\n$protocols${edgeData.common ? "\nUsed in all tests" : ""}",
       ),
     );
@@ -327,7 +335,7 @@ class EndpointGraph extends StatelessWidget {
       ];
       return _infoPanelContent(
         context,
-        state.connectionsGrouped ? e.name : e.hostname ?? e.ip,
+        state.connectionsGrouped ? e.displayName : e.hostname ?? e.ip,
         entries, //'IP: ${e.ip}\n${e.hostname != null ? "Hostname: ${e.hostname}\n" : ""}# Connected Groups: ${v.connectedGroups}',
       );
     } else if (e is EndpointGroup) {
@@ -345,11 +353,11 @@ class EndpointGraph extends StatelessWidget {
       ];
       return _infoPanelContent(
         context,
-        e.name,
-        entries, //'IP: ${e.ip}\n${e.hasHostname ? "Domain: ${e.domain}\nEndpoints: \n\t${e.endpoints.map<String>((ep) => ep.hostname ?? ep.ip).toList().sortedCopy((String a, String b) => compareHostnames(a, b)).join("\n\t")}\n" : ""}# Connected Groups: ${v.connectedGroups}',
+        e.displayName,
+        entries,
       );
     }
-    return Text("Unknown");
+    return const Text("Unknown");
   }
 
   Widget _groupVertexPanelBuilder(BuildContext context, TrafficGroup g) =>

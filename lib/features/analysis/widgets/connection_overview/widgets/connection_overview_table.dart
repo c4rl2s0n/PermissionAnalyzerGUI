@@ -15,45 +15,44 @@ class ConnectionOverviewTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return BlocBuilder<ConnectionOverviewCubit, ConnectionOverviewState>(
+      buildWhen: (oldState, state) => oldState.connections != state.connections,
+  builder: (context, state) {
     return BlocBuilder<AnalysisCubit, AnalysisState>(
         buildWhen: (oldState, state) => oldState.connectionsGrouped != state.connectionsGrouped
-            || oldState.visibleConnections != state.visibleConnections
-            || oldState.trafficLoadInPackets != state.trafficLoadInPackets,
-        builder: (context, state) {
+            || oldState.trafficLoadInPackets != state.trafficLoadInPackets
+            || oldState.analyzingEndpoints != state.analyzingEndpoints,
+        builder: (context, analysisState) {
       return InfoContainer(
         title: "Connection Overview",
-        action: _actions(context, state),
-        child: state.connectionsGrouped
+        action: _actions(context, analysisState),
+        child: analysisState.connectionsGrouped
             ? DataGrid<ConnectionGroup>(
-                columns: _networkGroupColumns(context, state),
+                columns: _networkGroupColumns(context, analysisState),
                 onDataSelected: (entry, index) =>
                     context.connectionOverviewCubit.updateSelection(entry),
                 onDataSecondaryTap: (entry, [pos]) =>
                     _onDataSecondaryTap(context, entry, pos),
-                data: state.visibleConnections.whereType<ConnectionGroup>().toList(),
-                initialSelectedEntry: _getInitialSelectedEntry<ConnectionGroup>(state),
+                data: state.connections.whereType<ConnectionGroup>().toList(),
+                initialSelectedIndex: initialSelectionIndex,
                 //context.connectionOverviewCubit.state.selectedConnection,
               )
             : DataGrid<NetworkConnection>(
-                columns: _networkConnectionColumns(context, state),
+                columns: _networkConnectionColumns(context, analysisState),
                 onDataSelected: (entry, index) =>
                     context.connectionOverviewCubit.updateSelection(entry),
                 onDataSecondaryTap: (entry, [pos]) =>
                     _onDataSecondaryTap(context, entry, pos),
-                data: state.visibleConnections.whereType<NetworkConnection>().toList(),
-                initialSelectedEntry: _getInitialSelectedEntry<NetworkConnection>(state),
+                data: state.connections.whereType<NetworkConnection>().toList(),
+                initialSelectedIndex: initialSelectionIndex,
                 //context.connectionOverviewCubit.state.selectedConnection,
               ),
       );
     });
+  },
+);
   }
 
-  T? _getInitialSelectedEntry<T extends INetworkConnection>(AnalysisState state){
-    if(initialSelectionIndex == null) return null;
-    List<T> connections = state.visibleConnections.whereType<T>().toList();
-    if(initialSelectionIndex! >= connections.length) return null;
-    return connections[initialSelectionIndex!];
-  }
 
   void _onDataSecondaryTap(BuildContext context, INetworkConnection connection,
       [Offset? position]) {
@@ -98,7 +97,10 @@ class ConnectionOverviewTable extends StatelessWidget {
         const Text("Group connections"),
         Switch(
           value: state.connectionsGrouped,
-          onChanged: (grouped) => context.analysisCubit.setGrouped(grouped),
+          onChanged: (grouped) {
+              context.connectionOverviewCubit.updateSelection(null);
+              context.analysisCubit.setGrouped(grouped);
+            },
         ),
       ].insertBetweenItems(() => Margin.horizontal(context.constants.spacing)),
     );

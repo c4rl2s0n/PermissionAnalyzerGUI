@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
@@ -20,9 +19,7 @@ class ToolSettings extends StatelessWidget {
         _adbPathSettings(),
         _adbDeviceSettings(),
         _tsharkPathSettings(),
-        _recorderPathSettings(),
-        _recorderDestinationPathSettings(),
-        _inputRecordDestinationPathSettings(),
+        _recorderSettings(),
       ],
     );
   }
@@ -175,63 +172,26 @@ class ToolSettings extends StatelessWidget {
     );
   }
 
-  Widget _recorderPathSettings() {
+  Widget _recorderSettings() {
     return BlocBuilder<SettingsCubit, SettingsState>(
       buildWhen: (oldState, state) =>
           oldState.recorderPath != state.recorderPath,
       builder: (context, state) {
         return SimpleSetting(
           name: context.strings.recorderLocalSettings,
-          description: state.recorderPath,
-          action: IconButton(
-            onPressed: () async {
-              FilePickerResult? file = await FilePickerFactory.getFilePicker()
-                  .pickFiles(dialogTitle: context.strings.pickRecorderPath);
-              if (!context.mounted) return;
-              String? recorderPath = file?.files.firstOrNull?.path;
-              if (recorderPath != null && recorderPath.isNotEmpty) {
-                context.settings.setRecorderPath(recorderPath);
-              }
-            },
-            icon: Icon(context.icons.pickFile),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _recorderDestinationPathSettings() {
-    return BlocBuilder<SettingsCubit, SettingsState>(
-      buildWhen: (oldState, state) =>
-          oldState.recorderDestinationPath != state.recorderDestinationPath,
-      builder: (context, state) {
-        return SimpleSetting(
-          name: context.strings.recorderDestinationSettings,
-          description: context.strings.recorderDestinationSettingsDescription,
-          action: SimpleTextField(
-            initialValue: state.recorderDestinationPath,
-            labelText: context.strings.path,
-            onChanged: (s) => context.settings.setRecorderDestinationPath(s),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _inputRecordDestinationPathSettings() {
-    return BlocBuilder<SettingsCubit, SettingsState>(
-      buildWhen: (oldState, state) =>
-          oldState.inputRecordDestinationPath !=
-          state.inputRecordDestinationPath,
-      builder: (context, state) {
-        return SimpleSetting(
-          name: "User Input Record Destination Path",
-          description:
-              "Location where the record of the user input will be stored on the test device",
-          action: SimpleTextField(
-            initialValue: state.inputRecordDestinationPath,
-            labelText: context.strings.path,
-            onChanged: (s) => context.settings.setInputRecordDestinationPath(s),
+          description: "Select the version that matches you target device (Android)",
+          action:
+          DropdownMenu<String>(
+            key: Key(state.recorderVersion),
+            width: 250,
+            initialSelection: state.recorderVersion,
+            requestFocusOnTap: false,
+            onSelected: (r) => r != null
+                ? context.settings.setRecorder(r)
+                : null,
+            dropdownMenuEntries: SettingsState.recorderVersions
+                .map((d) => DropdownMenuEntry<String>(value: d, label: d))
+                .toList(),
           ),
         );
       },

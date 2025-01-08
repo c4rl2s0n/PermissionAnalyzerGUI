@@ -62,13 +62,13 @@ class SystemProcess {
 
 /// run response helper.
 extension ProcessResultText on ProcessResult {
-  Iterable<String> _outStringToLines(String out) => out.split("\n");
+  Iterable<String> _outStringToLines(String out) => out.split(Platform.lineTerminator);
 
   /// Join the out lines for a quick string access.
-  String get outText => outLines.join('\n');
+  String get outText => outLines.join(Platform.lineTerminator);
 
   /// Join the out lines for a quick string access.
-  String get errText => errLines.join('\n');
+  String get errText => errLines.join(Platform.lineTerminator);
 
   /// Out line lists
   Iterable<String> get outLines => _outStringToLines(this.stdout.toString().filterWeirdCharacters);
@@ -83,8 +83,8 @@ extension ProcessText on Process {
   Stream<String> _streamLines(Stream<List<int>> raw) =>
       raw.transform(utf8.decoder);
 
-  Future<String> get outText async => (await outLines.toList()).join("\n");
-  Future<String> get errText async => (await errLines.toList()).join("\n");
+  Future<String> get outText async => (await outLines.toList()).join(Platform.lineTerminator);
+  Future<String> get errText async => (await errLines.toList()).join(Platform.lineTerminator);
 
   /// Out line lists
   Stream<String> get outLines => _streamLines(this.stdout).transform(_characterFilterTransformer);
