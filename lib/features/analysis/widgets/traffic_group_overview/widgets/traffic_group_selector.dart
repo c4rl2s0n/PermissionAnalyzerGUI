@@ -227,7 +227,6 @@ class TrafficGroupSelector extends StatelessWidget {
     node.addAll(children.map((c) {
       String key =
           "${keyPrefix}_${c.group.id}".replaceAll(INode.PATH_SEPARATOR, "_");
-      print(key);
       return _addChildren(
         TreeNode(key: key, data: c),
         key,

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
@@ -146,15 +147,20 @@ class Adb {
   Future<List<String>> getOptionalApplicationPermissions(String applicationId) async {
     var dump = (await shell(["dumpsys", "package", applicationId])).outText;
     List<String> permissions = [];
-    List<String> permissionDump =
-        dump.split("runtime permissions:")[1].split("\n");
-    for (var line in permissionDump) {
-      if (line.isEmpty) continue;
-      if (!line.contains(":") || !line.contains("granted")) break;
-      permissions.add(line.split(":")[0].trim());
+    try {
+      List<String> permissionDump =
+      dump.split("runtime permissions:")[1].split("\n");
+      for (var line in permissionDump) {
+        if (line.isEmpty) continue;
+        if (!line.contains(":") || !line.contains("granted")) break;
+        permissions.add(line.split(":")[0].trim());
+      }
+      permissions.sort();
+      return permissions;
+    }catch(e){
+      Logger.root.warning("[ADB] Could not read permissions", e);
+      return [];
     }
-    permissions.sort();
-    return permissions;
   }
 
   Future<Process> captureTraffic({

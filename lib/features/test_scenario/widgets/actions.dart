@@ -65,21 +65,14 @@ class TestScenarioActions extends StatelessWidget {
   }
 
   Widget _recordButton() {
-    return BlocBuilder<SettingsCubit, SettingsState>(
-      buildWhen: (oldState, state) =>
-          oldState.inputRecordDestinationPath !=
-          state.inputRecordDestinationPath,
-      builder: (context, settings) =>
-          BlocBuilder<TestScenarioCubit, TestScenarioState>(
+    return BlocBuilder<TestScenarioCubit, TestScenarioState>(
         buildWhen: (oldState, state) => oldState.hasTests != state.hasTests
             || oldState.loading != state.loading,
         builder: (context, state) {
-          bool isEnabled = !state.hasTests && settings.recorderPath.isNotEmpty;
+          bool isEnabled = !state.hasTests;
           return Optional.tooltip(
             tooltip: state.hasTests
                 ? "Tests have already been recorded for this scenario."
-                : settings.inputRecordDestinationPath.isEmpty
-                    ? "The tool for recording user input needs to be specified (in the settings)."
                     : "",
             show: !isEnabled,
             child: IconTextButton(
@@ -90,7 +83,6 @@ class TestScenarioActions extends StatelessWidget {
             ),
           );
         },
-      ),
     );
   }
 

@@ -264,6 +264,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
     String tmpPath = "${(await getTemporaryDirectory()).path}/mysendevent";
     await File(tmpPath).writeAsBytes(dataBytes, flush: true);
     await _adb.pushFile(tmpPath, _settings.recorderDestinationPath);
+    await _adb.shell(["chmod", "+x", _settings.recorderDestinationPath]);
   }
 
   void _updateAnalysis() {

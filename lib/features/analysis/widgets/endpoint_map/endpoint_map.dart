@@ -272,7 +272,7 @@ class _EndpointMapState extends State<EndpointMap> {
         ],
       );
     }
-
+    var sortedConnections = connections.sortedCopy((a,b) => a.endpoint.compareTo(b.endpoint));
     return WidgetSpan(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxHeight: 220),
@@ -283,7 +283,7 @@ class _EndpointMapState extends State<EndpointMap> {
               padding: const EdgeInsets.only(right: 18.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: connections.map(getConnectionEntry).toList(),
+                children: sortedConnections.map(getConnectionEntry).toList(),
               ),
             ),
           ),

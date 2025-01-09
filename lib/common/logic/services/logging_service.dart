@@ -32,7 +32,7 @@ class LoggingService{
   static String logToJson(LogRecord record) {
     Map<String, dynamic> errorMap = {
       'timestamp': record.time.toString(),
-      'level': record.level,
+      'level': record.level.name,
       'message': record.message,
       'error': record.error?.toString(),
       'stackTrace': record.stackTrace?.toString(),
