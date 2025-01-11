@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,7 +18,7 @@ class ScreenRecordOverview extends StatelessWidget {
       List<TestRun> tests = state.enabledGroups
           .fold(<TestRun>[], (all, g) => [...all, ...g.group.tests])
           .where((t) => t.screenRecordPath.notEmpty)
-          .toList();
+          .toList().distinct;
       String? file = tests
           .where((t) => t.screenRecordPath.notEmpty)
           .firstOrNull
@@ -31,6 +32,8 @@ class ScreenRecordOverview extends StatelessWidget {
             crossAxisCount: count,
             mainAxisSpacing: context.constants.spacing,
             children: tests
+                //.sublist(0, min(tests.length, 15))
+                .where((t) => File(t.screenRecordPath!).existsSync())
                 .map((t) => Container(
                       width: size,
                       //height: size,
