@@ -5,6 +5,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:fvp/fvp.dart' as fvp;
 
 import 'app_root.dart';
 import 'main_module.dart';
@@ -22,6 +23,10 @@ void main() async {
 
   // initialize logging
   LoggingService.setupLogger(documentsDirectory);
+
+  // register flutter video player
+  fvp.registerWith();
+
 
   // run the application
   runApp(

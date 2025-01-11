@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:http/http.dart';
+import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
 class EndpointAnalyzer{
@@ -11,6 +12,13 @@ class EndpointAnalyzer{
       InternetAddress domain = await InternetAddress(ip).reverse();
       if (domain.host.isEmpty) return null;
       return domain.host;
+    }catch(_){
+      return null;
+    }
+  }
+  static Future<String?> lookupWhois(String ip)async{
+    try {
+      return (await SystemProcess().run("whois", [ip])).outText;
     }catch(_){
       return null;
     }

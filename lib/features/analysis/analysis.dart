@@ -88,6 +88,14 @@ class _AnalysisState extends State<Analysis> {
         getView: (c) => const EndpointMap(),
         noPadding: true,
       ),
+      _NavigationRailEntry(
+        destination: _getNavigationRailDestination(
+          context,
+          label: "Recordings",
+          icon: context.icons.recording,
+        ),
+        getView: (c) => const ScreenRecordOverview(),
+      ),
     ];
   }
 

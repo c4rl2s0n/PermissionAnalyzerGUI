@@ -36,6 +36,7 @@ class NetworkEndpoint extends INetworkEndpoint{
     this.ip = "",
     this.analyzed = false,
     this.geolocation,
+    this.whois,
     this.tags = const [],
     super.hostname,
   });
@@ -49,6 +50,8 @@ class NetworkEndpoint extends INetworkEndpoint{
   @override
   String get ipRange => ip;
   bool analyzed;
+
+  String? whois;
 
   @override
   List<Geolocation> get geolocations => geolocation != null ? [geolocation!] : [];

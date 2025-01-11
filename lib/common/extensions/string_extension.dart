@@ -12,3 +12,7 @@ extension StringExtension on String{
     return copy;
   }
 }
+extension NullableStringExtension on String?{
+  bool get empty => this == null || this!.isEmpty;
+  bool get notEmpty => this != null && this!.isNotEmpty;
+}

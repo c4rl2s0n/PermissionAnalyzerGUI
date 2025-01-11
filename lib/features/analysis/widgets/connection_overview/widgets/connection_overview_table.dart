@@ -17,59 +17,85 @@ class ConnectionOverviewTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ConnectionOverviewCubit, ConnectionOverviewState>(
       buildWhen: (oldState, state) => oldState.connections != state.connections,
-  builder: (context, state) {
-    return BlocBuilder<AnalysisCubit, AnalysisState>(
-        buildWhen: (oldState, state) => oldState.connectionsGrouped != state.connectionsGrouped
-            || oldState.trafficLoadInPackets != state.trafficLoadInPackets
-            || oldState.analyzingEndpoints != state.analyzingEndpoints,
-        builder: (context, analysisState) {
-      return InfoContainer(
-        title: "Connection Overview",
-        action: _actions(context, analysisState),
-        child: analysisState.connectionsGrouped
-            ? DataGrid<ConnectionGroup>(
-                columns: _networkGroupColumns(context, analysisState),
-                onDataSelected: (entry, index) =>
-                    context.connectionOverviewCubit.updateSelection(entry),
-                onDataSecondaryTap: (entry, [pos]) =>
-                    _onDataSecondaryTap(context, entry, pos),
-                data: state.connections.whereType<ConnectionGroup>().toList(),
-                initialSelectedIndex: initialSelectionIndex,
-                //context.connectionOverviewCubit.state.selectedConnection,
-              )
-            : DataGrid<NetworkConnection>(
-                columns: _networkConnectionColumns(context, analysisState),
-                onDataSelected: (entry, index) =>
-                    context.connectionOverviewCubit.updateSelection(entry),
-                onDataSecondaryTap: (entry, [pos]) =>
-                    _onDataSecondaryTap(context, entry, pos),
-                data: state.connections.whereType<NetworkConnection>().toList(),
-                initialSelectedIndex: initialSelectionIndex,
-                //context.connectionOverviewCubit.state.selectedConnection,
-              ),
-      );
-    });
-  },
-);
+      builder: (context, state) {
+        return BlocBuilder<AnalysisCubit, AnalysisState>(
+            buildWhen: (oldState, state) =>
+                oldState.connectionsGrouped != state.connectionsGrouped ||
+                oldState.trafficLoadInPackets != state.trafficLoadInPackets ||
+                oldState.analyzingEndpoints != state.analyzingEndpoints,
+            builder: (context, analysisState) {
+              return InfoContainer(
+                title: "Connection Overview",
+                action: _actions(context, analysisState),
+                child: analysisState.connectionsGrouped
+                    ? DataGrid<ConnectionGroup>(
+                        columns: _networkGroupColumns(context, analysisState),
+                        onDataSelected: (entry, index) => context
+                            .connectionOverviewCubit
+                            .updateSelection(entry),
+                        onDataSecondaryTap: (entry, [pos]) =>
+                            _onDataSecondaryTap(context, entry, pos),
+                        data: state.connections
+                            .whereType<ConnectionGroup>()
+                            .toList(),
+                        initialSelectedIndex: initialSelectionIndex,
+                        //context.connectionOverviewCubit.state.selectedConnection,
+                      )
+                    : DataGrid<NetworkConnection>(
+                        columns:
+                            _networkConnectionColumns(context, analysisState),
+                        onDataSelected: (entry, index) => context
+                            .connectionOverviewCubit
+                            .updateSelection(entry),
+                        onDataSecondaryTap: (entry, [pos]) =>
+                            _onDataSecondaryTap(context, entry, pos),
+                        data: state.connections
+                            .whereType<NetworkConnection>()
+                            .toList(),
+                        initialSelectedIndex: initialSelectionIndex,
+                        //context.connectionOverviewCubit.state.selectedConnection,
+                      ),
+              );
+            });
+      },
+    );
   }
 
-
-  void _onDataSecondaryTap(BuildContext context, INetworkConnection connection,
+  void _onDataSecondaryTap<T extends INetworkConnection>(
+      BuildContext context, T connection,
       [Offset? position]) {
     position ??= Offset.zero;
+    print(connection.runtimeType);
     ContextMenuFactory.showContextMenuOnPosition(context, position, [
       ContextMenuItem(
           name: "Copy Wireshark Filter",
           onTap: (context) async {
-            await Clipboard.setData(ClipboardData(text: connection.wiresharkFilter));
-            if(context.mounted) {
+            await Clipboard.setData(
+                ClipboardData(text: connection.wiresharkFilter));
+            if (context.mounted) {
               context.messenger.showSnackBar(
                 SnackBarFactory.getPositiveSnackBar(context,
                     text: "Wireshark filter copied to clipboard."),
               );
             }
           },
-          icon: Icon(context.icons.filter))
+          icon: Icon(context.icons.filter),
+      ),
+      if (T == NetworkConnection) ...[
+        ContextMenuItem(
+            name: "Show Whois",
+            onTap: (context) async {
+              NetworkEndpoint endpoint =
+                  (connection as NetworkConnection).endpoint;
+              InfoDialog.showInfo(
+                context,
+                title:
+                    "Whois (${(connection as NetworkConnection).endpoint.name})",
+                content: endpoint.whois ?? "No whois-data available...",
+              );
+            },
+            icon: Icon(context.icons.show)),
+      ],
     ]);
   }
 
@@ -87,8 +113,14 @@ class ConnectionOverviewTable extends StatelessWidget {
     );
   }
 
-  Widget _loadByPacketsSwitch(BuildContext context, AnalysisState state){
-    return BoolSwitch(textLeft: "Bytes", textRight: "Packets", rightSelected: state.trafficLoadInPackets, onChanged: (loadInPackets) => context.analysisCubit.setTrafficLoadInPackets(loadInPackets),);
+  Widget _loadByPacketsSwitch(BuildContext context, AnalysisState state) {
+    return BoolSwitch(
+      textLeft: "Bytes",
+      textRight: "Packets",
+      rightSelected: state.trafficLoadInPackets,
+      onChanged: (loadInPackets) =>
+          context.analysisCubit.setTrafficLoadInPackets(loadInPackets),
+    );
   }
 
   Widget _groupConnectionsSlider(BuildContext context, AnalysisState state) {
@@ -98,9 +130,9 @@ class ConnectionOverviewTable extends StatelessWidget {
         Switch(
           value: state.connectionsGrouped,
           onChanged: (grouped) {
-              context.connectionOverviewCubit.updateSelection(null);
-              context.analysisCubit.setGrouped(grouped);
-            },
+            context.connectionOverviewCubit.updateSelection(null);
+            context.analysisCubit.setGrouped(grouped);
+          },
         ),
       ].insertBetweenItems(() => Margin.horizontal(context.constants.spacing)),
     );
@@ -266,12 +298,13 @@ class ConnectionOverviewTable extends StatelessWidget {
     ];
   }
 
-  List<DataGridColumn<T, Object?>> _trafficLoadColumns<T extends INetworkConnection>(
+  List<DataGridColumn<T, Object?>>
+      _trafficLoadColumns<T extends INetworkConnection>(
     BuildContext context,
     AnalysisState state,
   ) {
     return [
-      if(state.trafficLoadInPackets)...[
+      if (state.trafficLoadInPackets) ...[
         // Traffic Load in Packets
         DataGridColumn<T, int>(
           name: "Packets In",
@@ -301,7 +334,7 @@ class ConnectionOverviewTable extends StatelessWidget {
           getValue: (c) => c.countAvg.floor(),
           defaultCellTextAlign: TextAlign.center,
         ),
-      ]else...[
+      ] else ...[
         // Traffic Load in Bytes
         DataGridColumn<T, int>(
           name: "Bytes In",

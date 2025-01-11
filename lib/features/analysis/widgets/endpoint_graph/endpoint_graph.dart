@@ -33,6 +33,9 @@ class EndpointGraph extends StatelessWidget {
   }
 
   Widget _graphWidget(BuildContext context, AnalysisState state) {
+    if(state.endpoints.isEmpty){
+      return const Center(child: Text("No Endpoints to show."));
+    }
     return Container(
       clipBehavior: Clip.hardEdge,
       decoration: const BoxDecoration(shape: BoxShape.rectangle),

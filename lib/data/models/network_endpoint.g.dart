@@ -68,6 +68,11 @@ const NetworkEndpointSchema = CollectionSchema(
       id: 9,
       name: r'tags',
       type: IsarType.stringList,
+    ),
+    r'whois': PropertySchema(
+      id: 10,
+      name: r'whois',
+      type: IsarType.string,
     )
   },
   estimateSize: _networkEndpointEstimateSize,
@@ -142,6 +147,12 @@ int _networkEndpointEstimateSize(
       bytesCount += value.length * 3;
     }
   }
+  {
+    final value = object.whois;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -171,6 +182,7 @@ void _networkEndpointSerialize(
   writer.writeString(offsets[7], object.ip);
   writer.writeString(offsets[8], object.ipRange);
   writer.writeStringList(offsets[9], object.tags);
+  writer.writeString(offsets[10], object.whois);
 }
 
 NetworkEndpoint _networkEndpointDeserialize(
@@ -189,6 +201,7 @@ NetworkEndpoint _networkEndpointDeserialize(
     hostname: reader.readStringOrNull(offsets[5]),
     ip: reader.readStringOrNull(offsets[7]) ?? "",
     tags: reader.readStringList(offsets[9]) ?? const [],
+    whois: reader.readStringOrNull(offsets[10]),
   );
   object.isarId = id;
   return object;
@@ -231,6 +244,8 @@ P _networkEndpointDeserializeProp<P>(
       return (reader.readString(offset)) as P;
     case 9:
       return (reader.readStringList(offset) ?? const []) as P;
+    case 10:
+      return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -1554,6 +1569,160 @@ extension NetworkEndpointQueryFilter
       );
     });
   }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      whoisIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'whois',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      whoisIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'whois',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      whoisEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'whois',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      whoisGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'whois',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      whoisLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'whois',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      whoisBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'whois',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      whoisStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'whois',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      whoisEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'whois',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      whoisContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'whois',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      whoisMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'whois',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      whoisIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'whois',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      whoisIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'whois',
+        value: '',
+      ));
+    });
+  }
 }
 
 extension NetworkEndpointQueryObject
@@ -1669,6 +1838,19 @@ extension NetworkEndpointQuerySortBy
       return query.addSortBy(r'ipRange', Sort.desc);
     });
   }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy> sortByWhois() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'whois', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy>
+      sortByWhoisDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'whois', Sort.desc);
+    });
+  }
 }
 
 extension NetworkEndpointQuerySortThenBy
@@ -1777,6 +1959,19 @@ extension NetworkEndpointQuerySortThenBy
       return query.addSortBy(r'isarId', Sort.desc);
     });
   }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy> thenByWhois() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'whois', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy>
+      thenByWhoisDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'whois', Sort.desc);
+    });
+  }
 }
 
 extension NetworkEndpointQueryWhereDistinct
@@ -1833,6 +2028,13 @@ extension NetworkEndpointQueryWhereDistinct
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QDistinct> distinctByTags() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'tags');
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QDistinct> distinctByWhois(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'whois', caseSensitive: caseSensitive);
     });
   }
 }
@@ -1904,6 +2106,12 @@ extension NetworkEndpointQueryProperty
   QueryBuilder<NetworkEndpoint, List<String>, QQueryOperations> tagsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'tags');
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, String?, QQueryOperations> whoisProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'whois');
     });
   }
 }
