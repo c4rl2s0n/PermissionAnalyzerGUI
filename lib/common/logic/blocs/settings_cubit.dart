@@ -49,6 +49,7 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   Future setRecorder(String version) async {
     emit(state.copyWith(recorderVersion: version));
+    saveSettings();
   }
   void setRecorderPath(String path) {
     settings.recorderPath = path;

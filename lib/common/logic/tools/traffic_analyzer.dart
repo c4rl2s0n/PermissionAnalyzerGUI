@@ -298,8 +298,6 @@ class TrafficAnalyzer {
       );
     }
 
-    print("${allPackets.length}: $serverName");
-
     return NetworkPacket(
       ipSrc: ipSrc,
       portSrc: portSrc,

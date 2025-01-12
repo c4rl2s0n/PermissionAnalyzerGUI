@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
@@ -99,7 +101,7 @@ class TestRun {
       _connectionTimeline![keyTotal]![tsInSec] = frameTotal;
 
       // go on with next packet in next timeframe
-      tsInSec = packetTsInSec;
+      tsInSec = max(0, packetTsInSec);
       packetsInFrame = [packet];
     }
     return _connectionTimeline!;
