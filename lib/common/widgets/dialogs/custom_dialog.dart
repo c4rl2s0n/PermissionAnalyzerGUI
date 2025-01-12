@@ -24,47 +24,50 @@ class CustomDialog<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: context.colors.surface,
-      insetPadding: EdgeInsets.all(context.constants.spacing),
-      title: Row(
-        children: [
-          if (icon != null) ...[
-            IconTheme(
-              data: IconTheme.of(context).copyWith(size: maxTitleWidgetHeight),
-              child: icon!,
-            ),
-            Margin.horizontal(context.constants.spacing)
-          ],
-          Text(
-            title,
-            softWrap: true,
-            maxLines: 2,
-          ),
-          if (titleTrailing != null) ...[
-            Margin.horizontal(context.constants.spacing),
-            SizedBox(height: maxTitleWidgetHeight, child: titleTrailing!),
-          ],
-        ],
-      ),
-      content: Builder(builder: (context) {
-        MediaQueryData mediaQuery = MediaQuery.of(context);
-        return Column(
-          mainAxisSize: MainAxisSize.min,
+    return SelectionArea(
+      contextMenuBuilder: (_, __) => const SizedBox.shrink(),
+      child: AlertDialog(
+        backgroundColor: context.colors.surface,
+        insetPadding: EdgeInsets.all(context.constants.spacing),
+        title: Row(
           children: [
-            expand
-                ? Expanded(child: content)
-                : Container(
-                    constraints: BoxConstraints(
-                      maxHeight: mediaQuery.size.height * 0.6,
+            if (icon != null) ...[
+              IconTheme(
+                data: IconTheme.of(context).copyWith(size: maxTitleWidgetHeight),
+                child: icon!,
+              ),
+              Margin.horizontal(context.constants.spacing)
+            ],
+            Text(
+              title,
+              softWrap: true,
+              maxLines: 2,
+            ),
+            if (titleTrailing != null) ...[
+              Margin.horizontal(context.constants.spacing),
+              SizedBox(height: maxTitleWidgetHeight, child: titleTrailing!),
+            ],
+          ],
+        ),
+        content: Builder(builder: (context) {
+          MediaQueryData mediaQuery = MediaQuery.of(context);
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              expand
+                  ? Expanded(child: content)
+                  : Container(
+                      constraints: BoxConstraints(
+                        maxHeight: mediaQuery.size.height * 0.6,
+                      ),
+                      child: content,
                     ),
-                    child: content,
-                  ),
-            if (actions != null) ..._buildActions(context),
-          ].insertBetweenItems(
-              () => Margin.vertical(context.constants.smallSpacing)),
-        );
-      }),
+              if (actions != null) ..._buildActions(context),
+            ].insertBetweenItems(
+                () => Margin.vertical(context.constants.smallSpacing)),
+          );
+        }),
+      ),
     );
   }
 

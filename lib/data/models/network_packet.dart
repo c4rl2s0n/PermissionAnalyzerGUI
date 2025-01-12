@@ -10,6 +10,7 @@ class NetworkPacket {
     this.ipDst = "",
     this.portDst,
     this.protocols,
+    this.serverName,
     this.timeInMs = 0,
     this.size = 0,
   });
@@ -27,5 +28,6 @@ class NetworkPacket {
   @ignore
   String get dst => "$ipDst:$portDst";
   String? protocols;
+  String? serverName;
   int size;
 }

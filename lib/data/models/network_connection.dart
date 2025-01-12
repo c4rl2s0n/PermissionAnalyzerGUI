@@ -1,4 +1,6 @@
 import 'package:isar/isar.dart';
+import 'package:permission_analyzer_gui/app_root.dart';
+import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
 part 'network_connection.g.dart';
@@ -9,6 +11,8 @@ abstract class INetworkConnection {
   List<String> get ips;
   List<int> get ports;
   List<String> get protocols;
+  List<String> get serverNameIndications;
+  String get serverNameIndicationsString => serverNameIndications.join("\n");
   String get wiresharkFilter => ips.map((ip) => "ip.addr == $ip").join(" or ");
   String get protocolsString => _protocolsString;
   String get flow => "(${endpoint.ip}; ${endpoint.name}; ${ports.join(",")}; ${protocolsString.replaceAll("\n", ",")})";
@@ -83,9 +87,10 @@ abstract class INetworkConnection {
 @Embedded(ignore: {'endpoint', 'copy', 'testRuns', 'connections', 'protocolsString'})
 class NetworkConnection extends INetworkConnection{
   NetworkConnection({
-    this.ip = "0.0.0.0",
+    String ip = "0.0.0.0",
     this.port,
     NetworkEndpoint? endpoint,
+    this.serverName,
     this.packets = const [],
     this.testRuns = const [],
   }) {
@@ -94,12 +99,12 @@ class NetworkConnection extends INetworkConnection{
   }
 
   NetworkConnection._copied({
-    required this.ip,
     required this.port,
     required this.endpoint,
     required this.packets,
     required this.testRuns,
     required this.protocols,
+    required this.serverName,
     required this.outCount,
     required this.inCount,
     required this.outBytes,
@@ -109,7 +114,7 @@ class NetworkConnection extends INetworkConnection{
   @override
   @ignore
   late NetworkEndpoint endpoint;
-  String ip;
+  String get ip => endpoint.ip;
   @override
   List<String> get ips => [ip];
   int? port;
@@ -117,6 +122,10 @@ class NetworkConnection extends INetworkConnection{
   List<int> get ports => port != null ? [port!] : [];
   @override
   late List<String> protocols;
+
+  @override
+  List<String> get serverNameIndications => serverName.empty ? [] : [serverName!];
+  String? serverName;
 
 
   @override
@@ -145,7 +154,7 @@ class NetworkConnection extends INetworkConnection{
 
     for (var packet in packets) {
       // collect all protocols used in the connection (should only be one)
-      if(packet.protocols != null && !protocols.contains(packet.protocols)){
+      if(packet.protocols.notEmpty && !protocols.contains(packet.protocols)){
         protocols.add(packet.protocols!);
       }
       if (packet.ipDst == ip) {
@@ -164,11 +173,11 @@ class NetworkConnection extends INetworkConnection{
   @override
   NetworkConnection get copy {
     return NetworkConnection._copied(
-      ip: ip,
       port: port,
       endpoint: endpoint,
       testRuns: testRuns,
       protocols: protocols,
+      serverName: serverName,
       outCount: outCount,
       inCount: inCount,
       outBytes: outBytes,

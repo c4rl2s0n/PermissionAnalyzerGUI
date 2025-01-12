@@ -38,13 +38,18 @@ const NetworkPacketSchema = Schema(
       name: r'protocols',
       type: IsarType.string,
     ),
-    r'size': PropertySchema(
+    r'serverName': PropertySchema(
       id: 5,
+      name: r'serverName',
+      type: IsarType.string,
+    ),
+    r'size': PropertySchema(
+      id: 6,
       name: r'size',
       type: IsarType.long,
     ),
     r'timeInMs': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'timeInMs',
       type: IsarType.long,
     )
@@ -69,6 +74,12 @@ int _networkPacketEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  {
+    final value = object.serverName;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -83,8 +94,9 @@ void _networkPacketSerialize(
   writer.writeLong(offsets[2], object.portDst);
   writer.writeLong(offsets[3], object.portSrc);
   writer.writeString(offsets[4], object.protocols);
-  writer.writeLong(offsets[5], object.size);
-  writer.writeLong(offsets[6], object.timeInMs);
+  writer.writeString(offsets[5], object.serverName);
+  writer.writeLong(offsets[6], object.size);
+  writer.writeLong(offsets[7], object.timeInMs);
 }
 
 NetworkPacket _networkPacketDeserialize(
@@ -99,8 +111,9 @@ NetworkPacket _networkPacketDeserialize(
     portDst: reader.readLongOrNull(offsets[2]),
     portSrc: reader.readLongOrNull(offsets[3]),
     protocols: reader.readStringOrNull(offsets[4]),
-    size: reader.readLongOrNull(offsets[5]) ?? 0,
-    timeInMs: reader.readLongOrNull(offsets[6]),
+    serverName: reader.readStringOrNull(offsets[5]),
+    size: reader.readLongOrNull(offsets[6]) ?? 0,
+    timeInMs: reader.readLongOrNull(offsets[7]),
   );
   return object;
 }
@@ -123,8 +136,10 @@ P _networkPacketDeserializeProp<P>(
     case 4:
       return (reader.readStringOrNull(offset)) as P;
     case 5:
-      return (reader.readLongOrNull(offset) ?? 0) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 6:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 7:
       return (reader.readLongOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -702,6 +717,160 @@ extension NetworkPacketQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'protocols',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkPacket, NetworkPacket, QAfterFilterCondition>
+      serverNameIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'serverName',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkPacket, NetworkPacket, QAfterFilterCondition>
+      serverNameIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'serverName',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkPacket, NetworkPacket, QAfterFilterCondition>
+      serverNameEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'serverName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkPacket, NetworkPacket, QAfterFilterCondition>
+      serverNameGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'serverName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkPacket, NetworkPacket, QAfterFilterCondition>
+      serverNameLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'serverName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkPacket, NetworkPacket, QAfterFilterCondition>
+      serverNameBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'serverName',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkPacket, NetworkPacket, QAfterFilterCondition>
+      serverNameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'serverName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkPacket, NetworkPacket, QAfterFilterCondition>
+      serverNameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'serverName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkPacket, NetworkPacket, QAfterFilterCondition>
+      serverNameContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'serverName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkPacket, NetworkPacket, QAfterFilterCondition>
+      serverNameMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'serverName',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkPacket, NetworkPacket, QAfterFilterCondition>
+      serverNameIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'serverName',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkPacket, NetworkPacket, QAfterFilterCondition>
+      serverNameIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'serverName',
         value: '',
       ));
     });

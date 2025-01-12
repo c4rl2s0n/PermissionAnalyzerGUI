@@ -81,16 +81,15 @@ class ConnectionOverviewTable extends StatelessWidget {
           },
           icon: Icon(context.icons.filter),
       ),
-      if (T == NetworkConnection) ...[
+      if (connection.connections.length == 1) ...[
         ContextMenuItem(
             name: "Show Whois",
             onTap: (context) async {
-              NetworkEndpoint endpoint =
-                  (connection as NetworkConnection).endpoint;
+              NetworkEndpoint endpoint = connection.connections.first.endpoint;
               InfoDialog.showInfo(
                 context,
                 title:
-                    "Whois (${(connection as NetworkConnection).endpoint.name})",
+                    "Whois (${endpoint.name})",
                 content: endpoint.whois ?? "No whois-data available...",
               );
             },
@@ -186,6 +185,13 @@ class ConnectionOverviewTable extends StatelessWidget {
             String bString = b as String;
             return compareHostnames(aString, bString);
           }),
+
+      DataGridColumn<NetworkConnection, String?>(
+        name: "Server Name",
+        width: 200,
+        getCell: (c) => Text(c.serverName ?? ""),
+        getValue: (c) => c.serverName,
+      ),
       DataGridColumn<NetworkConnection, String?>(
         name: "Protocols",
         width: 200,
@@ -276,6 +282,12 @@ class ConnectionOverviewTable extends StatelessWidget {
             String bString = b as String;
             return compareHostnames(aString, bString);
           }),
+      DataGridColumn<ConnectionGroup, String>(
+        name: "SNIs",
+        width: 200,
+        getCell: (c) => Text(c.serverNameIndicationsString),
+        getValue: (c) => c.serverNameIndicationsString,
+      ),
       DataGridColumn<ConnectionGroup, String?>(
         name: "Protocols",
         width: 200,

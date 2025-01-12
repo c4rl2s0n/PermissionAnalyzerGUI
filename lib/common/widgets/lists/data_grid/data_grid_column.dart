@@ -40,7 +40,7 @@ class DataGridColumn<T, V extends Object?> {
   int Function(Object?, Object?)? compare;
 
   // sort direction (null = no sorting, true = ascending, false = descending)
-  bool? sortAsc;
+  bool? sortDesc;
 
   bool get canSort => getValue != null && compare != null;
 

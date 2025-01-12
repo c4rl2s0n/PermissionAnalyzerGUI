@@ -175,7 +175,7 @@ class ToolSettings extends StatelessWidget {
   Widget _recorderSettings() {
     return BlocBuilder<SettingsCubit, SettingsState>(
       buildWhen: (oldState, state) =>
-          oldState.recorderPath != state.recorderPath,
+          oldState.recorderVersion != state.recorderVersion,
       builder: (context, state) {
         return SimpleSetting(
           name: context.strings.recorderLocalSettings,

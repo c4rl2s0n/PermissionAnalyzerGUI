@@ -40,6 +40,13 @@ class ConnectionGroup extends INetworkConnection {
     allProtocols.sort();
     return allProtocols;
   }
+  @override
+  List<String> get serverNameIndications {
+    List<String> allSnis = connections.fold(<String>[],
+        (List<String> all, con) => [...all, ...con.serverNameIndications]).distinct;
+    allSnis.sort();
+    return allSnis;
+  }
 
   @override
   int get inBytes => connections.fold(0, (sum, con) => sum + con.inBytes);

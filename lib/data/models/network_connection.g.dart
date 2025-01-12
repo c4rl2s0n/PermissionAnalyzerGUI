@@ -109,13 +109,28 @@ const NetworkConnectionSchema = Schema(
       name: r'protocols',
       type: IsarType.stringList,
     ),
-    r'testRunCount': PropertySchema(
+    r'serverName': PropertySchema(
       id: 19,
+      name: r'serverName',
+      type: IsarType.string,
+    ),
+    r'serverNameIndications': PropertySchema(
+      id: 20,
+      name: r'serverNameIndications',
+      type: IsarType.stringList,
+    ),
+    r'serverNameIndicationsString': PropertySchema(
+      id: 21,
+      name: r'serverNameIndicationsString',
+      type: IsarType.string,
+    ),
+    r'testRunCount': PropertySchema(
+      id: 22,
       name: r'testRunCount',
       type: IsarType.long,
     ),
     r'wiresharkFilter': PropertySchema(
-      id: 20,
+      id: 23,
       name: r'wiresharkFilter',
       type: IsarType.string,
     )
@@ -158,6 +173,20 @@ int _networkConnectionEstimateSize(
       bytesCount += value.length * 3;
     }
   }
+  {
+    final value = object.serverName;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  bytesCount += 3 + object.serverNameIndications.length * 3;
+  {
+    for (var i = 0; i < object.serverNameIndications.length; i++) {
+      final value = object.serverNameIndications[i];
+      bytesCount += value.length * 3;
+    }
+  }
+  bytesCount += 3 + object.serverNameIndicationsString.length * 3;
   bytesCount += 3 + object.wiresharkFilter.length * 3;
   return bytesCount;
 }
@@ -192,8 +221,11 @@ void _networkConnectionSerialize(
   writer.writeLong(offsets[16], object.port);
   writer.writeLongList(offsets[17], object.ports);
   writer.writeStringList(offsets[18], object.protocols);
-  writer.writeLong(offsets[19], object.testRunCount);
-  writer.writeString(offsets[20], object.wiresharkFilter);
+  writer.writeString(offsets[19], object.serverName);
+  writer.writeStringList(offsets[20], object.serverNameIndications);
+  writer.writeString(offsets[21], object.serverNameIndicationsString);
+  writer.writeLong(offsets[22], object.testRunCount);
+  writer.writeString(offsets[23], object.wiresharkFilter);
 }
 
 NetworkConnection _networkConnectionDeserialize(
@@ -218,6 +250,7 @@ NetworkConnection _networkConnectionDeserialize(
   object.outBytes = reader.readLong(offsets[11]);
   object.outCount = reader.readLong(offsets[13]);
   object.protocols = reader.readStringList(offsets[18]) ?? [];
+  object.serverName = reader.readStringOrNull(offsets[19]);
   return object;
 }
 
@@ -273,8 +306,14 @@ P _networkConnectionDeserializeProp<P>(
     case 18:
       return (reader.readStringList(offset) ?? []) as P;
     case 19:
-      return (reader.readLong(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 20:
+      return (reader.readStringList(offset) ?? []) as P;
+    case 21:
+      return (reader.readString(offset)) as P;
+    case 22:
+      return (reader.readLong(offset)) as P;
+    case 23:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -2042,6 +2081,525 @@ extension NetworkConnectionQueryFilter
         upper,
         includeUpper,
       );
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'serverName',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'serverName',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'serverName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'serverName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'serverName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'serverName',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'serverName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'serverName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'serverName',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'serverName',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'serverName',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'serverName',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'serverNameIndications',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'serverNameIndications',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'serverNameIndications',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'serverNameIndications',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'serverNameIndications',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'serverNameIndications',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsElementContains(String value,
+          {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'serverNameIndications',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsElementMatches(String pattern,
+          {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'serverNameIndications',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'serverNameIndications',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'serverNameIndications',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'serverNameIndications',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'serverNameIndications',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'serverNameIndications',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'serverNameIndications',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'serverNameIndications',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'serverNameIndications',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsStringEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'serverNameIndicationsString',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsStringGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'serverNameIndicationsString',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsStringLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'serverNameIndicationsString',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsStringBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'serverNameIndicationsString',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsStringStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'serverNameIndicationsString',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsStringEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'serverNameIndicationsString',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsStringContains(String value,
+          {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'serverNameIndicationsString',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsStringMatches(String pattern,
+          {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'serverNameIndicationsString',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsStringIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'serverNameIndicationsString',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkConnection, NetworkConnection, QAfterFilterCondition>
+      serverNameIndicationsStringIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'serverNameIndicationsString',
+        value: '',
+      ));
     });
   }
 

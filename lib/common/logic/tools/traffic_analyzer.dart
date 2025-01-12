@@ -65,10 +65,11 @@ class TrafficAnalyzer {
     bool grouped = false,
   }) {
     List<TestRun> tests = [];
-    for(var group in groups){
+    for (var group in groups) {
       tests.addAll(group.tests);
     }
-    return getConnectionsFromTestRuns(tests,filtered: filtered,grouped: grouped);
+    return getConnectionsFromTestRuns(tests,
+        filtered: filtered, grouped: grouped);
   }
 
   static List<INetworkConnection> getConnectionsFromTestRuns(
@@ -86,7 +87,8 @@ class TrafficAnalyzer {
         } else {
           // aggregate connection
           NetworkConnection tc = connectionsMap[connection.flow]!;
-          tc.packets.addAll(test.packets.where((p) => p.ipSrc == tc.ip || p.ipDst == tc.ip));
+          tc.packets.addAll(
+              test.packets.where((p) => p.ipSrc == tc.ip || p.ipDst == tc.ip));
           if (!tc.testRuns.any((tr) => tr.id == test.id)) {
             tc.testRuns.add(test);
           }
@@ -104,10 +106,9 @@ class TrafficAnalyzer {
   static List<T> getFilteredConnections<T extends INetworkConnection>(
     List<T> connections,
   ) {
-    return connections
-        .where((c) => !c.ips.any(_shouldFilterIp))
-        .toList();
+    return connections.where((c) => !c.ips.any(_shouldFilterIp)).toList();
   }
+
   static List<NetworkPacket> getFilteredPackets(
     List<NetworkPacket> packets,
   ) {
@@ -115,7 +116,9 @@ class TrafficAnalyzer {
         .where((p) => !(_shouldFilterIp(p.ipDst) && _shouldFilterIp(p.ipSrc)))
         .toList();
   }
-  static bool _shouldFilterIp(String ip) => ip.startsWith("10.0.") || ip.startsWith("127.0.0.1");
+
+  static bool _shouldFilterIp(String ip) =>
+      ip.startsWith("10.0.") || ip.startsWith("127.0.0.1");
 
   static List<ConnectionGroup> getGroupedConnections(
     List<INetworkConnection> connections, {
@@ -185,14 +188,18 @@ class TrafficAnalyzer {
             ip: packet.ipDst,
             port: packet.portDst,
             packets: [],
-            testRuns: testRun != null ? [testRun] : []);
+            testRuns: testRun != null ? [testRun] : [],
+            serverName: packet.serverName,
+        );
       }
       if (!connections.containsKey(packet.src)) {
         connections[packet.src] = NetworkConnection(
             ip: packet.ipSrc,
             port: packet.portSrc,
             packets: [],
-            testRuns: testRun != null ? [testRun] : []);
+            testRuns: testRun != null ? [testRun] : [],
+          serverName: packet.serverName,
+        );
       }
 
       // incoming packets
@@ -236,6 +243,8 @@ class TrafficAnalyzer {
         'tcp.dstport',
         'udp.srcport',
         'udp.dstport',
+        'tls.handshake.session_id',
+        'tls.handshake.extensions_server_name',
       ],
     );
     // TODO: udp port not extracted
@@ -246,13 +255,16 @@ class TrafficAnalyzer {
         // extract relevant data
         Map<String, dynamic> packetData =
             entry['_source']['layers'] as Map<String, dynamic>;
-        packets.add(_getPacketFromMap(packetData));
+        packets.add(_getPacketFromMap(packetData, allPackets: packets));
       } catch (_) {}
     }
-    return packets;
+    return TrafficAnalyzer.getFilteredPackets(packets);
   }
 
-  static NetworkPacket _getPacketFromMap(Map<String, dynamic> packetData) {
+  static NetworkPacket _getPacketFromMap(
+    Map<String, dynamic> packetData, {
+    List<NetworkPacket> allPackets = const [],
+  }) {
     // frame info
     int timeInMs =
         _getTimestampFromPacket(packetData['frame.time_epoch'].first as String);
@@ -274,6 +286,20 @@ class TrafficAnalyzer {
       portDst = int.parse(packetData['udp.dstport'].first);
     }
 
+    // Server Name Indication
+    String? serverName = packetData["tls.handshake.extensions_server_name"].first;
+    if (serverName.empty && protocols.contains("tls")) {
+      serverName = _lookupSniFromPacketHistory(
+        ipSrc: ipSrc,
+        ipDst: ipDst,
+        portSrc: portSrc,
+        portDst: portDst,
+        allPackets: allPackets,
+      );
+    }
+
+    print("${allPackets.length}: $serverName");
+
     return NetworkPacket(
       ipSrc: ipSrc,
       portSrc: portSrc,
@@ -282,7 +308,34 @@ class TrafficAnalyzer {
       protocols: protocols,
       timeInMs: timeInMs,
       size: size,
+      serverName: serverName,
     );
+  }
+
+  static String? _lookupSniFromPacketHistory({
+    required String ipSrc,
+    required String ipDst,
+    int? portSrc,
+    int? portDst,
+    List<NetworkPacket> allPackets = const [],
+  }) {
+    if (portSrc == null || portDst == null) return null;
+    for (int i = allPackets.length - 1; i >= 0; i--) {
+      NetworkPacket packet = allPackets[i];
+      // if packet has no ports, ignore it for sni-lookup
+      if (packet.portSrc == null || packet.portDst == null) continue;
+      // packet has same ip flow (might be other direction)
+      if (packet.ipSrc == ipSrc && packet.ipDst == ipDst ||
+          packet.ipSrc == ipDst && packet.ipDst == ipSrc) {
+        // packet has same ip flow (might be other direction)
+        if (packet.portSrc == portSrc && packet.portDst == portDst ||
+            packet.portSrc == portDst && packet.portDst == portSrc) {
+          // found previous packet from same flow -> use SNI from there
+          return packet.serverName;
+        }
+      }
+    }
+    return null;
   }
 
   static int _getTimestampFromPacket(String timeEpoch) {
@@ -358,8 +411,8 @@ class TrafficAnalyzer {
     for (var protocol in protocols) {
       int protocolLoad = connections.fold(
           0,
-          (int load, con) => load += getFilteredPackets(con.packets
-              .where((p) => p.protocols == protocol).toList())
+          (int load, con) => load += getFilteredPackets(
+                  con.packets.where((p) => p.protocols == protocol).toList())
               .map((p) => loadInPackets ? 1 : p.size)
               .nonNulls
               .toList()
@@ -375,8 +428,8 @@ class TrafficAnalyzer {
     List<NetworkConnection> connections,
   ) {
     List<NetworkConnection> groupConnections = [];
-    for(var con in group.networkConnections){
-      if(connections.any((c) => c.ip == con.ip)) {
+    for (var con in group.networkConnections) {
+      if (connections.any((c) => c.ip == con.ip)) {
         groupConnections.add(con);
       }
     }
