@@ -243,7 +243,6 @@ class TrafficAnalyzer {
         'tcp.dstport',
         'udp.srcport',
         'udp.dstport',
-        'tls.handshake.session_id',
         'tls.handshake.extensions_server_name',
       ],
     );
@@ -287,7 +286,7 @@ class TrafficAnalyzer {
     }
 
     // Server Name Indication
-    String? serverName = packetData["tls.handshake.extensions_server_name"].first;
+    String? serverName = packetData["tls.handshake.extensions_server_name"]?.firstOrNull;
     if (serverName.empty && protocols.contains("tls")) {
       serverName = _lookupSniFromPacketHistory(
         ipSrc: ipSrc,

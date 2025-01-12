@@ -81,7 +81,7 @@ class AnalysisCubit extends Cubit<AnalysisState> {
     for (var scenario in scenarios) {
       for (var constellation in scenario.testConstellations) {
         for (var test in constellation.tests) {
-          if (test.pcapPath == null) continue;
+          if (test.pcapPath.empty) continue;
           test.packets = await TrafficAnalyzer.extractPackets(
             Tshark(settingsCubit),
             test.pcapPath!,
