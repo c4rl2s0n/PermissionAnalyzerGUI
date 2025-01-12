@@ -48,6 +48,7 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   Future setRecorder(String version) async {
+    settings.recorderVersion = version;
     emit(state.copyWith(recorderVersion: version));
     saveSettings();
   }
