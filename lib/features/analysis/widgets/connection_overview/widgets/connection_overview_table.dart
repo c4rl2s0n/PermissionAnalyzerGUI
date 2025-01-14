@@ -6,7 +6,9 @@ import 'package:permission_analyzer_gui/common/widgets/factories/context_menu_fa
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/logic/logic.dart';
 import 'package:permission_analyzer_gui/features/analysis/models/connection_group.dart';
+import 'package:permission_analyzer_gui/features/analysis/widgets/config_builder.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/connection_overview/logic/logic.dart';
+import 'package:permission_analyzer_gui/features/analysis/widgets/connection_overview/widgets/config_dialog.dart';
 
 class ConnectionOverviewTable extends StatelessWidget {
   const ConnectionOverviewTable({this.initialSelectionIndex, super.key});
@@ -17,47 +19,50 @@ class ConnectionOverviewTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ConnectionOverviewCubit, ConnectionOverviewState>(
       buildWhen: (oldState, state) => oldState.connections != state.connections,
-      builder: (context, state) {
-        return BlocBuilder<AnalysisCubit, AnalysisState>(
-            buildWhen: (oldState, state) =>
-                oldState.connectionsGrouped != state.connectionsGrouped ||
-                oldState.trafficLoadInPackets != state.trafficLoadInPackets ||
-                oldState.analyzingEndpoints != state.analyzingEndpoints,
-            builder: (context, analysisState) {
-              return InfoContainer(
-                title: "Connection Overview",
-                action: _actions(context, analysisState),
-                child: analysisState.connectionsGrouped
-                    ? DataGrid<ConnectionGroup>(
-                        columns: _networkGroupColumns(context, analysisState),
-                        onDataSelected: (entry, index) => context
-                            .connectionOverviewCubit
-                            .updateSelection(entry),
-                        onDataSecondaryTap: (entry, [pos]) =>
-                            _onDataSecondaryTap(context, entry, pos),
-                        data: state.connections
-                            .whereType<ConnectionGroup>()
-                            .toList(),
-                        initialSelectedIndex: initialSelectionIndex,
-                        //context.connectionOverviewCubit.state.selectedConnection,
-                      )
-                    : DataGrid<NetworkConnection>(
-                        columns:
-                            _networkConnectionColumns(context, analysisState),
-                        onDataSelected: (entry, index) => context
-                            .connectionOverviewCubit
-                            .updateSelection(entry),
-                        onDataSecondaryTap: (entry, [pos]) =>
-                            _onDataSecondaryTap(context, entry, pos),
-                        data: state.connections
-                            .whereType<NetworkConnection>()
-                            .toList(),
-                        initialSelectedIndex: initialSelectionIndex,
-                        //context.connectionOverviewCubit.state.selectedConnection,
-                      ),
-              );
-            });
-      },
+      builder: (context, state) => ConfigBuilder(
+          buildWhenAnalysis: (oldState, state) =>
+              oldState.analyzingEndpoints != state.analyzingEndpoints,
+          buildWhenAnalysisConfig: (oldState, state) =>
+              oldState.groupConnections != state.groupConnections ||
+              oldState.trafficLoadInPackets != state.trafficLoadInPackets ||
+              oldState.sniInDomain != state.sniInDomain ||
+              oldState.showPort != state.showPort ||
+              oldState.showLocation != state.showLocation,
+          builder: (context, analysisState, configState) =>
+              _content(context, state, analysisState, configState)),
+    );
+  }
+
+  Widget _content(
+    BuildContext context,
+    ConnectionOverviewState state,
+    AnalysisState analysisState,
+    AnalysisConfigState analysisConfig,
+  ) {
+    return InfoContainer(
+      title: "Connection Overview",
+      action: _actions(context, analysisState),
+      child: analysisConfig.groupConnections
+          ? DataGrid<ConnectionGroup>(
+              columns: _networkGroupColumns(context, analysisState, analysisConfig),
+              onDataSelected: (entry, index) =>
+                  context.connectionOverviewCubit.updateSelection(entry),
+              onDataSecondaryTap: (entry, [pos]) =>
+                  _onDataSecondaryTap(context, entry, pos),
+              data: state.connections.whereType<ConnectionGroup>().toList(),
+              initialSelectedIndex: initialSelectionIndex,
+              //context.connectionOverviewCubit.state.selectedConnection,
+            )
+          : DataGrid<NetworkConnection>(
+              columns: _networkConnectionColumns(context, analysisState, analysisConfig),
+              onDataSelected: (entry, index) =>
+                  context.connectionOverviewCubit.updateSelection(entry),
+              onDataSecondaryTap: (entry, [pos]) =>
+                  _onDataSecondaryTap(context, entry, pos),
+              data: state.connections.whereType<NetworkConnection>().toList(),
+              initialSelectedIndex: initialSelectionIndex,
+              //context.connectionOverviewCubit.state.selectedConnection,
+            ),
     );
   }
 
@@ -65,21 +70,20 @@ class ConnectionOverviewTable extends StatelessWidget {
       BuildContext context, T connection,
       [Offset? position]) {
     position ??= Offset.zero;
-    print(connection.runtimeType);
     ContextMenuFactory.showContextMenuOnPosition(context, position, [
       ContextMenuItem(
-          name: "Copy Wireshark Filter",
-          onTap: (context) async {
-            await Clipboard.setData(
-                ClipboardData(text: connection.wiresharkFilter));
-            if (context.mounted) {
-              context.messenger.showSnackBar(
-                SnackBarFactory.getPositiveSnackBar(context,
-                    text: "Wireshark filter copied to clipboard."),
-              );
-            }
-          },
-          icon: Icon(context.icons.filter),
+        name: "Copy Wireshark Filter",
+        onTap: (context) async {
+          await Clipboard.setData(
+              ClipboardData(text: connection.wiresharkFilter));
+          if (context.mounted) {
+            context.messenger.showSnackBar(
+              SnackBarFactory.getPositiveSnackBar(context,
+                  text: "Wireshark filter copied to clipboard."),
+            );
+          }
+        },
+        icon: Icon(context.icons.filter),
       ),
       if (connection.connections.length == 1) ...[
         ContextMenuItem(
@@ -88,8 +92,7 @@ class ConnectionOverviewTable extends StatelessWidget {
               NetworkEndpoint endpoint = connection.connections.first.endpoint;
               InfoDialog.showInfo(
                 context,
-                title:
-                    "Whois (${endpoint.name})",
+                title: "Whois (${endpoint.name})",
                 content: endpoint.whois ?? "No whois-data available...",
               );
             },
@@ -101,39 +104,27 @@ class ConnectionOverviewTable extends StatelessWidget {
   Widget _actions(BuildContext context, AnalysisState state) {
     return Expanded(
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          _tableConfigButton(context, state),
           const Margin.horizontal(42),
-          _loadByPacketsSwitch(context, state),
-          _groupConnectionsSlider(context, state),
           _analyzeEndpointsButton(context, state),
         ],
       ),
     );
   }
 
-  Widget _loadByPacketsSwitch(BuildContext context, AnalysisState state) {
-    return BoolSwitch(
-      textLeft: "Bytes",
-      textRight: "Packets",
-      rightSelected: state.trafficLoadInPackets,
-      onChanged: (loadInPackets) =>
-          context.analysisCubit.setTrafficLoadInPackets(loadInPackets),
-    );
-  }
 
-  Widget _groupConnectionsSlider(BuildContext context, AnalysisState state) {
-    return Row(
-      children: [
-        const Text("Group connections"),
-        Switch(
-          value: state.connectionsGrouped,
-          onChanged: (grouped) {
-            context.connectionOverviewCubit.updateSelection(null);
-            context.analysisCubit.setGrouped(grouped);
-          },
-        ),
-      ].insertBetweenItems(() => Margin.horizontal(context.constants.spacing)),
+  Widget _tableConfigButton(
+    BuildContext context,
+    AnalysisState state,
+  ) {
+    return IconTextButton(
+      text: "Config",
+      color: context.colors.warning,
+      icon: Icon(context.icons.settings),
+      verticalPadding: context.constants.infoContainerActionButtonPadding,
+      onTap: () => ConfigDialog.showSettings(context, context.analysisCubit),
     );
   }
 
@@ -149,7 +140,7 @@ class ConnectionOverviewTable extends StatelessWidget {
             child: IconTextButton(
               text: "Analyze Endpoints",
               icon: Icon(context.icons.test),
-              padding: context.constants.infoContainerActionButtonPadding,
+              verticalPadding: context.constants.infoContainerActionButtonPadding,
               onTap: () => context.analysisCubit.analyzeEndpoints(),
             ),
           );
@@ -158,6 +149,7 @@ class ConnectionOverviewTable extends StatelessWidget {
   List<DataGridColumn<NetworkConnection, Object?>> _networkConnectionColumns(
     BuildContext context,
     AnalysisState state,
+    AnalysisConfigState config,
   ) {
     return [
       DataGridColumn<NetworkConnection, String>(
@@ -166,32 +158,15 @@ class ConnectionOverviewTable extends StatelessWidget {
         getCell: (c) => Text(c.ip),
         getValue: (c) => c.ip,
       ),
-      DataGridColumn<NetworkConnection, int?>(
-        name: "Port",
-        width: 80,
-        getCell: (c) => Text(c.port?.toString() ?? "None"),
-        getValue: (c) => c.port,
-      ),
-      DataGridColumn<NetworkConnection, String>(
-          name: "Domain",
-          width: 220,
-          getCell: (c) => Optional.tooltip(
-              tooltip: c.endpoint.hostname ?? "",
-              show: c.endpoint.hasHostname,
-              child: Text(c.endpoint.domain ?? "Unknown")),
-          getValue: (c) => c.endpoint.domain ?? "Unknown",
-          compare: (a, b) {
-            String aString = a as String;
-            String bString = b as String;
-            return compareHostnames(aString, bString);
-          }),
-
-      DataGridColumn<NetworkConnection, String?>(
-        name: "Server Name",
-        width: 200,
-        getCell: (c) => Text(c.serverName ?? ""),
-        getValue: (c) => c.serverName,
-      ),
+      if (config.showPort) ...[
+        DataGridColumn<NetworkConnection, int?>(
+          name: "Port",
+          width: 80,
+          getCell: (c) => Text(c.port?.toString() ?? "None"),
+          getValue: (c) => c.port,
+        ),
+      ],
+      ..._endpointNameColumns(context, config),
       DataGridColumn<NetworkConnection, String?>(
         name: "Protocols",
         width: 200,
@@ -210,6 +185,72 @@ class ConnectionOverviewTable extends StatelessWidget {
             )),
         getValue: (c) => c.testRunCount,
       ),
+      ..._geolocationColumns(context, config),
+      ..._trafficLoadColumns<NetworkConnection>(context, config),
+    ];
+  }
+
+  List<DataGridColumn<ConnectionGroup, Object?>> _networkGroupColumns(
+    BuildContext context,
+    AnalysisState state,
+      AnalysisConfigState config,
+  ) {
+    return [
+      DataGridColumn<ConnectionGroup, String?>(
+        name: "IP Range",
+        width: 120,
+        getCell: (c) => Optional.tooltip(
+            tooltip: c.endpoint.endpoints
+                .map((e) => e.ip)
+                .toList()
+                .sorted
+                .join("\n"),
+            show: c.endpoint.endpoints.length > 1,
+            child: Text(c.endpoint.ipRange)),
+        getValue: (c) => c.endpoint.ipRange,
+      ),
+      DataGridColumn<ConnectionGroup, int>(
+        name: "# Endpoints",
+        width: 120,
+        getValue: (c) => c.endpoint.endpoints.length,
+      ),
+      if (config.showPort) ...[
+        DataGridColumn<ConnectionGroup, List<int>>(
+          name: "Ports",
+          width: 80,
+          getCell: (c) => Text(c.ports.join(", ")),
+          getValue: (c) => c.ports,
+        ),
+      ],
+      ..._endpointNameColumns(context, config),
+      DataGridColumn<ConnectionGroup, String?>(
+        name: "Protocols",
+        width: 200,
+        getCell: (c) => Text(c.protocolsString),
+        getValue: (c) => c.protocolsString,
+      ),
+      DataGridColumn<ConnectionGroup, int>(
+        name: "# Tests",
+        width: 100,
+        headerAlign: TextAlign.center,
+        getCell: (c) => Tooltip(
+            message: c.testRuns.map((t) => t.name).toList().distinct.join("\n"),
+            child: Text(
+              c.testRunCount.toString(),
+              textAlign: TextAlign.center,
+            )),
+        getValue: (c) => c.testRunCount,
+      ),
+      ..._trafficLoadColumns<ConnectionGroup>(context, config),
+    ];
+  }
+
+  List<DataGridColumn<NetworkConnection, Object?>> _geolocationColumns(
+    BuildContext context,
+    AnalysisConfigState config,
+  ) {
+    if (!config.showLocation) return [];
+    return [
       DataGridColumn<NetworkConnection, String?>(
         name: "Continent",
         width: 100,
@@ -231,92 +272,89 @@ class ConnectionOverviewTable extends StatelessWidget {
         getValue: (c) => c.endpoint.geolocations.firstOrNull?.city,
         defaultCellTextAlign: TextAlign.center,
       ),
-      ..._trafficLoadColumns<NetworkConnection>(context, state),
     ];
   }
 
-  List<DataGridColumn<ConnectionGroup, Object?>> _networkGroupColumns(
+  List<DataGridColumn<T, Object?>>
+      _endpointNameColumns<T extends INetworkConnection>(
     BuildContext context,
-    AnalysisState state,
+    AnalysisConfigState config,
   ) {
+    if (config.sniInDomain) {
+      return <DataGridColumn<T, Object?>>[
+        DataGridColumn<T, String>(
+            name: "Domain",
+            width: 220,
+            getCell: (c) {
+              List<NetworkEndpoint> endpoints = c is NetworkConnection
+                  ? [(c as NetworkConnection).endpoint]
+                  : c is ConnectionGroup
+                      ? (c as ConnectionGroup).endpoint.endpoints
+                      : [];
+              return Optional.tooltip(
+                  tooltip: endpoints
+                      .map((e) => e.hostname)
+                      .nonNulls
+                      .toList()
+                      .sorted
+                      .join("\n"),
+                  show: c.endpoint.hasHostname,
+                  child: Text(c.serverNames.isNotEmpty
+                      ? c.serverNamesString
+                      : c.endpoint.domainString ?? "Unknown"));
+            },
+            getValue: (c) => c.serverNames.isNotEmpty
+                ? c.serverNamesString
+                : c.endpoint.domainString ?? "Unknown",
+            compare: (a, b) {
+              String aString = a as String;
+              String bString = b as String;
+              return compareHostnames(aString, bString);
+            })
+      ];
+    }
     return [
-      DataGridColumn<ConnectionGroup, String?>(
-        name: "IP Range",
-        width: 120,
-        getCell: (c) => Optional.tooltip(
-            tooltip: c.endpoint.endpoints
-                .map((e) => e.ip)
-                .toList()
-                .sorted
-                .join("\n"),
-            show: c.endpoint.endpoints.length > 1,
-            child: Text(c.endpoint.ipRange)),
-        getValue: (c) => c.endpoint.ipRange,
-      ),
-      DataGridColumn<ConnectionGroup, int>(
-        name: "# Endpoints",
-        width: 120,
-        getValue: (c) => c.endpoint.endpoints.length,
-      ),
-      DataGridColumn<ConnectionGroup, List<int>>(
-        name: "Ports",
-        width: 80,
-        getCell: (c) => Text(c.ports.join(", ")),
-        getValue: (c) => c.ports,
-      ),
-      DataGridColumn<ConnectionGroup, String>(
+      DataGridColumn<T, String>(
           name: "Domain",
           width: 220,
-          getCell: (c) => Optional.tooltip(
-              tooltip: c.endpoint.endpoints
-                  .map((e) => e.hostname)
-                  .nonNulls
-                  .toList()
-                  .sorted
-                  .join("\n"),
-              show: c.endpoint.hasHostname,
-              child: Text(c.endpoint.domain ?? "Unknown")),
-          getValue: (c) => c.endpoint.domain ?? "Unknown",
+          getCell: (c) {
+            List<NetworkEndpoint> endpoints = c is NetworkConnection
+                ? [(c as NetworkConnection).endpoint]
+                : c is ConnectionGroup
+                    ? (c as ConnectionGroup).endpoint.endpoints
+                    : [];
+            return Optional.tooltip(
+                tooltip: endpoints
+                    .map((e) => e.hostname)
+                    .nonNulls
+                    .toList()
+                    .sorted
+                    .join("\n"),
+                show: c.endpoint.hasHostname,
+                child: Text(c.endpoint.domainString ?? "Unknown"));
+          },
+          getValue: (c) => c.endpoint.domainString ?? "Unknown",
           compare: (a, b) {
             String aString = a as String;
             String bString = b as String;
             return compareHostnames(aString, bString);
           }),
-      DataGridColumn<ConnectionGroup, String>(
+      DataGridColumn<T, String>(
         name: "SNIs",
         width: 200,
-        getCell: (c) => Text(c.serverNameIndicationsString),
-        getValue: (c) => c.serverNameIndicationsString,
+        getCell: (c) => Text(c.serverNamesString),
+        getValue: (c) => c.serverNamesString,
       ),
-      DataGridColumn<ConnectionGroup, String?>(
-        name: "Protocols",
-        width: 200,
-        getCell: (c) => Text(c.protocolsString),
-        getValue: (c) => c.protocolsString,
-      ),
-      DataGridColumn<ConnectionGroup, int>(
-        name: "# Tests",
-        width: 100,
-        headerAlign: TextAlign.center,
-        getCell: (c) => Tooltip(
-            message: c.testRuns.map((t) => t.name).toList().distinct.join("\n"),
-            child: Text(
-              c.testRunCount.toString(),
-              textAlign: TextAlign.center,
-            )),
-        getValue: (c) => c.testRunCount,
-      ),
-      ..._trafficLoadColumns<ConnectionGroup>(context, state),
     ];
   }
 
   List<DataGridColumn<T, Object?>>
       _trafficLoadColumns<T extends INetworkConnection>(
     BuildContext context,
-    AnalysisState state,
+    AnalysisConfigState config,
   ) {
     return [
-      if (state.trafficLoadInPackets) ...[
+      if (config.trafficLoadInPackets) ...[
         // Traffic Load in Packets
         DataGridColumn<T, int>(
           name: "Packets In",
@@ -372,9 +410,12 @@ class ConnectionOverviewTable extends StatelessWidget {
           name: "Bytes Total",
           width: 120,
           headerAlign: TextAlign.center,
-          getCell: (c) => Text(
-            c.bytesTotal.readableFileSize(base1024: false),
-            textAlign: TextAlign.center,
+          getCell: (c) => Tooltip(
+            message: c.bytesTotal.toString(),
+            child: Text(
+              c.bytesTotal.readableFileSize(base1024: false),
+              textAlign: TextAlign.center,
+            ),
           ),
           getValue: (c) => c.bytesTotal,
         ),

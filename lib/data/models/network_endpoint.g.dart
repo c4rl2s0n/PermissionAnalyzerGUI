@@ -22,9 +22,9 @@ const NetworkEndpointSchema = CollectionSchema(
       name: r'analyzed',
       type: IsarType.bool,
     ),
-    r'domain': PropertySchema(
+    r'domainString': PropertySchema(
       id: 1,
-      name: r'domain',
+      name: r'domainString',
       type: IsarType.string,
     ),
     r'geolocation': PropertySchema(
@@ -44,33 +44,43 @@ const NetworkEndpointSchema = CollectionSchema(
       name: r'hasHostname',
       type: IsarType.bool,
     ),
-    r'hostname': PropertySchema(
+    r'hasServerName': PropertySchema(
       id: 5,
+      name: r'hasServerName',
+      type: IsarType.bool,
+    ),
+    r'hostname': PropertySchema(
+      id: 6,
       name: r'hostname',
       type: IsarType.string,
     ),
+    r'hostnames': PropertySchema(
+      id: 7,
+      name: r'hostnames',
+      type: IsarType.stringList,
+    ),
     r'id': PropertySchema(
-      id: 6,
+      id: 8,
       name: r'id',
       type: IsarType.string,
     ),
     r'ip': PropertySchema(
-      id: 7,
+      id: 9,
       name: r'ip',
       type: IsarType.string,
     ),
-    r'ipRange': PropertySchema(
-      id: 8,
-      name: r'ipRange',
-      type: IsarType.string,
+    r'serverNames': PropertySchema(
+      id: 10,
+      name: r'serverNames',
+      type: IsarType.stringList,
     ),
     r'tags': PropertySchema(
-      id: 9,
+      id: 11,
       name: r'tags',
       type: IsarType.stringList,
     ),
     r'whois': PropertySchema(
-      id: 10,
+      id: 12,
       name: r'whois',
       type: IsarType.string,
     )
@@ -110,7 +120,7 @@ int _networkEndpointEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
-    final value = object.domain;
+    final value = object.domainString;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
@@ -137,9 +147,22 @@ int _networkEndpointEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.hostnames.length * 3;
+  {
+    for (var i = 0; i < object.hostnames.length; i++) {
+      final value = object.hostnames[i];
+      bytesCount += value.length * 3;
+    }
+  }
   bytesCount += 3 + object.id.length * 3;
   bytesCount += 3 + object.ip.length * 3;
-  bytesCount += 3 + object.ipRange.length * 3;
+  bytesCount += 3 + object.serverNames.length * 3;
+  {
+    for (var i = 0; i < object.serverNames.length; i++) {
+      final value = object.serverNames[i];
+      bytesCount += value.length * 3;
+    }
+  }
   bytesCount += 3 + object.tags.length * 3;
   {
     for (var i = 0; i < object.tags.length; i++) {
@@ -163,7 +186,7 @@ void _networkEndpointSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeBool(offsets[0], object.analyzed);
-  writer.writeString(offsets[1], object.domain);
+  writer.writeString(offsets[1], object.domainString);
   writer.writeObject<Geolocation>(
     offsets[2],
     allOffsets,
@@ -177,12 +200,14 @@ void _networkEndpointSerialize(
     object.geolocations,
   );
   writer.writeBool(offsets[4], object.hasHostname);
-  writer.writeString(offsets[5], object.hostname);
-  writer.writeString(offsets[6], object.id);
-  writer.writeString(offsets[7], object.ip);
-  writer.writeString(offsets[8], object.ipRange);
-  writer.writeStringList(offsets[9], object.tags);
-  writer.writeString(offsets[10], object.whois);
+  writer.writeBool(offsets[5], object.hasServerName);
+  writer.writeString(offsets[6], object.hostname);
+  writer.writeStringList(offsets[7], object.hostnames);
+  writer.writeString(offsets[8], object.id);
+  writer.writeString(offsets[9], object.ip);
+  writer.writeStringList(offsets[10], object.serverNames);
+  writer.writeStringList(offsets[11], object.tags);
+  writer.writeString(offsets[12], object.whois);
 }
 
 NetworkEndpoint _networkEndpointDeserialize(
@@ -198,10 +223,11 @@ NetworkEndpoint _networkEndpointDeserialize(
       GeolocationSchema.deserialize,
       allOffsets,
     ),
-    hostname: reader.readStringOrNull(offsets[5]),
-    ip: reader.readStringOrNull(offsets[7]) ?? "",
-    tags: reader.readStringList(offsets[9]) ?? const [],
-    whois: reader.readStringOrNull(offsets[10]),
+    hostname: reader.readStringOrNull(offsets[6]),
+    ip: reader.readStringOrNull(offsets[9]) ?? "",
+    serverNames: reader.readStringList(offsets[10]) ?? const [],
+    tags: reader.readStringList(offsets[11]) ?? const [],
+    whois: reader.readStringOrNull(offsets[12]),
   );
   object.isarId = id;
   return object;
@@ -235,16 +261,20 @@ P _networkEndpointDeserializeProp<P>(
     case 4:
       return (reader.readBool(offset)) as P;
     case 5:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 6:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 7:
-      return (reader.readStringOrNull(offset) ?? "") as P;
+      return (reader.readStringList(offset) ?? []) as P;
     case 8:
       return (reader.readString(offset)) as P;
     case 9:
-      return (reader.readStringList(offset) ?? const []) as P;
+      return (reader.readStringOrNull(offset) ?? "") as P;
     case 10:
+      return (reader.readStringList(offset) ?? const []) as P;
+    case 11:
+      return (reader.readStringList(offset) ?? const []) as P;
+    case 12:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -457,31 +487,31 @@ extension NetworkEndpointQueryFilter
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      domainIsNull() {
+      domainStringIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'domain',
+        property: r'domainString',
       ));
     });
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      domainIsNotNull() {
+      domainStringIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'domain',
+        property: r'domainString',
       ));
     });
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      domainEqualTo(
+      domainStringEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'domain',
+        property: r'domainString',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -489,7 +519,7 @@ extension NetworkEndpointQueryFilter
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      domainGreaterThan(
+      domainStringGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -497,7 +527,7 @@ extension NetworkEndpointQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'domain',
+        property: r'domainString',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -505,7 +535,7 @@ extension NetworkEndpointQueryFilter
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      domainLessThan(
+      domainStringLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -513,7 +543,7 @@ extension NetworkEndpointQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'domain',
+        property: r'domainString',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -521,7 +551,7 @@ extension NetworkEndpointQueryFilter
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      domainBetween(
+      domainStringBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -530,7 +560,7 @@ extension NetworkEndpointQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'domain',
+        property: r'domainString',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -541,13 +571,13 @@ extension NetworkEndpointQueryFilter
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      domainStartsWith(
+      domainStringStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'domain',
+        property: r'domainString',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -555,13 +585,13 @@ extension NetworkEndpointQueryFilter
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      domainEndsWith(
+      domainStringEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'domain',
+        property: r'domainString',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -569,10 +599,10 @@ extension NetworkEndpointQueryFilter
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      domainContains(String value, {bool caseSensitive = true}) {
+      domainStringContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'domain',
+        property: r'domainString',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -580,10 +610,10 @@ extension NetworkEndpointQueryFilter
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      domainMatches(String pattern, {bool caseSensitive = true}) {
+      domainStringMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'domain',
+        property: r'domainString',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
@@ -591,20 +621,20 @@ extension NetworkEndpointQueryFilter
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      domainIsEmpty() {
+      domainStringIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'domain',
+        property: r'domainString',
         value: '',
       ));
     });
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      domainIsNotEmpty() {
+      domainStringIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'domain',
+        property: r'domainString',
         value: '',
       ));
     });
@@ -722,6 +752,16 @@ extension NetworkEndpointQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'hasHostname',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hasServerNameEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'hasServerName',
         value: value,
       ));
     });
@@ -878,6 +918,231 @@ extension NetworkEndpointQueryFilter
         property: r'hostname',
         value: '',
       ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'hostnames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'hostnames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'hostnames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'hostnames',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'hostnames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'hostnames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'hostnames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'hostnames',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'hostnames',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'hostnames',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'hostnames',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'hostnames',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'hostnames',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'hostnames',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'hostnames',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      hostnamesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'hostnames',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 
@@ -1154,142 +1419,6 @@ extension NetworkEndpointQueryFilter
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      ipRangeEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'ipRange',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      ipRangeGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'ipRange',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      ipRangeLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'ipRange',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      ipRangeBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'ipRange',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      ipRangeStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'ipRange',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      ipRangeEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'ipRange',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      ipRangeContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'ipRange',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      ipRangeMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'ipRange',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      ipRangeIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'ipRange',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
-      ipRangeIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'ipRange',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
       isarIdEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1342,6 +1471,231 @@ extension NetworkEndpointQueryFilter
         upper: upper,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'serverNames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'serverNames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'serverNames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'serverNames',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'serverNames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'serverNames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'serverNames',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'serverNames',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'serverNames',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'serverNames',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'serverNames',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'serverNames',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'serverNames',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'serverNames',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'serverNames',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterFilterCondition>
+      serverNamesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'serverNames',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 
@@ -1761,16 +2115,17 @@ extension NetworkEndpointQuerySortBy
     });
   }
 
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy> sortByDomain() {
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy>
+      sortByDomainString() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'domain', Sort.asc);
+      return query.addSortBy(r'domainString', Sort.asc);
     });
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy>
-      sortByDomainDesc() {
+      sortByDomainStringDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'domain', Sort.desc);
+      return query.addSortBy(r'domainString', Sort.desc);
     });
   }
 
@@ -1785,6 +2140,20 @@ extension NetworkEndpointQuerySortBy
       sortByHasHostnameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'hasHostname', Sort.desc);
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy>
+      sortByHasServerName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasServerName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy>
+      sortByHasServerNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasServerName', Sort.desc);
     });
   }
 
@@ -1826,19 +2195,6 @@ extension NetworkEndpointQuerySortBy
     });
   }
 
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy> sortByIpRange() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'ipRange', Sort.asc);
-    });
-  }
-
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy>
-      sortByIpRangeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'ipRange', Sort.desc);
-    });
-  }
-
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy> sortByWhois() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'whois', Sort.asc);
@@ -1869,16 +2225,17 @@ extension NetworkEndpointQuerySortThenBy
     });
   }
 
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy> thenByDomain() {
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy>
+      thenByDomainString() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'domain', Sort.asc);
+      return query.addSortBy(r'domainString', Sort.asc);
     });
   }
 
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy>
-      thenByDomainDesc() {
+      thenByDomainStringDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'domain', Sort.desc);
+      return query.addSortBy(r'domainString', Sort.desc);
     });
   }
 
@@ -1893,6 +2250,20 @@ extension NetworkEndpointQuerySortThenBy
       thenByHasHostnameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'hasHostname', Sort.desc);
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy>
+      thenByHasServerName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasServerName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy>
+      thenByHasServerNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'hasServerName', Sort.desc);
     });
   }
 
@@ -1934,19 +2305,6 @@ extension NetworkEndpointQuerySortThenBy
     });
   }
 
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy> thenByIpRange() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'ipRange', Sort.asc);
-    });
-  }
-
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy>
-      thenByIpRangeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'ipRange', Sort.desc);
-    });
-  }
-
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QAfterSortBy> thenByIsarId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.asc);
@@ -1983,10 +2341,10 @@ extension NetworkEndpointQueryWhereDistinct
     });
   }
 
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QDistinct> distinctByDomain(
-      {bool caseSensitive = true}) {
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QDistinct>
+      distinctByDomainString({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'domain', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'domainString', caseSensitive: caseSensitive);
     });
   }
 
@@ -1997,10 +2355,24 @@ extension NetworkEndpointQueryWhereDistinct
     });
   }
 
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QDistinct>
+      distinctByHasServerName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'hasServerName');
+    });
+  }
+
   QueryBuilder<NetworkEndpoint, NetworkEndpoint, QDistinct> distinctByHostname(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'hostname', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QDistinct>
+      distinctByHostnames() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'hostnames');
     });
   }
 
@@ -2018,10 +2390,10 @@ extension NetworkEndpointQueryWhereDistinct
     });
   }
 
-  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QDistinct> distinctByIpRange(
-      {bool caseSensitive = true}) {
+  QueryBuilder<NetworkEndpoint, NetworkEndpoint, QDistinct>
+      distinctByServerNames() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'ipRange', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'serverNames');
     });
   }
 
@@ -2053,9 +2425,10 @@ extension NetworkEndpointQueryProperty
     });
   }
 
-  QueryBuilder<NetworkEndpoint, String?, QQueryOperations> domainProperty() {
+  QueryBuilder<NetworkEndpoint, String?, QQueryOperations>
+      domainStringProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'domain');
+      return query.addPropertyName(r'domainString');
     });
   }
 
@@ -2079,9 +2452,23 @@ extension NetworkEndpointQueryProperty
     });
   }
 
+  QueryBuilder<NetworkEndpoint, bool, QQueryOperations>
+      hasServerNameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'hasServerName');
+    });
+  }
+
   QueryBuilder<NetworkEndpoint, String?, QQueryOperations> hostnameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'hostname');
+    });
+  }
+
+  QueryBuilder<NetworkEndpoint, List<String>, QQueryOperations>
+      hostnamesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'hostnames');
     });
   }
 
@@ -2097,9 +2484,10 @@ extension NetworkEndpointQueryProperty
     });
   }
 
-  QueryBuilder<NetworkEndpoint, String, QQueryOperations> ipRangeProperty() {
+  QueryBuilder<NetworkEndpoint, List<String>, QQueryOperations>
+      serverNamesProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'ipRange');
+      return query.addPropertyName(r'serverNames');
     });
   }
 

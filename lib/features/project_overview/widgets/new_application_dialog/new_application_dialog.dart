@@ -38,7 +38,9 @@ class NewApplicationDialog extends StatelessWidget {
             actions: [
               _cancelButton(context),
               Optional.hidden(
-                  hide: Platform.isWindows, child: _loadIconButton()),
+                hide: Platform.isWindows,
+                child: _loadIconButton(),
+              ),
               _createButton(),
             ],
           );
@@ -110,6 +112,7 @@ class NewApplicationDialog extends StatelessWidget {
   Widget _loadIconButton() {
     return BlocBuilder<NewApplicationDialogCubit, NewApplicationDialogState>(
       buildWhen: (oldState, state) =>
+          oldState.name != state.name ||
           oldState.searching != state.searching ||
           oldState.iconFound != state.iconFound ||
           oldState.applicationId != state.applicationId,

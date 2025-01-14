@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 
-import 'widgets/widgets.dart';
 
 class BehaviorSettings extends StatelessWidget {
   const BehaviorSettings({super.key});

@@ -1,6 +1,7 @@
 
 import 'package:permission_analyzer_gui/common/keys.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
+import 'package:permission_analyzer_gui/features/analysis/models/endpoint_group.dart';
 
 import 'models.dart';
 
@@ -11,10 +12,12 @@ class EndpointVertex extends GraphVertex {
 
   @override
   List<String> get tags => [
-    if (endpoint.hasHostname) tHostname,
     tEndpoint,
     if (unique) tUnique,
     if (common) tCommon,
+    if (endpoint is SniEndpoint) tServerName
+    else if (endpoint.hasHostname) tHostname
+    else tIpOnly,
   ];
 
   @override

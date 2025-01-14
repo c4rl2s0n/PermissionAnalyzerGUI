@@ -14,8 +14,6 @@ class Analysis extends StatefulWidget {
 
   final List<models.TestScenario> scenarios;
 
-
-
   @override
   State<Analysis> createState() => _AnalysisState();
 }
@@ -30,16 +28,16 @@ class _AnalysisState extends State<Analysis> {
     return ne.noPadding
         ? view
         : Padding(
-      padding: EdgeInsets.all(context.constants.spacing),
-      child: view,
-    );
+            padding: EdgeInsets.all(context.constants.spacing),
+            child: view,
+          );
   }
 
   NavigationRailDestination _getNavigationRailDestination(
-      BuildContext context, {
-        required String label,
-        required IconData icon,
-      }) {
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+  }) {
     Color iconColor = context.colors.onPrimary;
     return NavigationRailDestination(
       icon: Icon(
@@ -107,7 +105,7 @@ class _AnalysisState extends State<Analysis> {
       appBar: PageComponentFactory.appBar(context, title: "Analysis", actions: [
         PageComponentFactory.navigationIconButton(
           context,
-              () => const SettingsPage(),
+          () => const SettingsPage(),
           context.icons.settings,
         )
       ]),
@@ -117,35 +115,42 @@ class _AnalysisState extends State<Analysis> {
 
   Widget _buildContent(BuildContext context) {
     initNavigationEntries(context);
-    return BlocProvider(
-      create: (context) => AnalysisCubit(
-        scenarios: widget.scenarios,
-        testScenarioRepository: Modular.get<ITestScenarioRepository>(),
-        networkEndpointRepository: Modular.get<INetworkEndpointRepository>(),
-        settingsCubit: context.settings,
-      ),
-      child: Builder(builder: (context) {
-        return Row(
-          children: [
-            NavigationRail(
-              backgroundColor: context.colors.primary,
-              selectedLabelTextStyle: context.textTheme.labelSmall,
-              unselectedLabelTextStyle: context.textTheme.labelSmall?.copyWith(
-                  color: context.textTheme.labelSmall?.color
-                      ?.withOpacity(context.constants.lightColorOpacity)),
-              labelType: NavigationRailLabelType.all,
-              selectedIndex: selectedIndex,
-              onDestinationSelected: (i) => setState(() {
-                selectedIndex = i;
-              }),
-              destinations:
-              navigationEntries.map((ne) => ne.destination).toList(),
+    return BlocProvider<AnalysisCubit>(
+        create: (context) => AnalysisCubit(
+              scenarios: widget.scenarios,
+              testScenarioRepository: Modular.get<ITestScenarioRepository>(),
+              networkEndpointRepository:
+                  Modular.get<INetworkEndpointRepository>(),
+              settingsCubit: context.settings,
             ),
-            Expanded(child: view(context)),
-          ],
-        );
-      }),
-    );
+        child: BlocBuilder<AnalysisCubit, AnalysisState>(
+            buildWhen: (oldState, state) =>
+                oldState.configCubit != state.configCubit,
+            builder: (context, state) =>
+                BlocProvider<AnalysisConfigCubit>(
+                    create: (context) => state.configCubit,
+                    child: Row(
+                      children: [
+                        NavigationRail(
+                          backgroundColor: context.colors.primary,
+                          selectedLabelTextStyle: context.textTheme.labelSmall,
+                          unselectedLabelTextStyle: context.textTheme.labelSmall
+                              ?.copyWith(
+                                  color: context.textTheme.labelSmall?.color
+                                      ?.withOpacity(
+                                          context.constants.lightColorOpacity)),
+                          labelType: NavigationRailLabelType.all,
+                          selectedIndex: selectedIndex,
+                          onDestinationSelected: (i) => setState(() {
+                            selectedIndex = i;
+                          }),
+                          destinations: navigationEntries
+                              .map((ne) => ne.destination)
+                              .toList(),
+                        ),
+                        Expanded(child: view(context)),
+                      ],
+                    ))));
   }
 }
 
@@ -159,4 +164,3 @@ class _NavigationRailEntry {
   Widget Function(BuildContext) getView;
   bool noPadding;
 }
-

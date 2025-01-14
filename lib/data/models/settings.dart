@@ -1,5 +1,7 @@
 import 'package:isar/isar.dart';
 
+import 'analysis_config.dart';
+
 part 'settings.g.dart';
 
 @collection
@@ -15,7 +17,10 @@ class Settings {
     this.recorderPath,
     this.recorderDestinationPath,
     this.inputRecordDestinationPath,
-  });
+    this.analysisConfig,
+  }){
+    analysisConfig ??= AnalysisConfig();
+  }
 
   Id id = 1;
   bool isDarkMode;
@@ -29,4 +34,6 @@ class Settings {
   String? recorderPath;
   String? recorderDestinationPath;
   String? inputRecordDestinationPath;
+
+  AnalysisConfig? analysisConfig;
 }

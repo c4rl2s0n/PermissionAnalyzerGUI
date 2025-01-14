@@ -100,20 +100,12 @@ extension TestScenarioExecutor on TestScenarioCubit {
 
     _emit(state.copyWith(
         loadingInfo: "$loadingInfoSuffix:\nRestart application"));
-    // restart the application
+
+    // stop the application (in case it is running)
     await _adb.stopApp(state.applicationId);
-    await _adb.startApp(state.applicationId);
 
+    // timestamp of test start
     int testStart = DateTime.now().millisecondsSinceEpoch;
-
-    _emit(state.copyWith(loadingInfo: "$loadingInfoSuffix:\nRunning the test"));
-    // setup screen recording
-    if (state.recordScreen) {
-      _adb.recordScreen(
-        videoPath: _videoStoragePathOnDevice,
-        duration: state.duration,
-      );
-    }
 
     // setup network sniffing
     if (state.captureTraffic) {
@@ -126,6 +118,19 @@ extension TestScenarioExecutor on TestScenarioCubit {
       pcapProcess.outLines.forEach((line) {});
       pcapProcess.errLines.forEach((_) {});
     }
+    // setup screen recording
+    if (state.recordScreen) {
+      _adb.recordScreen(
+        videoPath: _videoStoragePathOnDevice,
+        duration: state.duration,
+      );
+    }
+
+    // start the application
+    await _adb.startApp(state.applicationId);
+
+    _emit(state.copyWith(loadingInfo: "$loadingInfoSuffix:\nRunning the test"));
+
 
     // replay user input
     Process? userInputProcess;

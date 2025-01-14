@@ -6,7 +6,9 @@ const String defaultInputRecordDestinationPath = "/data/local/tmp/record.txt";
 
 // traffic group tags
 const String tEndpoint = "Endpoint";
+const String tIpOnly = "Only IP";
 const String tHostname = "Has Hostname";
+const String tServerName = "Has Server Name";
 const String tGroup = "Group";
 const String tApplication = "Application";
 const String tScenario = "Scenario";

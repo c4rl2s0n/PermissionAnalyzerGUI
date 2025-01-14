@@ -7,8 +7,10 @@ const Map<String, Color> graphTagColors = <String, Color>{
   tScenario: Color(0xE5FFBC13),
   tApplication: Color(0xE597D718),
   tGroup: Colors.blue,
-  tEndpoint: Colors.indigo,
-  tHostname: Colors.redAccent,
+  tEndpoint: Color(0xE5E16110), //Colors.indigo,
+  tIpOnly: Color(0xFFBC13FF), //Colors.redAccent,
+  tHostname: Color(0xFF13FFD9), //Colors.redAccent,
+  tServerName: Color(0xFFA8FF1A), //Colors.greenAccent,
   tUnique: Colors.yellow,
   tCommon: Colors.greenAccent,
 };

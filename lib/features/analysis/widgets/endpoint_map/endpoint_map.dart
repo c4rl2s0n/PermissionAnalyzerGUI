@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:latlong2/latlong.dart';
@@ -9,13 +8,15 @@ import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/logic/logic.dart';
 import 'package:permission_analyzer_gui/features/analysis/values.dart';
+import 'package:permission_analyzer_gui/features/analysis/widgets/config_builder.dart';
 
 const double maxClusterRadius = 120;
 const double minClusterRadius = 42;
 
 const double _markerIconSize = 15;
 
-List<Color> get opaqueColors => trafficGroupColors.map((c) => c.withOpacity(0.95)).toList();
+List<Color> get opaqueColors =>
+    trafficGroupColors.map((c) => c.withOpacity(0.95)).toList();
 
 class EndpointMap extends StatefulWidget {
   const EndpointMap({super.key});
@@ -31,7 +32,12 @@ class _EndpointMapState extends State<EndpointMap> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AnalysisCubit, AnalysisState>(builder: _buildMap);
+    return ConfigBuilder(
+      buildWhenAnalysisConfig: (oldState, state) =>
+          oldState.trafficLoadInPackets != state.trafficLoadInPackets,
+      builder: (context, analysisState, configState) =>
+          _buildMap(context, analysisState),
+    );
   }
 
   Map<Marker, NetworkConnection> _getMarkers(
@@ -63,15 +69,15 @@ class _EndpointMapState extends State<EndpointMap> {
     // get markers from connections
     List<INetworkConnection> connections =
         TrafficAnalyzer.getConnectionsFromTrafficGroups(
-      state.visibleTrafficGroups
-    );
+            state.visibleTrafficGroups);
+
     Map<Marker, NetworkConnection> markerMap = _getMarkers(connections);
     List<Marker> markers = markerMap.keys.toList();
 
     // compute traffic load
     overallTrafficLoad = TrafficAnalyzer.getTrafficLoad(
       connections,
-      inPackets: state.trafficLoadInPackets,
+      inPackets: state.config.trafficLoadInPackets,
     );
     return Optional(
       buildOptional: (child) => Stack(
@@ -96,10 +102,14 @@ class _EndpointMapState extends State<EndpointMap> {
             if (markers.isEmpty) return;
             LatLngBounds bounds =
                 LatLngBounds.fromPoints(markers.map((m) => m.point).toList());
-            _mapController.fitCamera(CameraFit.bounds(
-              bounds: bounds,
-              padding: const EdgeInsets.all(25),
-            ));
+            // center camera
+            Future.delayed(
+              Duration.zero,
+              () => _mapController.fitCamera(CameraFit.bounds(
+                bounds: bounds,
+                padding: const EdgeInsets.all(25),
+              )),
+            );
           },
         ),
         children: [
@@ -185,7 +195,7 @@ class _EndpointMapState extends State<EndpointMap> {
   ) {
     int trafficLoad = TrafficAnalyzer.getTrafficLoad(
       connections,
-      inPackets: context.analysisCubit.state.trafficLoadInPackets,
+      inPackets: context.analysisCubit.state.config.trafficLoadInPackets,
     );
     double trafficShare = trafficLoad / overallTrafficLoad;
     double size =
@@ -221,7 +231,7 @@ class _EndpointMapState extends State<EndpointMap> {
             context,
             trafficGroups,
             TrafficAnalyzer.getTrafficLoad(connections,
-                inPackets: state.trafficLoadInPackets),
+                inPackets: state.config.trafficLoadInPackets),
             connections,
           ),
         ),
@@ -242,7 +252,9 @@ class _EndpointMapState extends State<EndpointMap> {
   ) {
     Row getConnectionEntry(NetworkConnection connection) {
       List<Icon> icons = [];
-      Text text = Text(connection.endpoint.hostname ?? connection.endpoint.ip);
+      Text text = connection.hasServerName
+          ? Text("${connection.serverName} (@ ${connection.endpoint.ip})")
+          : Text(connection.endpoint.hostname ?? connection.endpoint.ip);
 
       for (int i = 0; i < trafficGroups.length; i++) {
         var group = trafficGroups[i].group;
@@ -272,7 +284,9 @@ class _EndpointMapState extends State<EndpointMap> {
         ],
       );
     }
-    var sortedConnections = connections.sortedCopy((a,b) => a.endpoint.compareTo(b.endpoint));
+
+    var sortedConnections =
+        connections.sortedCopy((a, b) => a.endpoint.compareTo(b.endpoint));
     return WidgetSpan(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxHeight: 220),
@@ -299,12 +313,15 @@ class _EndpointMapState extends State<EndpointMap> {
     List<NetworkConnection> connections,
   ) {
     if (!showColors) return null;
-    bool loadInPackets = context.analysisCubit.state.trafficLoadInPackets;
+    bool loadInPackets =
+        context.analysisCubit.state.config.trafficLoadInPackets;
 
     List<Color> gradientColors = [];
     List<double> colorStops = [];
     double previousStop = 0;
-    Map<AnalysisTrafficGroupCubit, int> loadByGroup = TrafficAnalyzer.getTrafficLoadByGroup(trafficGroups, connections, loadInPackets);
+    Map<AnalysisTrafficGroupCubit, int> loadByGroup =
+        TrafficAnalyzer.getTrafficLoadByGroup(
+            trafficGroups, connections, loadInPackets);
     for (int i = 0; i < trafficGroups.length; i++) {
       int groupTrafficLoad = loadByGroup[trafficGroups[i]] ?? 0;
       double stop = groupTrafficLoad / markerTrafficLoad;

@@ -20,6 +20,7 @@ void main() async {
   );
   await Directory(documentsDirectory).create(recursive: true);
   String databaseFilename = "permission_analyzer_db.isar";
+  print(documentsDirectory);
 
   // initialize logging
   LoggingService.setupLogger(documentsDirectory);

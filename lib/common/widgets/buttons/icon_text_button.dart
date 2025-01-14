@@ -11,7 +11,8 @@ class IconTextButton extends StatelessWidget {
     this.onTap,
     this.loading = false,
     this.color,
-    this.padding,
+    this.verticalPadding,
+    this.horizontalPadding,
     super.key,
   });
 
@@ -22,7 +23,8 @@ class IconTextButton extends StatelessWidget {
   final Function()? onTap;
   final bool loading;
   final Color? color;
-  final double? padding;
+  final double? verticalPadding;
+  final double? horizontalPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +38,10 @@ class IconTextButton extends StatelessWidget {
       splashColor: color.withOpacity(context.constants.strongColorOpacity),
       backgroundColor: Colors.transparent,
       child: Container(
-        padding: EdgeInsets.all(padding ?? context.constants.smallSpacing),
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding ?? context.constants.largeSpacing,
+          vertical: verticalPadding ?? context.constants.smallSpacing,
+        ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(context.constants.roundedCornerRadius),
           border: Border.all(color: color, width: 2),

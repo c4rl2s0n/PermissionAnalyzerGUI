@@ -19,6 +19,7 @@ class CustomEdgeLineShape extends EdgeLineShape {
     List<ui.Color> colors = [
       edge.start.colors.last,
       if (data.common) Colors.cyan,
+      if (data.hasSNI) Colors.orange,
       (edge.end?.colors.last ?? Colors.white)
     ];
     List<double> colorStops = List.generate(colors.length, (i) => i / (colors.length-1));

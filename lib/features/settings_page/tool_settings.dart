@@ -3,9 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
-import 'package:permission_analyzer_gui/features/settings_page/widgets/multi_action_setting.dart';
-
-import 'widgets/widgets.dart';
 
 class ToolSettings extends StatelessWidget {
   const ToolSettings({super.key});

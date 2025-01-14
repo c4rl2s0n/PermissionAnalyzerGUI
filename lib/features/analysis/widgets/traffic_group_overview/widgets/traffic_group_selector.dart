@@ -11,33 +11,34 @@ class TrafficGroupSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AnalysisCubit, AnalysisState>(
-      builder: (context, state) {
-        return InfoContainer(
-            title: "Group Selection",
-            action: IconTextButton(
-              icon: Icon(context.icons.check),
-              text: "Apply",
-              onTap: () => context.analysisCubit.reloadTrafficGroups(),
-              padding: 2,
-            ),
-            child: Column(
-              children: [
-                Expanded(
-                  child: TreeView.simple(
-                    showRootNode: false,
-                    shrinkWrap: true,
-                    indentation:
-                        const Indentation(style: IndentStyle.squareJoint),
-                    expansionIndicatorBuilder: _extensionIndicator,
-                    onTreeReady: _onTreeReady,
-                    builder: _buildTreeNode,
-                    tree: _generateTree(state.groups),
-                  ),
-                ),
-              ],
-            ));
-      },
+      builder: _content,
     );
+  }
+  Widget _content(BuildContext context, AnalysisState state){
+    return InfoContainer(
+        title: "Group Selection",
+        action: IconTextButton(
+          icon: Icon(context.icons.check),
+          text: "Apply",
+          onTap: () => context.analysisCubit.reloadTrafficGroups(),
+          verticalPadding: 2,
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: TreeView.simple(
+                showRootNode: false,
+                shrinkWrap: true,
+                indentation:
+                const Indentation(style: IndentStyle.squareJoint),
+                expansionIndicatorBuilder: _extensionIndicator,
+                onTreeReady: _onTreeReady,
+                builder: _buildTreeNode,
+                tree: _generateTree(state.groups),
+              ),
+            ),
+          ],
+        ));
   }
 
   List<TreeNode> _getAllNodes(INode node) {

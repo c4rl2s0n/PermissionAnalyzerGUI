@@ -68,12 +68,12 @@ class FirewallSelector extends StatelessWidget {
           ContextMenuItem(name: "Unblock IP Range (${ipParts[0]}.${ipParts[1]}.${ipParts[2]}.0/24)", onTap: (context)=>tsc.setFirewallStateIpRange(firewallSetting.ip, 3, false), icon: Icon(context.icons.check, color: context.colors.positive,)),
           ContextMenuItem(name: "Unblock IP Range (${ipParts[0]}.${ipParts[1]}.0.0/16)", onTap: (context)=>tsc.setFirewallStateIpRange(firewallSetting.ip, 2, false), icon: Icon(context.icons.check, color: context.colors.positive,)),
           ContextMenuItem(name: "Unblock in IP Range (${ipParts[0]}.0.0.0/8)", onTap: (context)=>tsc.setFirewallStateIpRange(firewallSetting.ip, 1, false), icon: Icon(context.icons.check, color: context.colors.positive,)),
-          if(firewallSetting.endpoint?.domain != null) ContextMenuItem(name: "Unblock Domain (${firewallSetting.endpoint!.domain!})", onTap: (context)=>tsc.setFirewallStateByDomain(firewallSetting.endpoint!.domain!, false), icon: Icon(context.icons.check, color: context.colors.positive,)),
+          if(firewallSetting.endpoint?.domainString != null) ContextMenuItem(name: "Unblock Domain (${firewallSetting.endpoint!.domainString!})", onTap: (context)=>tsc.setFirewallStateByDomain(firewallSetting.endpoint!.domainString!, false), icon: Icon(context.icons.check, color: context.colors.positive,)),
         ]else...[
           ContextMenuItem(name: "Block IP Range (${ipParts[0]}.${ipParts[1]}.${ipParts[2]}.0/24; known Endpoints only)", onTap: (context)=>tsc.setFirewallStateIpRange(firewallSetting.ip, 3, true), icon: Icon(context.icons.cancel, color: context.colors.negative,)),
           ContextMenuItem(name: "Block IP Range (${ipParts[0]}.${ipParts[1]}.0.0/16; known Endpoints only)", onTap: (context)=>tsc.setFirewallStateIpRange(firewallSetting.ip, 2, true), icon: Icon(context.icons.cancel, color: context.colors.negative,)),
           ContextMenuItem(name: "Block IP Range (${ipParts[0]}.0.0.0/8; known Endpoints only)", onTap: (context)=>tsc.setFirewallStateIpRange(firewallSetting.ip, 1, true), icon: Icon(context.icons.cancel, color: context.colors.negative,)),
-          if(firewallSetting.endpoint?.domain != null) ContextMenuItem(name: "Block Domain (${firewallSetting.endpoint!.domain!}; known Endpoints only)", onTap: (context)=>tsc.setFirewallStateByDomain(firewallSetting.endpoint!.domain!, true), icon: Icon(context.icons.cancel, color: context.colors.negative,)),
+          if(firewallSetting.endpoint?.domainString != null) ContextMenuItem(name: "Block Domain (${firewallSetting.endpoint!.domainString!}; known Endpoints only)", onTap: (context)=>tsc.setFirewallStateByDomain(firewallSetting.endpoint!.domainString!, true), icon: Icon(context.icons.cancel, color: context.colors.negative,)),
         ]
         
       ],
@@ -88,13 +88,13 @@ class FirewallSelector extends StatelessWidget {
           icon: Icon(context.icons.reset),
           color: context.colors.negative,
           onTap: context.testScenarioCubit.resetAllFirewallStates,
-          padding: 2,
+          verticalPadding: 2,
         ),
         IconTextButton(
           text: "Toggle all",
           icon: Icon(context.icons.toggle),
           onTap: context.testScenarioCubit.toggleAllFirewallStates,
-          padding: 2,
+          verticalPadding: 2,
         ),
       ].insertBetweenItems(() => Margin.horizontal(context.constants.spacing)),
     );

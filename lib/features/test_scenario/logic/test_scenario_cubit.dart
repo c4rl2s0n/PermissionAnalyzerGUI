@@ -235,7 +235,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   void setFirewallStateByDomain(String domain, bool blocked) {
     List<FirewallSetting> settings = state.firewallSettings
         .map((f) =>
-            f.blocked != blocked && f.endpoint?.domain == domain ? f.toggle : f)
+            f.blocked != blocked && f.endpoint?.domainString == domain ? f.toggle : f)
         .toList();
     emit(state.copyWith(firewallSettings: settings));
   }

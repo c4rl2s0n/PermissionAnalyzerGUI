@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/l10n/l10n.dart';
 
-import 'widgets/widgets.dart';
 
 class LanguageSettings extends StatelessWidget {
   const LanguageSettings({super.key});

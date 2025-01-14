@@ -1,5 +1,4 @@
 import 'package:isar/isar.dart';
-import 'package:permission_analyzer_gui/app_root.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
@@ -11,9 +10,10 @@ abstract class INetworkConnection {
   List<String> get ips;
   List<int> get ports;
   List<String> get protocols;
-  List<String> get serverNameIndications;
-  String get serverNameIndicationsString => serverNameIndications.join("\n");
-  String get wiresharkFilter => ips.map((ip) => "ip.addr == $ip").join(" or ");
+  List<String> get serverNames;
+  bool get hasServerName => serverNames.isNotEmpty;
+  String get serverNamesString => serverNames.join("\n");
+  String get wiresharkFilter => "(${ips.map((ip) => "ip.addr == $ip").join(" or ")}) and (${protocols.map((p) => p.split(":").lastOrNull).nonNulls.join(" or ")})";
   String get protocolsString => _protocolsString;
   String get flow => "(${endpoint.ip}; ${endpoint.name}; ${ports.join(",")}; ${protocolsString.replaceAll("\n", ",")})";
   List<NetworkConnection> get connections;
@@ -30,7 +30,7 @@ abstract class INetworkConnection {
   int get countTotal => outCount + inCount;
   double get outCountAvg => testRunCount == 0 ? 0 : outCount / testRunCount;
   double get inCountAvg => testRunCount == 0 ? 0 : inCount / testRunCount;
-  double get countAvg => testRunCount == 0 ? 0 : (inCount + outCount) / testRunCount;
+  double get countAvg => testRunCount == 0 ? 0 : (countTotal) / testRunCount;
 
   // byte count
   int get outBytes;
@@ -38,7 +38,7 @@ abstract class INetworkConnection {
   int get bytesTotal => outBytes + inBytes;
   double get outBytesAvg => testRunCount == 0 ? 0 : outBytes / testRunCount;
   double get inBytesAvg => testRunCount == 0 ? 0 : inBytes / testRunCount;
-  double get bytesAvg => testRunCount == 0 ? 0 : (inBytes + inBytes) / testRunCount;
+  double get bytesAvg => testRunCount == 0 ? 0 : (bytesTotal) / testRunCount;
 
   String get _protocolsString {
     String tcp = "tcp";
@@ -84,7 +84,7 @@ abstract class INetworkConnection {
 
 }
 
-@Embedded(ignore: {'endpoint', 'copy', 'testRuns', 'connections', 'protocolsString'})
+@Embedded(ignore: {'endpoint', 'copy', 'testRuns', 'connections', 'protocolsString', 'serverNames'})
 class NetworkConnection extends INetworkConnection{
   NetworkConnection({
     String ip = "0.0.0.0",
@@ -94,7 +94,7 @@ class NetworkConnection extends INetworkConnection{
     this.packets = const [],
     this.testRuns = const [],
   }) {
-    this.endpoint = endpoint ?? NetworkEndpoint(ip: ip);
+    this.endpoint = endpoint ?? NetworkEndpoint(ip: ip, serverNames: serverName.empty ? [] : [serverName!],);
     analyzePackets();
   }
 
@@ -124,7 +124,7 @@ class NetworkConnection extends INetworkConnection{
   late List<String> protocols;
 
   @override
-  List<String> get serverNameIndications => serverName.empty ? [] : [serverName!];
+  List<String> get serverNames => serverName.empty ? [] : [serverName!];
   String? serverName;
 
 

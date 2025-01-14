@@ -26,7 +26,6 @@ class TestRun {
     } else {
       this.name = name;
     }
-    _loadConnectionTimeline();
   }
 
   Id id = Isar.autoIncrement;

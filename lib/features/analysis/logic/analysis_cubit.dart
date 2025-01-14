@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/common/keys.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
+import 'package:permission_analyzer_gui/features/analysis/logic/analysis_config_cubit.dart';
 import 'package:permission_analyzer_gui/features/analysis/models/models.dart';
 
 import 'analysis_traffic_group_cubit.dart';
@@ -16,7 +17,7 @@ class AnalysisCubit extends Cubit<AnalysisState> {
     required this.testScenarioRepository,
     required this.networkEndpointRepository,
     required this.settingsCubit,
-  }) : super(AnalysisState.empty()) {
+  }) : super(AnalysisState.empty(AnalysisConfigCubit(settingsCubit))) {
     initialize();
   }
 
@@ -46,25 +47,30 @@ class AnalysisCubit extends Cubit<AnalysisState> {
     // collect all groups
     applicationGroups.addAll(applications.values.map(
       (a) => AnalysisTrafficGroupCubit(
+        endpointRepository: networkEndpointRepository,
         group: a,
         children: scenarios
             .where((s) => a.info?.contains(s.applicationId) ?? false)
             .map((scenario) => AnalysisTrafficGroupCubit(
+            endpointRepository: networkEndpointRepository,
                 group: TrafficGroup.fromScenario(scenario),
                 children: scenario.testConstellations.map((tc) {
                   var constellationGroup = AnalysisTrafficGroupCubit(
+                      endpointRepository: networkEndpointRepository,
                       group: TrafficGroup.fromConstellation(tc),
                       children: tc.tests
-                          .map(
-                            (t) => AnalysisTrafficGroupCubit(
-                                group: TrafficGroup.fromTest(t)),
-                          )
+                          .map((t) => AnalysisTrafficGroupCubit(
+                        endpointRepository: networkEndpointRepository,
+                                group: TrafficGroup.fromTest(t),
+                              ))
                           .toList());
                   constellationGroups.add(constellationGroup);
                   return constellationGroup;
                 }).toList())) // update trafficGroup data for scenario
             .toList(),
-      )..updateGroupFromChildren(connectionsGrouped: state.connectionsGrouped), // update trafficGroup data for application
+      )
+        // update trafficGroup data for application
+        ..updateGroupFromChildren(connectionsGrouped: state.config.groupConnections),
     ));
     updateState();
   }
@@ -86,7 +92,12 @@ class AnalysisCubit extends Cubit<AnalysisState> {
             Tshark(settingsCubit),
             test.pcapPath!,
           );
-          test.connections = TrafficAnalyzer.getConnectionsFromPackets(test.packets);
+          test.connections = TrafficAnalyzer.getConnectionsFromPackets(
+            test.packets,
+            testRun: test,
+            endpointRepository: networkEndpointRepository,
+          );
+          test.endpoints = TrafficAnalyzer.getEndpointsFromConnections(test.connections);
           if (test.startTimeInMs == 0) {
             test.startTimeInMs = test.packets.firstOrNull?.timeInMs ?? 0;
           }
@@ -98,8 +109,13 @@ class AnalysisCubit extends Cubit<AnalysisState> {
       }
       testScenarioRepository.update(scenario);
     }
+
+    // for (var ag in applicationGroups) {
+    //   ag.updateGroupFromChildren(connectionsGrouped: state.config.groupConnections);
+    //   ag.updateGroupFromChildren(connectionsGrouped: state.config.groupConnections);
+    // }
     emit(state.copyWith(analyzingTraffic: false));
-    initialize();
+    updateState();
   }
 
   void reloadTrafficGroups() {
@@ -114,7 +130,7 @@ class AnalysisCubit extends Cubit<AnalysisState> {
     for (var child in group.state.children) {
       _reloadChildrenTrafficGroups(child);
     }
-    group.updateGroupFromChildren(connectionsGrouped: state.connectionsGrouped);
+    group.updateGroupFromChildren(connectionsGrouped: state.config.groupConnections);
   }
 
   Future analyzeEndpoints({bool force = false}) async {
@@ -135,8 +151,11 @@ class AnalysisCubit extends Cubit<AnalysisState> {
     for (var endpoint in endpoints) {
       if (endpoint.analyzed && !force) continue;
       // perform all hostname-analysis here!
+      // DNS
       endpoint.hostname = await EndpointAnalyzer.lookupHostname(endpoint.ip);
+      // WHOIS
       endpoint.whois = await EndpointAnalyzer.lookupWhois(endpoint.ip);
+      // GeoLocation
       if (geolocations.containsKey(endpoint.ip)) {
         endpoint.geolocation = geolocations[endpoint.ip]!;
       }
@@ -144,24 +163,20 @@ class AnalysisCubit extends Cubit<AnalysisState> {
     }
     networkEndpointRepository.updateAll(endpoints);
     updateState();
+    for(var ag in applicationGroups){
+      ag.updateGroupConnections(grouped: state.config.groupConnections, );
+    }
     emit(state.copyWith(analyzingEndpoints: false));
   }
 
   void setGrouped(bool grouped) {
-    emit(state.copyWith(connectionsGrouped: grouped));
+    state.configCubit.setGroupConnections(grouped);
     for (var group in applicationGroups) {
-      group.updateGroupConnections(grouped: state.connectionsGrouped);
+      group.updateGroupConnections(grouped: state.config.groupConnections);
     }
     updateState();
   }
 
-  void setTrafficLoadInPackets(bool loadInPackets) {
-    emit(state.copyWith(trafficLoadInPackets: loadInPackets));
-  }
-
-  void setShowTestsInGroupTable(bool showTests) {
-    emit(state.copyWith(showTestsInGroupTable: showTests));
-  }
 
   /// get values for update
   List<AnalysisTrafficGroupCubit> _getGroups(
@@ -192,24 +207,22 @@ class AnalysisState with _$AnalysisState {
   const AnalysisState._();
 
   const factory AnalysisState({
+    required AnalysisConfigCubit configCubit,
     required List<AnalysisTrafficGroupCubit> groups,
     required List<AnalysisTrafficGroupCubit> enabledGroups,
     required bool analyzingTraffic,
     required bool analyzingEndpoints,
-    required bool connectionsGrouped,
-    required bool showTestsInGroupTable,
-    required bool trafficLoadInPackets,
   }) = _AnalysisState;
 
-  factory AnalysisState.empty() => const AnalysisState(
+  factory AnalysisState.empty(AnalysisConfigCubit analysisConfig) => AnalysisState(
+        configCubit: analysisConfig,
         groups: [],
         enabledGroups: [],
         analyzingTraffic: false,
         analyzingEndpoints: false,
-        connectionsGrouped: false,
-        showTestsInGroupTable: true,
-        trafficLoadInPackets: false,
       );
+
+  AnalysisConfigState get config => configCubit.state;
 
   List<AnalysisTrafficGroupCubit> get visibleGroups =>
       enabledGroups.where((g) => g.state.show).toList();
@@ -221,10 +234,15 @@ class AnalysisState with _$AnalysisState {
       TrafficAnalyzer.getConnectionsFromTrafficGroups(
         visibleTrafficGroups,
         filtered: true,
-        grouped: connectionsGrouped,
+        grouped: config.groupConnections,
       );
   List<INetworkEndpoint> get endpoints =>
-      TrafficAnalyzer.getEndpointsFromGroups(enabledGroups.map((g) => g.group).toList());
+      TrafficAnalyzer.getEndpointsFromGroups(
+          enabledGroups.map((g) => g.group).toList());
+
+  List<INetworkEndpoint> get visibleEndpoints =>
+      TrafficAnalyzer.getEndpointsFromGroups(
+          visibleGroups.map((g) => g.group).toList());
 
   List<NetworkPacket> get networkPackets => enabledGroups.fold(
       <NetworkPacket>[],

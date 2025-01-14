@@ -50,13 +50,13 @@ class PermissionSelector extends StatelessWidget {
           icon: Icon(context.icons.reset),
           color: context.colors.negative,
           onTap: context.testScenarioCubit.resetAllPermissionStates,
-          padding: 2,
+          verticalPadding: 2,
         ),
         IconTextButton(
           text: "Toggle all",
           icon: Icon(context.icons.toggle),
           onTap: context.testScenarioCubit.toggleAllPermissionStates,
-          padding: 2,
+          verticalPadding: 2,
         ),
       ].insertBetweenItems(() => Margin.horizontal(context.constants.spacing)),
     );

@@ -69,11 +69,11 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
     if (toggleSort) {
       _toggleSort(column);
     }
-    if (column.sortDesc == null) return;
+    if (column.sortAsc == null) return;
 
     // sort the list asc/desc
     int compare(Object? a, Object? b) =>
-        column.sortDesc! ? column.compare!(b, a) : column.compare!(a, b);
+        column.sortAsc! ? column.compare!(a, b) : column.compare!(b, a);
     data.sort((a, b) => compare(column.getValue!(a), column.getValue!(b)));
 
     // update state
@@ -82,13 +82,13 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
 
   void _toggleSort(DataGridColumn<T, Object?> column) {
     // get the desired sort direction of the current column
-    bool sortAsc = !(column.sortDesc ?? false);
+    bool sortAsc = !(column.sortAsc ?? false);
     // reset all sortings
     for (var c in columns) {
-      c.sortDesc = null;
+      c.sortAsc = null;
     }
     // apply the sorting to the current column
-    column.sortDesc = sortAsc;
+    column.sortAsc = sortAsc;
   }
 
   void _selectItemByIndex(int? index){
@@ -121,13 +121,13 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
     // copy data from widget
     data = List.of(widget.data);
     // copy columns from widget and apply sorting if it was sorted before
-    var sortedColumn = columns.where((c) => c.sortDesc != null).firstOrNull;
+    var sortedColumn = columns.where((c) => c.sortAsc != null).firstOrNull;
     columns = List.of(widget.columns);
     if (sortedColumn != null) {
       var newSortedColumn =
           columns.where((c) => c.name == sortedColumn.name).firstOrNull;
       if (newSortedColumn != null) {
-        newSortedColumn.sortDesc = sortedColumn.sortDesc;
+        newSortedColumn.sortAsc = sortedColumn.sortAsc;
         _sort(newSortedColumn, toggleSort: false);
       }
     }
@@ -256,7 +256,7 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
     DataGridColumn<T, Object?> column,
   ) {
     double width = column.width;
-    if (column.sortDesc != null) {
+    if (column.sortAsc != null) {
       width += DataGrid._sortIconSize;
     }
     Widget header = TapContainer(
@@ -271,15 +271,15 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
               column.name,
               textAlign: column.headerAlign,
               style: context.textTheme.labelSmall?.copyWith(
-                  fontWeight: column.sortDesc != null ? FontWeight.bold : null),
+                  fontWeight: column.sortAsc != null ? FontWeight.bold : null),
             ),
           ),
-          if (column.sortDesc == true)
+          if (column.sortAsc == true)
             Icon(
               context.icons.sortAsc,
               size: DataGrid._sortIconSize,
             ),
-          if (column.sortDesc == false)
+          if (column.sortAsc == false)
             Icon(
               context.icons.sortDesc,
               size: DataGrid._sortIconSize,
@@ -351,7 +351,7 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
     List<Widget> cells = [];
     for (var column in columns) {
       double width = column.width;
-      if (column.sortDesc != null) {
+      if (column.sortAsc != null) {
         width += DataGrid._sortIconSize;
       }
       cells.add(SizedBox(

@@ -24,12 +24,10 @@ class NetworkEndpointRepository extends INetworkEndpointRepository {
     update(endpoint);
     return endpoint;
   }
-
   @override
-  NetworkEndpoint? getByIp(String ip, {bool createIfNull=false}) {
+  NetworkEndpoint getByIp(String ip) {
     NetworkEndpoint? endpoint = _isar.networkEndpoints.getByIpSync(ip);
-    if(endpoint == null && createIfNull) endpoint = _newEndpoint(ip);
-    return endpoint;
+    return endpoint ?? _newEndpoint(ip);
   }
   @override
   List<NetworkEndpoint> getAllByIp(List<String> ips) {
@@ -38,10 +36,6 @@ class NetworkEndpointRepository extends INetworkEndpointRepository {
       endpoints.add(_newEndpoint(ip));
     }
     return endpoints;
-  }
-  @override
-  Stream<List<NetworkEndpoint>> watchByIp(String ip) {
-    return _isar.networkEndpoints.where().ipEqualTo(ip).watch(fireImmediately: true);
   }
 
   @override
@@ -63,4 +57,6 @@ class NetworkEndpointRepository extends INetworkEndpointRepository {
     endpoints.sort((a,b) => a.hostname != null && b.hostname != null ? compareHostnames(a.hostname!, b.hostname!) : (a.hostname ?? a.ip).compareTo(b.hostname ?? b.ip));
     return endpoints;
   }
+
+
 }

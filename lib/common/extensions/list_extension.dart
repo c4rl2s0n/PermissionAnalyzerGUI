@@ -2,6 +2,14 @@ import 'dart:math' as math;
 
 extension ListExtensions<T> on List<T> {
   List<T> get distinct => toSet().toList();
+  List<T> distinctBy(dynamic Function(T) getProp) {
+    List<T> distinctCopy = [];
+    for(T entry in this){
+      if(distinctCopy.any((c) => getProp(c) == getProp(entry))) continue;
+      distinctCopy.add(entry);
+    }
+    return distinctCopy;
+  }
   List<T> sortedCopy(int Function(T a, T b) compare) {
     List<T> copy = List.of(this);
     copy.sort(compare);

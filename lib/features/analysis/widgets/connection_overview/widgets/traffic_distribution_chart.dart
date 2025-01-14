@@ -24,17 +24,21 @@ class TrafficDistributionChart extends StatelessWidget {
   }
   BlocBuilder<AnalysisCubit, AnalysisState> _builder(Widget Function(BuildContext context, AnalysisState state) builder){
     return BlocBuilder<AnalysisCubit, AnalysisState>(
+      buildWhen: (oldState, state) =>
+      oldState.visibleGroups != state.visibleGroups,
+      builder: (context, analysisState) => BlocBuilder<AnalysisConfigCubit, AnalysisConfigState>(
         buildWhen: (oldState, state) =>
-        oldState.visibleGroups != state.visibleGroups ||
-            oldState.trafficLoadInPackets != state.trafficLoadInPackets,
-        builder: builder);
+        oldState.trafficLoadInPackets != state.trafficLoadInPackets,
+        builder: (context, configState) => builder(context, analysisState),
+      ),
+    );
   }
 
   DistributionValues<AnalysisTrafficGroupCubit> _updateValues(
       AnalysisState state,
       ) {
     List<AnalysisTrafficGroupCubit> data = state.visibleGroups;
-    bool loadInPackets = state.trafficLoadInPackets;
+    bool loadInPackets = state.config.trafficLoadInPackets;
     List<NetworkConnection> connections =
         TrafficAnalyzer.flattenConnections([connection]);
     Map<AnalysisTrafficGroupCubit, int> volumeByData = TrafficAnalyzer.getTrafficLoadByGroup(

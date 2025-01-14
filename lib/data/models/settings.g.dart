@@ -22,48 +22,54 @@ const SettingsSchema = CollectionSchema(
       name: r'adbPath',
       type: IsarType.string,
     ),
-    r'ignoreLocalTraffic': PropertySchema(
+    r'analysisConfig': PropertySchema(
       id: 1,
+      name: r'analysisConfig',
+      type: IsarType.object,
+      target: r'AnalysisConfig',
+    ),
+    r'ignoreLocalTraffic': PropertySchema(
+      id: 2,
       name: r'ignoreLocalTraffic',
       type: IsarType.bool,
     ),
     r'inputRecordDestinationPath': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'inputRecordDestinationPath',
       type: IsarType.string,
     ),
     r'isDarkMode': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'isDarkMode',
       type: IsarType.bool,
     ),
     r'language': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'language',
       type: IsarType.string,
     ),
     r'recorderDestinationPath': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'recorderDestinationPath',
       type: IsarType.string,
     ),
     r'recorderPath': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'recorderPath',
       type: IsarType.string,
     ),
     r'recorderVersion': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'recorderVersion',
       type: IsarType.string,
     ),
     r'tsharkPath': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'tsharkPath',
       type: IsarType.string,
     ),
     r'workingDirectory': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'workingDirectory',
       type: IsarType.string,
     )
@@ -75,7 +81,7 @@ const SettingsSchema = CollectionSchema(
   idName: r'id',
   indexes: {},
   links: {},
-  embeddedSchemas: {},
+  embeddedSchemas: {r'AnalysisConfig': AnalysisConfigSchema},
   getId: _settingsGetId,
   getLinks: _settingsGetLinks,
   attach: _settingsAttach,
@@ -92,6 +98,14 @@ int _settingsEstimateSize(
     final value = object.adbPath;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.analysisConfig;
+    if (value != null) {
+      bytesCount += 3 +
+          AnalysisConfigSchema.estimateSize(
+              value, allOffsets[AnalysisConfig]!, allOffsets);
     }
   }
   {
@@ -141,15 +155,21 @@ void _settingsSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.adbPath);
-  writer.writeBool(offsets[1], object.ignoreLocalTraffic);
-  writer.writeString(offsets[2], object.inputRecordDestinationPath);
-  writer.writeBool(offsets[3], object.isDarkMode);
-  writer.writeString(offsets[4], object.language);
-  writer.writeString(offsets[5], object.recorderDestinationPath);
-  writer.writeString(offsets[6], object.recorderPath);
-  writer.writeString(offsets[7], object.recorderVersion);
-  writer.writeString(offsets[8], object.tsharkPath);
-  writer.writeString(offsets[9], object.workingDirectory);
+  writer.writeObject<AnalysisConfig>(
+    offsets[1],
+    allOffsets,
+    AnalysisConfigSchema.serialize,
+    object.analysisConfig,
+  );
+  writer.writeBool(offsets[2], object.ignoreLocalTraffic);
+  writer.writeString(offsets[3], object.inputRecordDestinationPath);
+  writer.writeBool(offsets[4], object.isDarkMode);
+  writer.writeString(offsets[5], object.language);
+  writer.writeString(offsets[6], object.recorderDestinationPath);
+  writer.writeString(offsets[7], object.recorderPath);
+  writer.writeString(offsets[8], object.recorderVersion);
+  writer.writeString(offsets[9], object.tsharkPath);
+  writer.writeString(offsets[10], object.workingDirectory);
 }
 
 Settings _settingsDeserialize(
@@ -160,15 +180,20 @@ Settings _settingsDeserialize(
 ) {
   final object = Settings(
     adbPath: reader.readStringOrNull(offsets[0]),
-    ignoreLocalTraffic: reader.readBoolOrNull(offsets[1]) ?? true,
-    inputRecordDestinationPath: reader.readStringOrNull(offsets[2]),
-    isDarkMode: reader.readBoolOrNull(offsets[3]) ?? true,
-    language: reader.readStringOrNull(offsets[4]) ?? "en",
-    recorderDestinationPath: reader.readStringOrNull(offsets[5]),
-    recorderPath: reader.readStringOrNull(offsets[6]),
-    recorderVersion: reader.readStringOrNull(offsets[7]),
-    tsharkPath: reader.readStringOrNull(offsets[8]),
-    workingDirectory: reader.readStringOrNull(offsets[9]),
+    analysisConfig: reader.readObjectOrNull<AnalysisConfig>(
+      offsets[1],
+      AnalysisConfigSchema.deserialize,
+      allOffsets,
+    ),
+    ignoreLocalTraffic: reader.readBoolOrNull(offsets[2]) ?? true,
+    inputRecordDestinationPath: reader.readStringOrNull(offsets[3]),
+    isDarkMode: reader.readBoolOrNull(offsets[4]) ?? true,
+    language: reader.readStringOrNull(offsets[5]) ?? "en",
+    recorderDestinationPath: reader.readStringOrNull(offsets[6]),
+    recorderPath: reader.readStringOrNull(offsets[7]),
+    recorderVersion: reader.readStringOrNull(offsets[8]),
+    tsharkPath: reader.readStringOrNull(offsets[9]),
+    workingDirectory: reader.readStringOrNull(offsets[10]),
   );
   object.id = id;
   return object;
@@ -184,15 +209,19 @@ P _settingsDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readBoolOrNull(offset) ?? true) as P;
+      return (reader.readObjectOrNull<AnalysisConfig>(
+        offset,
+        AnalysisConfigSchema.deserialize,
+        allOffsets,
+      )) as P;
     case 2:
-      return (reader.readStringOrNull(offset)) as P;
-    case 3:
       return (reader.readBoolOrNull(offset) ?? true) as P;
-    case 4:
-      return (reader.readStringOrNull(offset) ?? "en") as P;
-    case 5:
+    case 3:
       return (reader.readStringOrNull(offset)) as P;
+    case 4:
+      return (reader.readBoolOrNull(offset) ?? true) as P;
+    case 5:
+      return (reader.readStringOrNull(offset) ?? "en") as P;
     case 6:
       return (reader.readStringOrNull(offset)) as P;
     case 7:
@@ -200,6 +229,8 @@ P _settingsDeserializeProp<P>(
     case 8:
       return (reader.readStringOrNull(offset)) as P;
     case 9:
+      return (reader.readStringOrNull(offset)) as P;
+    case 10:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -437,6 +468,24 @@ extension SettingsQueryFilter
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'adbPath',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      analysisConfigIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'analysisConfig',
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      analysisConfigIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'analysisConfig',
       ));
     });
   }
@@ -1564,7 +1613,14 @@ extension SettingsQueryFilter
 }
 
 extension SettingsQueryObject
-    on QueryBuilder<Settings, Settings, QFilterCondition> {}
+    on QueryBuilder<Settings, Settings, QFilterCondition> {
+  QueryBuilder<Settings, Settings, QAfterFilterCondition> analysisConfig(
+      FilterQuery<AnalysisConfig> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'analysisConfig');
+    });
+  }
+}
 
 extension SettingsQueryLinks
     on QueryBuilder<Settings, Settings, QFilterCondition> {}
@@ -1922,6 +1978,13 @@ extension SettingsQueryProperty
   QueryBuilder<Settings, String?, QQueryOperations> adbPathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'adbPath');
+    });
+  }
+
+  QueryBuilder<Settings, AnalysisConfig?, QQueryOperations>
+      analysisConfigProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'analysisConfig');
     });
   }
 

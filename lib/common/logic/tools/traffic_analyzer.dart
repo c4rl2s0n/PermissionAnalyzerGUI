@@ -23,6 +23,17 @@ class TrafficAnalyzer {
     return endpoints;
   }
 
+  static List<INetworkEndpoint>
+      getEndpointsFromIConnections<T extends INetworkConnection>(
+          List<T> connections) {
+    return T == NetworkConnection
+        ? getEndpointsFromConnections(connections as List<NetworkConnection>)
+        : T == ConnectionGroup
+            ? getEndpointsFromConnectionGroups(
+                connections as List<ConnectionGroup>)
+            : [];
+  }
+
   static List<NetworkEndpoint> getEndpointsFromConnections(
     List<NetworkConnection> connections, {
     bool filtered = true,
@@ -31,19 +42,35 @@ class TrafficAnalyzer {
     connections =
         (filtered ? getFilteredConnections(connections) : connections).toList();
     if (endpointRepository != null) {
-      List<String> ips = connections
-          .fold(<String>[], (all, con) => [...all, ...con.ips])
-          .toList()
-          .distinct;
+      List<String> ips = connections.map((c) => c.ip).toList().distinct;
+      Map<String, NetworkEndpoint> endpointMap = {};
       List<NetworkEndpoint> endpoints = endpointRepository.getAllByIp(ips);
+      for (var ep in endpoints) {
+        endpointMap[ep.ip] = ep;
+      }
+      List<NetworkEndpoint> updatedEndpoints = [];
       for (var connection in connections) {
-        var endpoint =
-            endpoints.where((e) => e.ip == connection.ip).firstOrNull;
-        if (endpoint != null) connection.endpoint = endpoint;
+        NetworkEndpoint endpoint = endpointMap[connection.ip]!;
+        connection.endpoint = endpoint;
+
+        // add server names to endpoint, in case they are missing
+        if (connection.serverName.notEmpty &&
+            !endpoint.serverNames.contains(connection.serverName!)) {
+          endpoint.serverNames = [
+            ...endpoint.serverNames,
+            connection.serverName!
+          ];
+          endpoint.serverNames.sort();
+          updatedEndpoints.add(endpoint);
+        }
+      }
+      // update endpoints, if a serverName was added
+      if (updatedEndpoints.isNotEmpty) {
+        endpointRepository.updateAll(updatedEndpoints);
       }
       return endpoints;
     }
-    return connections.map((c) => c.endpoint).toList();
+    return connections.map((c) => c.endpoint).toList().distinct;
   }
 
   static List<EndpointGroup> getEndpointsFromConnectionGroups(
@@ -52,7 +79,10 @@ class TrafficAnalyzer {
   }) {
     connections =
         (filtered ? getFilteredConnections(connections) : connections).toList();
-    return getGroupedConnections(connections).map((c) => c.endpoint).toList();
+    return getGroupedConnections(connections)
+        .map((c) => c.endpoint)
+        .toList()
+        .distinct;
   }
 
   /// ###############
@@ -68,8 +98,11 @@ class TrafficAnalyzer {
     for (var group in groups) {
       tests.addAll(group.tests);
     }
-    return getConnectionsFromTestRuns(tests,
-        filtered: filtered, grouped: grouped);
+    return getConnectionsFromTestRuns(
+      tests,
+      filtered: filtered,
+      grouped: grouped,
+    );
   }
 
   static List<INetworkConnection> getConnectionsFromTestRuns(
@@ -117,20 +150,89 @@ class TrafficAnalyzer {
         .toList();
   }
 
-  static bool _shouldFilterIp(String ip) =>
-      ip.startsWith("10.0.") || ip.startsWith("127.0.0.1");
+  static bool _shouldFilterIp(String ip) => _isLocalIp(ip);
+
+  static bool _isLocalIp(String ip) =>
+      // TODO: define in settings maybe? might be different, depending on device
+      ip.startsWith("10.0.") || ip.startsWith("192.168.") || ip == "127.0.0.1";
+
+  static List<INetworkConnection> groupIConnectionsByEndpoint(
+      List<INetworkConnection> connections) {
+    return connections is List<NetworkConnection>
+        ? groupConnectionsByEndpoint(connections)
+        : connections is List<ConnectionGroup>
+            ? groupConnectionGroupsByEndpoint(connections)
+            : [];
+  }
+
+  static List<NetworkConnection> groupConnectionsByEndpoint(
+    List<NetworkConnection> connections,
+  ) {
+    Map<String, NetworkConnection> grouped = {};
+    for (var con in connections) {
+      String key = con.endpoint.id;
+      if (!grouped.keys.contains(key)) {
+        grouped[key] = con.copy;
+      } else {
+        NetworkConnection c = grouped[key]!;
+        c.packets = [...c.packets, ...con.packets];
+      }
+    }
+    List<NetworkConnection> nCons = grouped.values.toList();
+    for (var c in nCons) {
+      c.analyzePackets();
+    }
+    return nCons;
+  }
+
+  static List<ConnectionGroup> groupConnectionGroupsByEndpoint(
+    List<ConnectionGroup> connections,
+  ) {
+    Map<EndpointGroup, ConnectionGroup> grouped = {};
+    for (var con in connections) {
+      if (!grouped.keys.contains(con.endpoint)) {
+        grouped[con.endpoint] = con.copy;
+      } else {
+        ConnectionGroup c = grouped[con.endpoint]!;
+        c.connections = [...c.connections, ...con.connections];
+      }
+    }
+    return grouped.values.toList();
+  }
 
   static List<ConnectionGroup> getGroupedConnections(
     List<INetworkConnection> connections, {
     int nGroupedOctets = 1, // number of octets to group over
   }) {
+    // different SNIs at same IP might result in the same group
+    Map<String, ConnectionGroup> connectionGroups = {};
     void addEndpoint(ConnectionGroup group, NetworkEndpoint endpoint) {
-      if (!group.endpoint.endpoints.contains(endpoint)) {
+      if (!group.endpoint.endpoints.any((e) => e.id == endpoint.id)) {
         group.endpoint.endpoints.add(endpoint);
       }
     }
 
-    Map<String, ConnectionGroup> connectionGroups = {};
+    bool testForKey(String? key, NetworkConnection connection,
+        {EndpointGroup Function(NetworkEndpoint, String)?
+            getInitialEndpointGroup}) {
+      if (key.notEmpty) {
+        // create the ConnectionGroup if not yet exists
+        if (!connectionGroups.containsKey(key!)) {
+          connectionGroups[key] = ConnectionGroup(
+            endpoint: getInitialEndpointGroup?.call(connection.endpoint, key) ??
+                EndpointGroup(endpoints: [connection.endpoint]),
+            connections: [connection],
+          );
+        } else {
+          // add connection to existing ConnectionGroup
+          addEndpoint(connectionGroups[key]!, connection.endpoint);
+          connectionGroups[key]!.connections.add(connection);
+        }
+        return true;
+      }
+      return false;
+    }
+
     for (var connection in connections) {
       if (connection is ConnectionGroup) {
         // connection is already grouped
@@ -138,39 +240,26 @@ class TrafficAnalyzer {
         continue;
       }
       connection as NetworkConnection;
+
+      // group by server name (SNI)
+      String? sni = connection.serverName;
+      if (testForKey(
+        sni,
+        connection,
+        getInitialEndpointGroup: (ep, sni) =>
+            SniEndpoint(endpoints: [ep], serverName: sni),
+      )) continue;
+
       // group by domain name
-      var domain = connection.endpoint.domain;
-      if (domain != null) {
-        // create the ConnectionGroup if not yet exists
-        if (!connectionGroups.containsKey(domain)) {
-          connectionGroups[domain] = ConnectionGroup(
-            endpoint: EndpointGroup(
-                hostname: domain, endpoints: [connection.endpoint]),
-            connections: [connection],
-          );
-        } else {
-          // add connection to existing ConnectionGroup
-          addEndpoint(connectionGroups[domain]!, connection.endpoint);
-          connectionGroups[domain]!.connections.add(connection);
-        }
-      } else {
-        // group by ipRange
-        var ipRange =
-            getIpRange(connection.endpoint.ip, nGroupedOctets: nGroupedOctets);
-        // create the ConnectionGroup if not yet exists
-        if (!connectionGroups.containsKey(ipRange)) {
-          connectionGroups[ipRange] = ConnectionGroup(
-            endpoint: EndpointGroup(
-              endpoints: [connection.endpoint],
-            ),
-            connections: [connection],
-          );
-        } else {
-          // add connection to existing ConnectionGroup
-          addEndpoint(connectionGroups[ipRange]!, connection.endpoint);
-          connectionGroups[ipRange]!.connections.add(connection);
-        }
-      }
+      String? domain = connection.endpoint.domainString;
+      if (testForKey(domain, connection)) continue;
+
+      // group by ipRange
+      String ipRange = getIpRange(
+        connection.endpoint.ip,
+        nGroupedOctets: nGroupedOctets,
+      );
+      testForKey(ipRange, connection);
     }
 
     return connectionGroups.values.toList();
@@ -180,33 +269,54 @@ class TrafficAnalyzer {
     List<NetworkPacket> packets, {
     TestRun? testRun,
     bool filtered = true,
+    INetworkEndpointRepository? endpointRepository,
   }) {
+    List<String> ips = [
+      ...packets.map((p) => p.ipSrc),
+      ...packets.map((p) => p.ipSrc)
+    ].distinct;
+    List<NetworkEndpoint>? endpoints = endpointRepository?.getAllByIp(ips);
     Map<String, NetworkConnection> connections = {};
     for (var packet in packets) {
-      if (!connections.containsKey(packet.dst)) {
-        connections[packet.dst] = NetworkConnection(
+      String key;
+      if (_isLocalIp(packet.src)) {
+        // outgoing connection
+        key = "${packet.ipDst}:${packet.serverName}";
+        if (!connections.containsKey(key)) {
+          connections[key] = NetworkConnection(
             ip: packet.ipDst,
+            endpoint: endpoints
+                ?.where((e) => e.ip == packet.ipDst)
+                .firstOrNull, //endpointRepository?.getByIp(packet.ipDst),
             port: packet.portDst,
             packets: [],
             testRuns: testRun != null ? [testRun] : [],
             serverName: packet.serverName,
-        );
-      }
-      if (!connections.containsKey(packet.src)) {
-        connections[packet.src] = NetworkConnection(
+          );
+        }
+      } else if (_isLocalIp(packet.dst)) {
+        // incoming connection
+        key = "${packet.ipSrc}:${packet.serverName}";
+        if (!connections.containsKey(key)) {
+          connections[key] = NetworkConnection(
             ip: packet.ipSrc,
+            endpoint: endpoints
+                ?.where((e) => e.ip == packet.ipSrc)
+                .firstOrNull, //endpointRepository?.getByIp(packet.ipSrc),
             port: packet.portSrc,
             packets: [],
             testRuns: testRun != null ? [testRun] : [],
-          serverName: packet.serverName,
-        );
+            serverName: packet.serverName,
+          );
+        }
+      } else {
+        // ignore packets that are not local on any side
+        continue;
       }
 
-      // incoming packets
-      connections[packet.dst]!.packets.add(packet);
-
-      // outgoing packets
-      connections[packet.src]!.packets.add(packet);
+      // add packet to connection
+      NetworkConnection con = connections[key]!;
+      con.packets.add(packet);
     }
     return _connectionMapToList(connections, filtered: filtered);
   }
@@ -286,7 +396,7 @@ class TrafficAnalyzer {
     }
 
     // Server Name Indication
-    String? serverName = packetData["tls.handshake.extensions_server_name"]?.firstOrNull;
+    String? serverName = packetData["tls.handshake.extensions_server_name"]?.first;
     if (serverName.empty && protocols.contains("tls")) {
       serverName = _lookupSniFromPacketHistory(
         ipSrc: ipSrc,
@@ -319,8 +429,11 @@ class TrafficAnalyzer {
     if (portSrc == null || portDst == null) return null;
     for (int i = allPackets.length - 1; i >= 0; i--) {
       NetworkPacket packet = allPackets[i];
-      // if packet has no ports, ignore it for sni-lookup
-      if (packet.portSrc == null || packet.portDst == null) continue;
+
+      // if packet has no SNI or ports, ignore it for sni-lookup
+      if (packet.serverName.empty ||
+          packet.portSrc == null ||
+          packet.portDst == null) continue;
       // packet has same ip flow (might be other direction)
       if (packet.ipSrc == ipSrc && packet.ipDst == ipDst ||
           packet.ipSrc == ipDst && packet.ipDst == ipSrc) {
@@ -426,7 +539,7 @@ class TrafficAnalyzer {
   ) {
     List<NetworkConnection> groupConnections = [];
     for (var con in group.networkConnections) {
-      if (connections.any((c) => c.ip == con.ip)) {
+      if (connections.any((c) => c.ip == con.ip && c.serverName == con.serverName)) {
         groupConnections.add(con);
       }
     }

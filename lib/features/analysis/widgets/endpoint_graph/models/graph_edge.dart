@@ -12,5 +12,6 @@ class GraphEdge {
   TrafficGroup src;
   INetworkConnection dst;
   bool common;
+  bool get hasSNI => dst.hasServerName;
   double size;
 }

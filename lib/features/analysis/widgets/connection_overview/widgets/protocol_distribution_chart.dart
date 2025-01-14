@@ -22,21 +22,24 @@ class ProtocolDistributionChart extends StatelessWidget {
       updateValues: _updateValues,
     );
   }
-  BlocBuilder<AnalysisCubit, AnalysisState> _builder(Widget Function(BuildContext context, AnalysisState state) builder){
+
+  BlocBuilder<AnalysisCubit, AnalysisState> _builder(
+      Widget Function(BuildContext context, AnalysisState state) builder) {
     return BlocBuilder<AnalysisCubit, AnalysisState>(
+      buildWhen: (oldState, state) => oldState.visibleGroups != state.visibleGroups,
+      builder: (context, analysisState) => BlocBuilder<AnalysisConfigCubit, AnalysisConfigState>(
         buildWhen: (oldState, state) =>
-        oldState.visibleGroups != state.visibleGroups ||
             oldState.trafficLoadInPackets != state.trafficLoadInPackets,
-        builder: builder);
+        builder: (context, configState) => builder(context, analysisState),
+      ),
+    );
   }
 
-  DistributionValues<String> _updateValues(
-      AnalysisState state,
-      ) {
+  DistributionValues<String> _updateValues(AnalysisState state) {
     List<String> data = connection.protocols;
-    bool loadInPackets = state.trafficLoadInPackets;
+    bool loadInPackets = state.config.trafficLoadInPackets;
     List<NetworkConnection> connections =
-    TrafficAnalyzer.flattenConnections([connection]);
+        TrafficAnalyzer.flattenConnections([connection]);
     Map<String, int> volumeByData = TrafficAnalyzer.getTrafficLoadByProtocol(
       data,
       connections,
@@ -52,5 +55,4 @@ class ProtocolDistributionChart extends StatelessWidget {
       volumeByData: volumeByData,
     );
   }
-
 }

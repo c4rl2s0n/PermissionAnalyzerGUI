@@ -18,6 +18,7 @@ enum SelectionState {
 class AnalysisTrafficGroupCubit extends Cubit<AnalysisTrafficGroupState> {
   AnalysisTrafficGroupCubit({
     required this.group,
+    required this.endpointRepository,
     SelectionState selected = SelectionState.selected,
     List<AnalysisTrafficGroupCubit> children = const [],
     bool show = false,
@@ -32,6 +33,8 @@ class AnalysisTrafficGroupCubit extends Cubit<AnalysisTrafficGroupState> {
 
   // TODO: Add event handling for toggleShow; showing only entries on the same level (and within same 'subtree' in case node is not root)
   // TODO: aggregate endpoints and connections! store by second (mabye just store the graphIds or sth to reduce memory usage)
+
+  INetworkEndpointRepository endpointRepository;
 
   TrafficGroup group;
   String get name => state.group.name;
@@ -112,15 +115,23 @@ class AnalysisTrafficGroupCubit extends Cubit<AnalysisTrafficGroupState> {
     emit(state.copyWith(show: show));
   }
 
-  void updateGroupFromChildren({bool connectionsGrouped = false}) {
+  void updateGroupFromChildren({bool connectionsGrouped = false, bool reloadEndpoints = false,}) {
     if (state.children.isEmpty) return;
     List<AnalysisTrafficGroupCubit> children =
         state.children.where((c) => c.state.isSelected).toList();
     for(var child in children){
-      child.updateGroupFromChildren(connectionsGrouped: connectionsGrouped);
+      child.updateGroupFromChildren(connectionsGrouped: connectionsGrouped, reloadEndpoints: reloadEndpoints,);
     }
     List<TestRun> tests = children.fold([], (all, child) => [...all, ...child.group.tests]);
 
+    // reload the endpoints from the database in case they changed
+    // if(reloadEndpoints){
+    //   for(var test in tests){
+    //     for(var connection in test.connections){
+    //       connection.endpoint = endpointRepository.getByIp(connection.ip);
+    //     }
+    //   }
+    // }
     group = TrafficGroup(
       name: state.group.name,
       info: state.group.info,

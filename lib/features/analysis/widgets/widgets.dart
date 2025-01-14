@@ -1,5 +1,6 @@
 // export widgets here
 
+export 'config_builder.dart';
 export 'legend_entry.dart';
 export 'radar_chart.dart';
 

@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/common/helper.dart';
 
 import 'models.dart';
@@ -6,31 +7,34 @@ import 'models.dart';
 part 'network_endpoint.g.dart';
 
 abstract class INetworkEndpoint{
-  INetworkEndpoint({this.hostname});
-  String get ipRange;
+  INetworkEndpoint();
   String get ip;
-  String? hostname;
-  List<Geolocation> get geolocations;
-  bool get hasHostname => hostname != null && hostname!.isNotEmpty;
   String get id;
+  List<String> get serverNames;
+  bool get hasServerName => serverNames.isNotEmpty;
+  List<String> get hostnames;
+  bool get hasHostname => hostnames.isNotEmpty;
 
+  List<Geolocation> get geolocations;
   List<String> get tags;
 
-  String get name => hostname ?? ip;
-  String get displayName => domain ?? hostname ?? ip;
+  String get name;
+  String get displayName => name;
+  String? get domainString;
 
-  String? get domain {
-    if (hostname == null) return null;
+
+
+  String? domainFromHostname(String? hostname){
+    if(hostname.empty) return null;
     List<String> parts = hostname!.split(".");
-    if (parts.length <= 2) return hostname;
+    if (parts.length <= 2) return null;
     List<String> rev = parts.reversed.toList();
-    return "${rev[1]}.${rev[0]}";
+    String domain = "${rev[1]}.${rev[0]}";
+    return domain;
   }
-  
-  int compareTo(NetworkEndpoint other) => hostname != null && other.hostname != null ? compareHostnames(hostname!, other.hostname!) : (hostname ?? ip).compareTo(other.hostname ?? other.ip);
 }
 
-@Collection(ignore: {'name', 'displayName'})
+@Collection(ignore: {'name', 'displayName', 'serverName', 'domains'})
 class NetworkEndpoint extends INetworkEndpoint{
   NetworkEndpoint({
     this.ip = "",
@@ -38,7 +42,8 @@ class NetworkEndpoint extends INetworkEndpoint{
     this.geolocation,
     this.whois,
     this.tags = const [],
-    super.hostname,
+    this.serverNames = const [],
+    this.hostname,
   });
 
   Id isarId = Isar.autoIncrement;
@@ -47,11 +52,15 @@ class NetworkEndpoint extends INetworkEndpoint{
   @override
   @Index(unique: true, replace: false)
   String ip;
-  @override
-  String get ipRange => ip;
   bool analyzed;
 
   String? whois;
+
+  String? hostname;
+  @override
+  List<String> get hostnames => hostname.empty ? [] : [hostname!];
+  @override
+  List<String> serverNames;
 
   @override
   List<Geolocation> get geolocations => geolocation != null ? [geolocation!] : [];
@@ -59,4 +68,15 @@ class NetworkEndpoint extends INetworkEndpoint{
 
   @override
   List<String> tags;
+
+
+  @override
+  String get name => hostname ?? ip;
+  @override
+  String get displayName => domainString ?? hostname ?? ip;
+  @override
+  String? get domainString => domainFromHostname(hostname);
+
+
+  int compareTo(NetworkEndpoint other) => hostname != null && other.hostname != null ? compareHostnames(hostname!, other.hostname!) : (hostname ?? ip).compareTo(other.hostname ?? other.ip);
 }
