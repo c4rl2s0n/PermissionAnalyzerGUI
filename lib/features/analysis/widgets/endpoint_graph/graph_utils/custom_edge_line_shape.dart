@@ -15,7 +15,8 @@ class CustomEdgeLineShape extends EdgeLineShape {
     paint.style = PaintingStyle.stroke;
     var startPoint = Offset.zero;
     var endPoint = Offset(EdgeShape.len(edge), paint.strokeWidth);
-    var hoverOpacity = edge.cpn?.gameRef.options.graphStyle.hoverOpacity ?? .5;
+    var hoverOpacity = edge.cpn?.gameRef.options.graphStyle.hoverOpacity ?? .3;
+    var idleOpacity = .6;
     List<ui.Color> colors = [
       edge.start.colors.last,
       if (data.common) Colors.cyan,
@@ -23,11 +24,19 @@ class CustomEdgeLineShape extends EdgeLineShape {
       (edge.end?.colors.last ?? Colors.white)
     ];
     List<double> colorStops = List.generate(colors.length, (i) => i / (colors.length-1));
+    var graph = edge.cpn!.gameRef.graph;
     if (isWeaken(edge)) {
       paint.shader = ui.Gradient.linear(
         startPoint,
         endPoint,
         colors.map((c) => c.withOpacity(hoverOpacity)).toList(),
+        colorStops,
+      );
+    } else if(graph.hoverVertex == null && graph.hoverEdge == null){
+      paint.shader = ui.Gradient.linear(
+        startPoint,
+        endPoint,
+        colors.map((c) => c.withOpacity(idleOpacity)).toList(),
         colorStops,
       );
     } else {

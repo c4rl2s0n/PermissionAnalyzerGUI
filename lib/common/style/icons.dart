@@ -44,6 +44,10 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
     this.connectionIn = Icons.arrow_back,
     this.tests = Icons.science_outlined,
     this.filter = Icons.filter_alt_outlined,
+    this.color = Icons.palette,
+    this.play = Icons.play_circle_outline,
+    this.pause = Icons.pause_circle_outline,
+    this.restart = Icons.restart_alt,
   });
 
   final IconData infoPositive;
@@ -88,6 +92,10 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
   final IconData connectionIn;
   final IconData tests;
   final IconData filter;
+  final IconData color;
+  final IconData play;
+  final IconData pause;
+  final IconData restart;
 
   @override
   ThemeExtension<CustomIcons> copyWith() => this;

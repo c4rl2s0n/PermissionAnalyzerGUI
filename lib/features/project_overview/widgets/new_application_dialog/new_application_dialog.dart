@@ -112,7 +112,6 @@ class NewApplicationDialog extends StatelessWidget {
   Widget _loadIconButton() {
     return BlocBuilder<NewApplicationDialogCubit, NewApplicationDialogState>(
       buildWhen: (oldState, state) =>
-          oldState.name != state.name ||
           oldState.searching != state.searching ||
           oldState.iconFound != state.iconFound ||
           oldState.applicationId != state.applicationId,
@@ -179,7 +178,7 @@ class NewApplicationDialog extends StatelessWidget {
   Widget _applicationName() {
     return BlocBuilder<NewApplicationDialogCubit, NewApplicationDialogState>(
       buildWhen: (oldState, state) =>
-          oldState.applicationId != state.applicationId,
+          oldState.name != state.name,
       builder: (context, state) => SimpleTextField(
         initialValue: state.name,
         labelText: "Application Name",

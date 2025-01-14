@@ -33,16 +33,6 @@ class TestConstellation {
     _tests = value;
   }
 
-  @ignore
-  String get info {
-    String info = 'Permissions:\n';
-    info += permissions
-        .where((p) => p.state == PermissionState.granted)
-        .map((p) => p.permission)
-        .join("\t\t\n");
-    return info;
-  }
-
   String get abbreviation {
     if (permissions.every((p) => p.state == PermissionState.granted)) {
       return "ALL";

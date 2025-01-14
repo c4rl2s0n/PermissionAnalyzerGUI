@@ -11,8 +11,8 @@ class NavigationService {
     Navigator.of(context).pop(result);
   }
 
-  void maybePop() {
-    Navigator.of(context).pop();
+  void maybePop<T>([T? result]) {
+    Navigator.of(context).maybePop(result);
   }
 
   void popUntil(RoutePredicate predicate) {

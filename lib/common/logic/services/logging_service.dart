@@ -22,7 +22,7 @@ class LoggingService{
     if(!await logfile.exists()){
     await logfile.create(recursive: true);
     }
-    await logfile.writeAsString(logToJson(record), mode: FileMode.append);
+    await logfile.writeAsString("${logToJson(record)}\n", mode: FileMode.append);
     if (kDebugMode) {
       print(record.toString());
     }
@@ -46,7 +46,7 @@ class LoggingService{
     if(!await logfile.exists()){
       await logfile.create(recursive: true);
     }
-    await logfile.writeAsString(errorToJson(details), mode: FileMode.append);
+    await logfile.writeAsString("${errorToJson(details)}\n", mode: FileMode.append);
     FlutterError.presentError(details);
   }
 

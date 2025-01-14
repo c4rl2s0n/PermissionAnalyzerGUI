@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:fvp/mdk.dart';
+import 'package:logging/logging.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
@@ -23,7 +25,7 @@ void main() async {
   print(documentsDirectory);
 
   // initialize logging
-  LoggingService.setupLogger(documentsDirectory);
+  LoggingService.setupLogger(documentsDirectory, loglevel: Level.WARNING);
 
   // register flutter video player
   fvp.registerWith();

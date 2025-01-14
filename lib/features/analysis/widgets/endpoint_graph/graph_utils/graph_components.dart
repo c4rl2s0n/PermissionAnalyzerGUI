@@ -83,6 +83,7 @@ class GraphComponents {
           ["# Connections", g.connections.length.toString()],
           ["# Connected Endpoints", g.endpoints.length.toString()],
           if (g.info != null && g.info!.isNotEmpty) ["Info", g.info!],
+          if (g.permissions != null && g.permissions!.isNotEmpty) ["Permissions", ...g.permissions!],
         ], //'# Connections: ${g.connections.length}${g.info != null ? "\n${g.info}" : ""}',
       );
 

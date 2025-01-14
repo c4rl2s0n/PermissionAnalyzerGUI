@@ -124,19 +124,12 @@ class AnalysisTrafficGroupCubit extends Cubit<AnalysisTrafficGroupState> {
     }
     List<TestRun> tests = children.fold([], (all, child) => [...all, ...child.group.tests]);
 
-    // reload the endpoints from the database in case they changed
-    // if(reloadEndpoints){
-    //   for(var test in tests){
-    //     for(var connection in test.connections){
-    //       connection.endpoint = endpointRepository.getByIp(connection.ip);
-    //     }
-    //   }
-    // }
     group = TrafficGroup(
       name: state.group.name,
       info: state.group.info,
       id: state.group.id,
       graphTags: state.group.graphTags,
+      permissions: state.group.permissions,
       data: state.group.data,
       tests: [],  // set tests separately to ensure grouped is applied correctly
     );

@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_graph_view/flutter_graph_view.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:permission_analyzer_gui/common/keys.dart';
+import 'package:permission_analyzer_gui/features/analysis/values.dart';
 
 typedef LegendBuilder = Widget Function(LegendDecorator)?;
 LegendBuilder? legendOverlayBuilder() {
@@ -25,7 +27,7 @@ LegendBuilder? legendOverlayBuilder() {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  icon,
+                  Optional.hidden(hide: !graphTagColors.containsKey(tag), child: icon),
                   const SizedBox(width: 9),
                   Text(
                     tag,
@@ -45,7 +47,7 @@ LegendBuilder? legendOverlayBuilder() {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ...graph.allTags.map((tag) {
+        ...graphTags.where((gt) => graph.allTags.contains(gt)).map((tag) {
           return legendBuilder(
             tag,
             ld.changeTag,

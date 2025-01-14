@@ -13,11 +13,11 @@ class EndpointVertex extends GraphVertex {
   @override
   List<String> get tags => [
     tEndpoint,
-    if (unique) tUnique,
-    if (common) tCommon,
-    if (endpoint is SniEndpoint) tServerName
-    else if (endpoint.hasHostname) tHostname
-    else tIpOnly,
+    if (unique) tUnique else tNotUnique,
+    if (common) tCommon else tNotCommon,
+    if (endpoint is SniEndpoint) tServerName else tNoServerName,
+    if (endpoint.hasHostname) tHostname else tNoHostname,
+    if(endpoint is! SniEndpoint && !endpoint.hasServerName) tIpOnly,
   ];
 
   @override

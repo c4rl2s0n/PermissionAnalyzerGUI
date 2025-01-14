@@ -5,12 +5,13 @@ class ScrollContainer extends StatefulWidget {
   const ScrollContainer({
     this.scrollbarOrientation = ScrollbarOrientation.right,
     this.scrollDirection = Axis.vertical,
+    this.scrollbarAlwaysVisible,
     required this.child,
     super.key,
   });
 
   final Widget child;
-
+  final bool? scrollbarAlwaysVisible;
   final ScrollbarOrientation scrollbarOrientation;
   final Axis scrollDirection;
 
@@ -26,6 +27,7 @@ class _ScrollContainerState extends State<ScrollContainer> {
     return Scrollbar(
       scrollbarOrientation: widget.scrollbarOrientation,
       controller: _scrollController,
+      thumbVisibility: widget.scrollbarAlwaysVisible,
       child: _padding(
         context,
         ScrollConfiguration(

@@ -36,7 +36,7 @@ class _EndpointMapState extends State<EndpointMap> {
       buildWhenAnalysisConfig: (oldState, state) =>
           oldState.trafficLoadInPackets != state.trafficLoadInPackets,
       builder: (context, analysisState, configState) =>
-          _buildMap(context, analysisState),
+          _content(context, analysisState),
     );
   }
 
@@ -62,10 +62,25 @@ class _EndpointMapState extends State<EndpointMap> {
     return markers;
   }
 
-  Widget _buildMap(BuildContext context, AnalysisState state) {
+  Widget _content(BuildContext context, AnalysisState state) {
     // only show colors if there are not too many groups
     showColors = state.visibleGroups.length <= trafficGroupColors.length;
 
+    return Stack(
+      children: [
+        _buildMap(context, state),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Align(
+            alignment: Alignment.bottomRight,
+            child: _buildLegend(context),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _buildMap(BuildContext context, AnalysisState state) {
     // get markers from connections
     List<INetworkConnection> connections =
         TrafficAnalyzer.getConnectionsFromTrafficGroups(
@@ -79,52 +94,36 @@ class _EndpointMapState extends State<EndpointMap> {
       connections,
       inPackets: state.config.trafficLoadInPackets,
     );
-    return Optional(
-      buildOptional: (child) => Stack(
-        children: [
-          child,
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Align(
-              alignment: Alignment.bottomRight,
-              child: _buildLegend(context),
-            ),
-          )
-        ],
+    return FlutterMap(
+      mapController: _mapController,
+      options: MapOptions(
+        //initialCenter: bounds.center,
+        initialZoom: 9.2,
+        onMapReady: () {
+          if (markers.isEmpty) return;
+          LatLngBounds bounds =
+              LatLngBounds.fromPoints(markers.map((m) => m.point).toList());
+          // center camera
+          Future.delayed(
+            Duration.zero,
+            () => _mapController.fitCamera(CameraFit.bounds(
+              bounds: bounds,
+              padding: const EdgeInsets.all(25),
+            )),
+          );
+        },
       ),
-      useOptional: showColors,
-      child: FlutterMap(
-        mapController: _mapController,
-        options: MapOptions(
-          //initialCenter: bounds.center,
-          initialZoom: 9.2,
-          onMapReady: () {
-            if (markers.isEmpty) return;
-            LatLngBounds bounds =
-                LatLngBounds.fromPoints(markers.map((m) => m.point).toList());
-            // center camera
-            Future.delayed(
-              Duration.zero,
-              () => _mapController.fitCamera(CameraFit.bounds(
-                bounds: bounds,
-                padding: const EdgeInsets.all(25),
-              )),
-            );
-          },
+      children: [
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'es.tma.analyzer',
         ),
-        children: [
-          TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'es.tma.analyzer',
-          ),
-          _buildMarkerClusterLayer(markers, markerMap),
-        ],
-      ),
+        _buildMarkerClusterLayer(markers, markerMap),
+      ],
     );
   }
 
   Widget _buildLegend(BuildContext context) {
-    assert(showColors);
     List<Row> rows = [];
     List<AnalysisTrafficGroupCubit> trafficGroups =
         context.analysisCubit.state.visibleGroups;
@@ -134,12 +133,14 @@ class _EndpointMapState extends State<EndpointMap> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              context.icons.mapMarker,
-              size: _markerIconSize,
-              color: trafficGroupColors[i],
-            ),
-            Margin.horizontal(context.constants.spacing),
+            if (showColors) ...[
+              Icon(
+                context.icons.mapMarker,
+                size: _markerIconSize,
+                color: trafficGroupColors[i],
+              ),
+              Margin.horizontal(context.constants.spacing),
+            ],
             Text(
               trafficGroups[i].fullName,
               style: context.textTheme.labelMedium,
@@ -159,7 +160,7 @@ class _EndpointMapState extends State<EndpointMap> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Legend:",
+            showColors ? "Legend:" : "Included Groups:",
             style: context.textTheme.headlineSmall,
           ),
           ...rows,
@@ -256,7 +257,7 @@ class _EndpointMapState extends State<EndpointMap> {
           ? Text("${connection.serverName} (@ ${connection.endpoint.ip})")
           : Text(connection.endpoint.hostname ?? connection.endpoint.ip);
 
-      for (int i = 0; i < trafficGroups.length; i++) {
+      for (int i = 0; i < trafficGroups.length && showColors; i++) {
         var group = trafficGroups[i].group;
         // group has connection
         if (group.networkConnections.any((nc) => nc.ip == connection.ip)) {
@@ -290,15 +291,13 @@ class _EndpointMapState extends State<EndpointMap> {
     return WidgetSpan(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxHeight: 220),
-        child: Scrollbar(
-          thumbVisibility: true,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 18.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: sortedConnections.map(getConnectionEntry).toList(),
-              ),
+        child: ScrollContainer(
+          scrollbarAlwaysVisible: true,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 18.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: sortedConnections.map(getConnectionEntry).toList(),
             ),
           ),
         ),

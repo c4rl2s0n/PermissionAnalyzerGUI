@@ -8,6 +8,7 @@ class TrafficGroup {
     this.info,
     this.id = "",
     this.graphTags = const [],
+    this.permissions,
     List<TestRun> tests = const [],
     this.data,
   }) {
@@ -28,8 +29,8 @@ class TrafficGroup {
           name: c.displayName,
           id: c.uniqueIdentifier,
           data: c,
-          info: c.info,
           graphTags: [tConstellation],
+          permissions: c.permissions.where((p) => p.state == PermissionState.granted).map((p) => p.permission).toList(),
           tests: List.of(c.tests),
         );
 
@@ -47,6 +48,7 @@ class TrafficGroup {
   String id;
   int testRuns = 0;
   List<String> graphTags;
+  List<String>? permissions;
 
   late List<TestRun> _tests;
   List<TestRun> get tests => _tests;

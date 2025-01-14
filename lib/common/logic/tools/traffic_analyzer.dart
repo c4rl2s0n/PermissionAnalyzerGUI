@@ -2,6 +2,7 @@ import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/logic/logic.dart';
 import 'package:permission_analyzer_gui/features/analysis/models/models.dart';
+import 'package:permission_analyzer_gui/data/models/connection_timeline.dart';
 
 class TrafficAnalyzer {
   /// #############
@@ -334,6 +335,53 @@ class TrafficAnalyzer {
     }
     return connectionsList;
   }
+  //
+  // ConnectionTimeline connectionToTimeline(INetworkConnection connection) {
+  //   var packets = connection.packets.where((p) => p.timeInMs != null).toList();
+  //   packets.sort((a,b) => a.timeInMs!.compareTo(b.timeInMs!));
+  //   int durationInMs = packets.last.timeInMs! - (packets.firstWhere((p) => (p.timeInMs!)> 0, orElse: () => packets.first).timeInMs!);
+  //   List<INetworkConnection?> emptyList = List.generate((durationInMs / 1000).ceil(), (_) => null);
+  //
+  //   int tsInSec = 0;
+  //   List<NetworkPacket> packetsInFrame = [];
+  //   for (var packet in packets) {
+  //     // ignore packets without a timestamp (should not happen...)
+  //
+  //     // get time of packet
+  //     int packetTsInSec = ((packet.timeInMs! - startTimeInMs) / 1000).floor();
+  //     // collect all packets within the current timeframe
+  //     if (packetTsInSec == tsInSec) {
+  //       packetsInFrame.add(packet);
+  //       continue;
+  //     }
+  //
+  //     // get the connections for all packets within the current timeframe
+  //     List<NetworkConnection> frameConnections =
+  //     TrafficAnalyzer.getConnectionsFromPackets(
+  //       packetsInFrame,
+  //       testRun: this,
+  //       filtered: false,
+  //     );
+  //
+  //     EndpointGroup totalEndpoint = EndpointGroup(endpoints: []);
+  //     ConnectionGroup frameTotal = ConnectionGroup(endpoint: totalEndpoint, connections: [],);
+  //     // put connection-frames to timeline
+  //     for (var con in frameConnections) {
+  //       if(!_connectionTimeline!.containsKey(con.ip)) continue;
+  //       _connectionTimeline![con.ip]![tsInSec] = con;
+  //
+  //       // aggregate for total connections
+  //       totalEndpoint.endpoints.add(con.endpoint);
+  //       frameTotal.connections.add(con);
+  //     }
+  //     _connectionTimeline![keyTotal]![tsInSec] = frameTotal;
+  //
+  //     // go on with next packet in next timeframe
+  //     tsInSec = max(0, packetTsInSec);
+  //     packetsInFrame = [packet];
+  //   }
+  //   return _connectionTimeline!;
+  // }
 
   /// #################
   /// Packet Extraction

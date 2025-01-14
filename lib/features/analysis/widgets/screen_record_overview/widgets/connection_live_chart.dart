@@ -4,17 +4,20 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
+import 'package:permission_analyzer_gui/features/analysis/widgets/screen_record_overview/logic/context_extension.dart';
+import 'package:permission_analyzer_gui/features/analysis/widgets/screen_record_overview/logic/timeline_cubit.dart';
+
 
 class ConnectionLiveChart extends StatefulWidget {
   const ConnectionLiveChart(
-    this.connectionTimelines, {
+    this.timelines, {
     this.time = 0,
     this.trafficLoadInPackets = false,
     super.key,
   });
 
   final bool trafficLoadInPackets;
-  final Map<String, List<INetworkConnection?>> connectionTimelines;
+  final List<TimelineState> timelines;
   final double time;
 
   @override
@@ -30,14 +33,14 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
   double time = 0;
 
   void _getMaxBounds() {
-    for (var key in widget.connectionTimelines.keys) {
+    for (var tl in widget.timelines) {
       // count frames (x-axis
-      int frameCount = widget.connectionTimelines[key]!.length;
+      int frameCount = tl.data.length;
       if (frameCount > maxX) {
         maxX = frameCount.toDouble();
       }
       // check max traffic load
-      for (INetworkConnection? con in widget.connectionTimelines[key]!) {
+      for (INetworkConnection? con in tl.data) {
         if (con == null) continue;
         if (widget.trafficLoadInPackets) {
           if (con.countTotal > maxY) {
@@ -49,8 +52,6 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
           }
         }
       }
-      // Total is the one with the most data, so should be enough to check the bounds of that
-      if (key == "Total") break;
     }
   }
 
@@ -58,11 +59,11 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
   void didUpdateWidget(ConnectionLiveChart oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.trafficLoadInPackets != widget.trafficLoadInPackets ||
-        oldWidget.connectionTimelines != widget.connectionTimelines) {
+        oldWidget.timelines != widget.timelines) {
       _getMaxBounds();
       setState(() {});
     }
-    if(oldWidget.time != widget.time){
+    if (oldWidget.time != widget.time) {
       setState(() {
         time = min(widget.time, maxX);
       });
@@ -77,26 +78,45 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1.23,
-      child: Stack(
-        children: <Widget>[
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Margin.vertical(context.constants.spacing),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 16, left: 6),
-                  child: _lineChart(),
-                ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-            ],
+    return SizedBox(
+      height: 200,
+      child: Column(
+        children: [
+          Expanded(
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Expanded(child: _lineChart()),
+              ],
+            ),
           ),
+          // SizedBox(
+          //   height: 50,
+          //   child: _legend(),
+          // ),
         ],
+      ),
+    );
+  }
+  Widget _legend(){
+    return Align(
+      alignment: Alignment.centerRight,
+      child: SingleChildScrollView(
+        child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ...widget.timelines.map<Widget>((tl) => Row(
+                children: [
+                  Icon(
+                    context.icons.mapMarker,
+                    color: tl.color,
+                  ),
+                  Margin.horizontal(context.constants.smallSpacing),
+                  Text("${tl.test.name}: ${tl.name}")
+                ],
+              )).toList().insertBetweenItems(() => Margin.horizontal(context.constants.spacing))
+            ]),
       ),
     );
   }
@@ -121,24 +141,33 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
   }
 
   ExtraLinesData get extraLines =>
-      ExtraLinesData(verticalLines: [VerticalLine(x: widget.time)]);
+      ExtraLinesData(verticalLines: [VerticalLine(x: widget.time, color: Colors.yellowAccent)]);
   LineTouchData get lineTouchData => LineTouchData(
         handleBuiltInTouches: true,
+        touchCallback: (event, r) {
+          if(event is FlTapUpEvent || event is FlPanUpdateEvent){
+            TouchLineBarSpot? closeSpot = r?.lineBarSpots?.firstOrNull;
+            if(closeSpot == null) return;
+            double posInSec = closeSpot.x;
+            Duration pos = Duration(milliseconds: (posInSec * 1000).floor());
+            context.overviewCubit.seekTo(pos);
+          }
+        },
         touchTooltipData: LineTouchTooltipData(
           getTooltipItems: (spots) => spots
               .map((s) => LineTooltipItem(
                   widget.trafficLoadInPackets
                       ? s.y.toString()
                       : s.y.readableFileSize(),
-                  context.textTheme.labelSmall ?? TextStyle()))
+                  context.textTheme.labelSmall ?? const TextStyle()))
               .toList(),
           getTooltipColor: (touchedSpot) => Colors.blueGrey.withOpacity(0.8),
         ),
       );
 
   List<LineChartBarData> get lineBarsData {
-    return widget.connectionTimelines.keys.map((k) {
-      List<INetworkConnection?> cons = widget.connectionTimelines[k]!;
+    return widget.timelines.map((tl) {
+      List<INetworkConnection?> cons = tl.data;
       List<FlSpot> spots = [];
       for (int i = 0; i < cons.length; i++) {
         if (cons[i] == null) {
@@ -151,7 +180,7 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
           }
         }
       }
-      return LineChartBarData(spots: spots);
+      return LineChartBarData(spots: spots, color: tl.color);
     }).toList();
   }
 
@@ -195,19 +224,21 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
       fontWeight: FontWeight.bold,
       fontSize: 16,
     );
-    if (value.toInt() % 5 == 0) {
+    int interval = maxX <= 60 ? 5 : 10;
+    int intVal = value.floor();
+    if(intVal % interval == 0) {
       return Text(
         value.toInt().toString(),
         style: style,
       );
     }
-    return SizedBox.shrink();
+    return const SizedBox.shrink();
   }
 
   SideTitles get leftTitles => SideTitles(
         getTitlesWidget: leftTitleWidgets,
         showTitles: true,
-        interval: (maxY / 5).floorToDouble(),
+        interval: max((maxY / 5).floorToDouble(), 1),
         reservedSize: 70,
       );
   Widget leftTitleWidgets(double value, TitleMeta meta) {
