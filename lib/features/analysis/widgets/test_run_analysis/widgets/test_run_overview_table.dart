@@ -45,7 +45,7 @@ class TestRunOverviewTable extends StatelessWidget {
               .toList()
               .join("\n") ??
               "",
-          show: c.constellation.hasEndpoints,
+          show: c.constellation.hasBlockedEndpoints,
           child: Text(c.constellation.abbreviation, textAlign: TextAlign.center,),
         ),
       ),

@@ -160,9 +160,10 @@ class TrafficAnalyzer {
       List<INetworkConnection> connections) {
     return connections is List<NetworkConnection>
         ? groupConnectionsByEndpoint(connections)
-        : connections is List<ConnectionGroup>
-            ? groupConnectionGroupsByEndpoint(connections)
-            : [];
+        : connections;
+    // connections is List<ConnectionGroup>
+    //         ? groupConnectionGroupsByEndpoint(connections)
+    //         : connections;
   }
 
   static List<NetworkConnection> groupConnectionsByEndpoint(

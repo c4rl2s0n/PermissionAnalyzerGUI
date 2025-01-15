@@ -77,17 +77,28 @@ class GraphComponents {
     return const Text("Unknown");
   }
 
-  static Widget groupVertexPanelBuilder(BuildContext context, TrafficGroup g) =>
-      _infoPanelContent(
-        context,
-        'Name: ${g.name} (${g.graphTags.join(", ")})',
-        [
-          ["# Connections", g.connections.length.toString()],
-          ["# Connected Endpoints", g.endpoints.length.toString()],
-          if (g.info != null && g.info!.isNotEmpty) ["Info", g.info!],
-          if (g.permissions != null && g.permissions!.isNotEmpty) ["Permissions", ...g.permissions!],
-        ], //'# Connections: ${g.connections.length}${g.info != null ? "\n${g.info}" : ""}',
-      );
+  static Widget groupVertexPanelBuilder(BuildContext context, TrafficGroup g) {
+    List<List<String>> entries = [
+      ["# Connections", g.connections.length.toString()],
+      ["# Connected Endpoints", g.endpoints.length.toString()],
+      if (g.info != null && g.info!.isNotEmpty) ["Info", g.info!],
+      if (g.permissions != null && g.permissions!.isNotEmpty) [
+        "Permissions",
+        ...g.permissions!
+      ],
+    ];
+    if(g.data is TestConstellation){
+      TestConstellation tc = g.data as TestConstellation;
+      if(tc.hasBlockedEndpoints){
+        entries.add(["Blocked Endpoints", ...tc.blockedEndpoints!.map((e) => e.name)]);
+      }
+    }
+    return _infoPanelContent(
+      context,
+      'Name: ${g.name} (${g.graphTags.join(", ")})',
+      entries,
+    );
+  }
 
   static Widget edgePanelBuilder(
       BuildContext context, Edge edge, Viewfinder viewfinder) {

@@ -56,7 +56,7 @@ class TestConstellationsOverview extends StatelessWidget {
                 .toList()
                 .join("\n") ??
             "",
-        show: tc.hasEndpoints,
+        show: tc.hasBlockedEndpoints,
         child: Text(
           tc.blockedIPs.length.toString(),
           textAlign: TextAlign.center,

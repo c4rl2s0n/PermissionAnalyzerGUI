@@ -12,6 +12,7 @@ class TimelineSelectionDialog extends StatelessWidget {
     super.key,
   }){
     timelines = overviewCubit.timelineCubits.where((t) => t.timeline.test == test).toList();
+    timelines.sort((a,b) => a.state.name.compareTo(b.state.name));
   }
 
   final TestRun test;

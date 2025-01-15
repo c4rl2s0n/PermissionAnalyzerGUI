@@ -23,7 +23,7 @@ class TestConstellation {
   @ignore
   List<NetworkEndpoint>? blockedEndpoints;
   @ignore
-  bool get hasEndpoints => blockedEndpoints != null && blockedEndpoints!.isNotEmpty;
+  bool get hasBlockedEndpoints => blockedEndpoints != null && blockedEndpoints!.isNotEmpty;
   List<int> testIds;
   @ignore
   List<TestRun>? _tests;

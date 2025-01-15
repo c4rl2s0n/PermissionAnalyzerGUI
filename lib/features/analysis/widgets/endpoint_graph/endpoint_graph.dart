@@ -98,7 +98,9 @@ class EndpointGraph extends StatelessWidget {
     }
     if (vertex.data is EndpointVertex) {
       EndpointVertex ev = vertex.data as EndpointVertex;
-      return ev.endpoint.displayName;
+      return ev.endpoint.serverNames.length == 1
+          ? ev.endpoint.serverNames.first
+          : ev.endpoint.name;//ev.endpoint.displayName;
     }
     GraphVertex gv = vertex.data as GraphVertex;
     return gv.name;
@@ -111,7 +113,9 @@ class EndpointGraph extends StatelessWidget {
   ) =>
       context.textTheme.labelSmall?.copyWith(
           color: context.textTheme.labelSmall?.color?.withOpacity(
-              vertex.data is TrafficGroupVertex || vertex.isHovered || vertex.neighborEdges.any((e) => e.isHovered)
+              vertex.data is TrafficGroupVertex ||
+                      vertex.isHovered ||
+                      vertex.neighborEdges.any((e) => e.isHovered)
                   ? 1
                   : vertex.neighbors.any((n) => n.isHovered)
                       ? 0.9
@@ -190,8 +194,7 @@ class EndpointGraph extends StatelessWidget {
 
     List<INetworkEndpoint> endpoints = state.endpoints;
     for (var group in state.visibleTrafficGroups) {
-      List<INetworkConnection> groupConnections =
-          TrafficAnalyzer.groupIConnectionsByEndpoint(group.connections);
+      List<INetworkConnection> groupConnections = TrafficAnalyzer.groupIConnectionsByEndpoint(group.connections);
       for (var connection in groupConnections) {
         if (!endpoints.any((e) => e.id == connection.endpoint.id)) {
           continue;
@@ -212,6 +215,4 @@ class EndpointGraph extends StatelessWidget {
     }
     return edges;
   }
-
-
 }
