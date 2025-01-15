@@ -1,6 +1,5 @@
 import 'package:isar/isar.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
-import 'package:permission_analyzer_gui/common/helper.dart';
 
 import 'models.dart';
 

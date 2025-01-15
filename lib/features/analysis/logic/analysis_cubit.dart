@@ -244,7 +244,7 @@ class AnalysisState with _$AnalysisState {
       TrafficAnalyzer.getEndpointsFromGroups(
           visibleGroups.map((g) => g.group).toList());
 
-  List<TestRun> get visibleTests => groups.fold([], (all, g) => [...all, ...g.group.tests]);
+  List<TestRun> get enabledTests => groups.where((g) => g.state.isSelected).fold([], (all, g) => [...all, ...g.group.tests]);
 
   List<NetworkPacket> get networkPackets => enabledGroups.fold(
       <NetworkPacket>[],

@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
-import 'package:permission_analyzer_gui/data/models/connection_timeline.dart';
 
 part 'timeline_cubit.freezed.dart';
 

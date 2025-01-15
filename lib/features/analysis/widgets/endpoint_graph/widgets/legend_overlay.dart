@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_graph_view/flutter_graph_view.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/common/keys.dart';
-import 'package:permission_analyzer_gui/features/analysis/values.dart';
+import 'package:permission_analyzer_gui/features/analysis/colors.dart';
 
 typedef LegendBuilder = Widget Function(LegendDecorator)?;
 LegendBuilder? legendOverlayBuilder() {

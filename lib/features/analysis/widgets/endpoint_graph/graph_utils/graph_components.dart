@@ -44,6 +44,7 @@ class GraphComponents {
         if (e.hasServerName) ["Server Names", ...e.serverNames],
         if (e.hasHostname) ["Hostname", e.hostname!],
         ["# Connected Groups", v.connectedGroups.toString()],
+        ["Tags", ...v.tags],
       ];
       return _infoPanelContent(
         context,
@@ -65,6 +66,7 @@ class GraphComponents {
         ],
         if (e.hasServerName && e is!  SniEndpoint) ["Server Names", ...e.serverNames],
         ["# Connected Groups", v.connectedGroups.toString()],
+        ["Tags", ...v.tags],
       ];
       return _infoPanelContent(
         context,

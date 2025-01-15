@@ -7,7 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/logic/logic.dart';
-import 'package:permission_analyzer_gui/features/analysis/values.dart';
+import 'package:permission_analyzer_gui/features/analysis/colors.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/config_builder.dart';
 
 const double maxClusterRadius = 120;

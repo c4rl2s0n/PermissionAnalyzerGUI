@@ -2,7 +2,6 @@ import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/logic/logic.dart';
 import 'package:permission_analyzer_gui/features/analysis/models/models.dart';
-import 'package:permission_analyzer_gui/data/models/connection_timeline.dart';
 
 class TrafficAnalyzer {
   /// #############
@@ -274,7 +273,7 @@ class TrafficAnalyzer {
   }) {
     List<String> ips = [
       ...packets.map((p) => p.ipSrc),
-      ...packets.map((p) => p.ipSrc)
+      ...packets.map((p) => p.ipDst)
     ].distinct;
     List<NetworkEndpoint>? endpoints = endpointRepository?.getAllByIp(ips);
     Map<String, NetworkConnection> connections = {};

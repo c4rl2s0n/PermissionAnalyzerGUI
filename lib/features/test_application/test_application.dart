@@ -97,22 +97,21 @@ class TestApplication extends StatelessWidget {
       builder: (context, state) {
         bool canCreateScenario = state.adbDevices.contains(application.device);
         return Optional.tooltip(
-          tooltip: "Please connect the device the application was created with.",
+          tooltip:
+              "Please connect the device the application was created with.",
           show: !canCreateScenario,
           child: IconTextButton(
-            text: "New Scenario",
-            icon: Icon(context.icons.add),
-            onTap: canCreateScenario
-                ? () async {
-                    model.TestScenario scenario =
-                        await context.testApplicationCubit.newScenario();
-                    if (context.mounted) {
+              text: "New Scenario",
+              icon: Icon(context.icons.add),
+              onTap: canCreateScenario
+                  ? () {
+                      model.TestScenario scenario =
+                          context.testApplicationCubit.newScenario();
                       context.navigator.navigateTo(TestScenario(scenario));
                     }
-                  }
-                : null),
+                  : null),
         );
-        },
+      },
     );
   }
 
@@ -131,7 +130,8 @@ class TestApplication extends StatelessWidget {
             ),
           ],
           data: state.scenarios,
-          onDataTap: (ts, [_]) => context.navigator.navigateTo(TestScenario(ts)),
+          onDataTap: (ts, [_]) =>
+              context.navigator.navigateTo(TestScenario(ts)),
           provideHorizontalScrollbarSpace: false,
         ),
       ),

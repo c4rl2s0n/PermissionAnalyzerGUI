@@ -9,7 +9,7 @@ import 'package:permission_analyzer_gui/common/keys.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/logic/logic.dart';
 import 'package:permission_analyzer_gui/features/analysis/models/models.dart';
-import 'package:permission_analyzer_gui/features/analysis/values.dart';
+import 'package:permission_analyzer_gui/features/analysis/colors.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/config_builder.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_graph/widgets/widgets.dart';
 
@@ -54,10 +54,10 @@ class EndpointGraph extends StatelessWidget {
                   tEndpoint: [
                     RandomLayout(
                       decorators: [
-                        CoulombDecorator(k: 250, sameTagsFactor: 0.5),
+                        CoulombDecorator(k: 420, sameTagsFactor: 0.5),
                         HookeBorderDecorator(),
                         HookeDecorator(),
-                        CoulombCenterDecorator(k: 50),
+                        CoulombCenterDecorator(k: 60),
                         HookeCenterDecorator(k: 0.005),
                         ForceDecorator(),
                         ForceMotionDecorator(),
@@ -75,7 +75,7 @@ class EndpointGraph extends StatelessWidget {
           ..useLegend = false
           ..enableHit = false
           ..panelDelay = const Duration(milliseconds: 200)
-          ..graphStyle = (GraphStyle()
+          ..graphStyle = (CustomGraphStyle()
             ..vertexTextStyleGetter = ((vertex, vertexShape) =>
                 _vertexTextStyleGetter(context, vertex, vertexShape))
             // tagColor is prior to tagColorByIndex. use vertex.tags to get color

@@ -7,6 +7,7 @@ class InfoContainer extends StatelessWidget {
     required this.child,
     this.width,
     this.height,
+    this.headerTextStyle,
     this.headerHeight = 30,
     this.scrollable,
     this.action,
@@ -17,6 +18,7 @@ class InfoContainer extends StatelessWidget {
   final Widget child;
   final double? width;
   final double? height;
+  final TextStyle? headerTextStyle;
   final double? headerHeight;
   final bool? scrollable;
   final Widget? action;
@@ -57,7 +59,7 @@ class InfoContainer extends StatelessWidget {
           if (title != null && title!.isNotEmpty) ...[
             Text(
               title!,
-              style: context.textTheme.labelLarge,
+              style: headerTextStyle ?? context.textTheme.labelLarge,
             ),
           ],
           if (action != null) ...[

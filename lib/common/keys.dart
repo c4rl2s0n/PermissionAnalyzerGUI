@@ -9,6 +9,7 @@ const String tEndpoint = "Endpoint";
 const String tIpOnly = "Only IP";
 const String tHostname = "Has Hostname";
 const String tNoHostname = "No Hostname";
+const String tSniEndpoint = "SNI Endpoint";
 const String tServerName = "Has Server Name";
 const String tNoServerName = "No Server Name";
 const String tGroup = "Group";
@@ -24,17 +25,20 @@ const String tHighlight = "Highlight";
 const String tNoHighlight = "No Highlight";
 
 const List<String> graphTags = [
+  // Group
+  tGroup,
+  tApplication,
+  tScenario,
+  tConstellation,
+  tTest,
+  // Endpoint
   tEndpoint,
   tIpOnly,
   tHostname,
   tNoHostname,
   tServerName,
   tNoServerName,
-  tGroup,
-  tApplication,
-  tScenario,
-  tConstellation,
-  tTest,
+  tSniEndpoint,
   tCommon,
   tNotCommon,
   tUnique,

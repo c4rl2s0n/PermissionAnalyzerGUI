@@ -11,6 +11,7 @@ class SimpleTextField extends StatefulWidget {
     this.hintText = "",
     this.validate,
     this.onChanged,
+    this.onChangedDelay,
     this.keyboardType = TextInputType.text,
     this.padding,
     this.isPassword = false,
@@ -24,6 +25,7 @@ class SimpleTextField extends StatefulWidget {
   final String initialValue;
   final String? Function(String?)? validate;
   final Function(String)? onChanged;
+  final Duration? onChangedDelay;
   final TextInputType keyboardType;
   final EdgeInsets? padding;
   final bool isPassword;
@@ -110,7 +112,11 @@ class _SimpleTextFieldState extends State<SimpleTextField> {
         onChanged: (val) {
           _validate();
           if (_errorText == null || widget.updateWhenInvalid) {
-            widget.onChanged?.call(val);
+            Future.delayed(widget.onChangedDelay ?? Duration.zero, () {
+              if (widget.onChangedDelay == null || controller.text == val && context.mounted) {
+                widget.onChanged?.call(val);
+              }
+            });
           }
         },
       ),

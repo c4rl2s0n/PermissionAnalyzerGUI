@@ -8,7 +8,6 @@ class TestScenario {
   TestScenario({
     this.userInputRecord = "",
     this.name = "",
-    this.fileDirectory = "",
     this.applicationName = "",
     this.applicationId = "",
     this.device = "",
@@ -25,7 +24,6 @@ class TestScenario {
   Id id = Isar.autoIncrement;
 
   String name;
-  String fileDirectory;
   String userInputRecord;
   String device;
   String applicationName;

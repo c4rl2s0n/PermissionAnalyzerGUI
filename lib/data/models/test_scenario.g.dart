@@ -48,46 +48,41 @@ const TestScenarioSchema = CollectionSchema(
       name: r'durationInSeconds',
       type: IsarType.long,
     ),
-    r'fileDirectory': PropertySchema(
-      id: 6,
-      name: r'fileDirectory',
-      type: IsarType.string,
-    ),
     r'name': PropertySchema(
-      id: 7,
+      id: 6,
       name: r'name',
       type: IsarType.string,
     ),
     r'networkInterface': PropertySchema(
-      id: 8,
+      id: 7,
       name: r'networkInterface',
       type: IsarType.object,
       target: r'TsharkNetworkInterface',
     ),
     r'numTestRuns': PropertySchema(
-      id: 9,
+      id: 8,
       name: r'numTestRuns',
       type: IsarType.long,
     ),
     r'permissions': PropertySchema(
-      id: 10,
+      id: 9,
       name: r'permissions',
       type: IsarType.objectList,
       target: r'PermissionSetting',
     ),
     r'recordScreen': PropertySchema(
-      id: 11,
+      id: 10,
       name: r'recordScreen',
       type: IsarType.bool,
     ),
     r'testConstellations': PropertySchema(
-      id: 12,
+      id: 11,
       name: r'testConstellations',
       type: IsarType.objectList,
       target: r'TestConstellation',
     ),
     r'userInputRecord': PropertySchema(
-      id: 13,
+      id: 12,
       name: r'userInputRecord',
       type: IsarType.string,
     )
@@ -137,7 +132,6 @@ int _testScenarioEstimateSize(
   bytesCount += 3 +
       AndroidInputDeviceSchema.estimateSize(
           object.deviceInput, allOffsets[AndroidInputDevice]!, allOffsets);
-  bytesCount += 3 + object.fileDirectory.length * 3;
   bytesCount += 3 + object.name.length * 3;
   bytesCount += 3 +
       TsharkNetworkInterfaceSchema.estimateSize(object.networkInterface,
@@ -181,29 +175,28 @@ void _testScenarioSerialize(
     object.deviceInput,
   );
   writer.writeLong(offsets[5], object.durationInSeconds);
-  writer.writeString(offsets[6], object.fileDirectory);
-  writer.writeString(offsets[7], object.name);
+  writer.writeString(offsets[6], object.name);
   writer.writeObject<TsharkNetworkInterface>(
-    offsets[8],
+    offsets[7],
     allOffsets,
     TsharkNetworkInterfaceSchema.serialize,
     object.networkInterface,
   );
-  writer.writeLong(offsets[9], object.numTestRuns);
+  writer.writeLong(offsets[8], object.numTestRuns);
   writer.writeObjectList<PermissionSetting>(
-    offsets[10],
+    offsets[9],
     allOffsets,
     PermissionSettingSchema.serialize,
     object.permissions,
   );
-  writer.writeBool(offsets[11], object.recordScreen);
+  writer.writeBool(offsets[10], object.recordScreen);
   writer.writeObjectList<TestConstellation>(
-    offsets[12],
+    offsets[11],
     allOffsets,
     TestConstellationSchema.serialize,
     object.testConstellations,
   );
-  writer.writeString(offsets[13], object.userInputRecord);
+  writer.writeString(offsets[12], object.userInputRecord);
 }
 
 TestScenario _testScenarioDeserialize(
@@ -224,31 +217,30 @@ TestScenario _testScenarioDeserialize(
         ) ??
         const AndroidInputDevice(),
     durationInSeconds: reader.readLongOrNull(offsets[5]) ?? 60,
-    fileDirectory: reader.readStringOrNull(offsets[6]) ?? "",
-    name: reader.readStringOrNull(offsets[7]) ?? "",
+    name: reader.readStringOrNull(offsets[6]) ?? "",
     networkInterface: reader.readObjectOrNull<TsharkNetworkInterface>(
-          offsets[8],
+          offsets[7],
           TsharkNetworkInterfaceSchema.deserialize,
           allOffsets,
         ) ??
         const TsharkNetworkInterface(),
-    numTestRuns: reader.readLongOrNull(offsets[9]) ?? 1,
+    numTestRuns: reader.readLongOrNull(offsets[8]) ?? 1,
     permissions: reader.readObjectList<PermissionSetting>(
-          offsets[10],
+          offsets[9],
           PermissionSettingSchema.deserialize,
           allOffsets,
           PermissionSetting(),
         ) ??
         const [],
-    recordScreen: reader.readBoolOrNull(offsets[11]) ?? true,
+    recordScreen: reader.readBoolOrNull(offsets[10]) ?? true,
     testConstellations: reader.readObjectList<TestConstellation>(
-          offsets[12],
+          offsets[11],
           TestConstellationSchema.deserialize,
           allOffsets,
           TestConstellation(),
         ) ??
         const [],
-    userInputRecord: reader.readStringOrNull(offsets[13]) ?? "",
+    userInputRecord: reader.readStringOrNull(offsets[12]) ?? "",
   );
   object.id = id;
   return object;
@@ -281,17 +273,15 @@ P _testScenarioDeserializeProp<P>(
     case 6:
       return (reader.readStringOrNull(offset) ?? "") as P;
     case 7:
-      return (reader.readStringOrNull(offset) ?? "") as P;
-    case 8:
       return (reader.readObjectOrNull<TsharkNetworkInterface>(
             offset,
             TsharkNetworkInterfaceSchema.deserialize,
             allOffsets,
           ) ??
           const TsharkNetworkInterface()) as P;
-    case 9:
+    case 8:
       return (reader.readLongOrNull(offset) ?? 1) as P;
-    case 10:
+    case 9:
       return (reader.readObjectList<PermissionSetting>(
             offset,
             PermissionSettingSchema.deserialize,
@@ -299,9 +289,9 @@ P _testScenarioDeserializeProp<P>(
             PermissionSetting(),
           ) ??
           const []) as P;
-    case 11:
+    case 10:
       return (reader.readBoolOrNull(offset) ?? true) as P;
-    case 12:
+    case 11:
       return (reader.readObjectList<TestConstellation>(
             offset,
             TestConstellationSchema.deserialize,
@@ -309,7 +299,7 @@ P _testScenarioDeserializeProp<P>(
             TestConstellation(),
           ) ??
           const []) as P;
-    case 13:
+    case 12:
       return (reader.readStringOrNull(offset) ?? "") as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -924,142 +914,6 @@ extension TestScenarioQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      fileDirectoryEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'fileDirectory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      fileDirectoryGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'fileDirectory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      fileDirectoryLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'fileDirectory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      fileDirectoryBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'fileDirectory',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      fileDirectoryStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'fileDirectory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      fileDirectoryEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'fileDirectory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      fileDirectoryContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'fileDirectory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      fileDirectoryMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'fileDirectory',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      fileDirectoryIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'fileDirectory',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterFilterCondition>
-      fileDirectoryIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'fileDirectory',
-        value: '',
       ));
     });
   }
@@ -1735,19 +1589,6 @@ extension TestScenarioQuerySortBy
     });
   }
 
-  QueryBuilder<TestScenario, TestScenario, QAfterSortBy> sortByFileDirectory() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fileDirectory', Sort.asc);
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterSortBy>
-      sortByFileDirectoryDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fileDirectory', Sort.desc);
-    });
-  }
-
   QueryBuilder<TestScenario, TestScenario, QAfterSortBy> sortByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -1870,19 +1711,6 @@ extension TestScenarioQuerySortThenBy
     });
   }
 
-  QueryBuilder<TestScenario, TestScenario, QAfterSortBy> thenByFileDirectory() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fileDirectory', Sort.asc);
-    });
-  }
-
-  QueryBuilder<TestScenario, TestScenario, QAfterSortBy>
-      thenByFileDirectoryDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fileDirectory', Sort.desc);
-    });
-  }
-
   QueryBuilder<TestScenario, TestScenario, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1987,14 +1815,6 @@ extension TestScenarioQueryWhereDistinct
     });
   }
 
-  QueryBuilder<TestScenario, TestScenario, QDistinct> distinctByFileDirectory(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'fileDirectory',
-          caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<TestScenario, TestScenario, QDistinct> distinctByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2067,12 +1887,6 @@ extension TestScenarioQueryProperty
       durationInSecondsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'durationInSeconds');
-    });
-  }
-
-  QueryBuilder<TestScenario, String, QQueryOperations> fileDirectoryProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'fileDirectory');
     });
   }
 

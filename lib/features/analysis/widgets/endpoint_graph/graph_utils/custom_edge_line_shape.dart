@@ -2,10 +2,31 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_graph_view/flutter_graph_view.dart';
+import 'package:permission_analyzer_gui/common/keys.dart';
+import 'package:permission_analyzer_gui/features/analysis/colors.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_graph/graph_utils/utils.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/endpoint_graph/models/models.dart';
 
 class CustomEdgeLineShape extends EdgeLineShape {
+  Color _colorByVertex(Vertex v){
+    List<String>? tags = v.tags;
+    if(tags == null || tags.isEmpty) return v.colors.last;
+    if(tags.contains(tGroup)){
+      return v.colors.first;
+    }else if(tags.contains(tEndpoint)){
+      if(tags.contains(tSniEndpoint)){
+        return graphTagColors[tSniEndpoint]!;
+      }
+      if(tags.contains(tUnique)){
+        return graphTagColors[tUnique]!;
+      }
+      if(tags.contains(tCommon)){
+        return graphTagColors[tCommon]!;
+      }
+    }
+    return v.colors.last;
+  }
+
   @override
   void setPaint(Edge edge) {
     GraphEdge data = edge.data as GraphEdge;
@@ -18,10 +39,10 @@ class CustomEdgeLineShape extends EdgeLineShape {
     var hoverOpacity = edge.cpn?.gameRef.options.graphStyle.hoverOpacity ?? .3;
     var idleOpacity = .6;
     List<ui.Color> colors = [
-      edge.start.colors.last,
-      if (data.common) Colors.cyan,
-      if (data.hasSNI) Colors.orange,
-      (edge.end?.colors.last ?? Colors.white)
+      _colorByVertex(edge.start),
+      if (data.common) Colors.green,
+      if (data.hasSNI) graphTagColors[tSniEndpoint]!,
+      if(edge.end != null) _colorByVertex(edge.end!),
     ];
     List<double> colorStops = List.generate(colors.length, (i) => i / (colors.length-1));
     var graph = edge.cpn!.gameRef.graph;

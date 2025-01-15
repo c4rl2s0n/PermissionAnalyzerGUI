@@ -92,14 +92,20 @@ class ScenarioDetails extends StatelessWidget {
 
   Widget _scenarioName() {
     return BlocBuilder<TestScenarioCubit, TestScenarioState>(
-      buildWhen: (oldState, state) => oldState.name != state.name,
+      buildWhen: (oldState, state) => oldState.name != state.name || oldState.hasTests != state.hasTests,
       builder: (context, state) {
         return SizedBox(
           width: leftColumnWidth,
-          child: SimpleTextField(
-            initialValue: state.name,
-            onChanged: (s) => context.testScenarioCubit.setName(s),
-            labelText: "Name",
+          child: Optional.tooltip(
+            tooltip: "Tests have already been run for this Scenario.",
+            show: state.hasTests,
+            child: SimpleTextField(
+              enabled: !state.hasTests,
+              initialValue: state.name,
+              onChanged: (s) => context.testScenarioCubit.setName(s),
+              onChangedDelay: const Duration(milliseconds: 500),
+              labelText: "Name",
+            ),
           ),
         );
       },
@@ -240,6 +246,7 @@ class ScenarioDetails extends StatelessWidget {
               validate: validateDuration,
               onChanged: (s) =>
                   context.testScenarioCubit.setDuration(int.parse(s)),
+              onChangedDelay: const Duration(milliseconds: 500),
               labelText: "Test Duration",
             ),
           ),
@@ -273,6 +280,7 @@ class ScenarioDetails extends StatelessWidget {
             validate: validateNumTestRuns,
             onChanged: (s) =>
                 context.testScenarioCubit.setNumTestRuns(int.parse(s)),
+            onChangedDelay: const Duration(milliseconds: 500),
             labelText: "# Test Runs",
           ),
         );

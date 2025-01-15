@@ -18,6 +18,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$ScreenRecorderOverviewState {
   List<Color> get graphColors => throw _privateConstructorUsedError;
   double get videoSize => throw _privateConstructorUsedError;
+  double get playbackSpeed => throw _privateConstructorUsedError;
   Duration get position => throw _privateConstructorUsedError;
   bool get isPlaying => throw _privateConstructorUsedError;
   List<TimelineState> get timelines => throw _privateConstructorUsedError;
@@ -40,6 +41,7 @@ abstract class $ScreenRecorderOverviewStateCopyWith<$Res> {
   $Res call(
       {List<Color> graphColors,
       double videoSize,
+      double playbackSpeed,
       Duration position,
       bool isPlaying,
       List<TimelineState> timelines});
@@ -63,6 +65,7 @@ class _$ScreenRecorderOverviewStateCopyWithImpl<$Res,
   $Res call({
     Object? graphColors = null,
     Object? videoSize = null,
+    Object? playbackSpeed = null,
     Object? position = null,
     Object? isPlaying = null,
     Object? timelines = null,
@@ -75,6 +78,10 @@ class _$ScreenRecorderOverviewStateCopyWithImpl<$Res,
       videoSize: null == videoSize
           ? _value.videoSize
           : videoSize // ignore: cast_nullable_to_non_nullable
+              as double,
+      playbackSpeed: null == playbackSpeed
+          ? _value.playbackSpeed
+          : playbackSpeed // ignore: cast_nullable_to_non_nullable
               as double,
       position: null == position
           ? _value.position
@@ -104,6 +111,7 @@ abstract class _$$ScreenRecorderOverviewStateImplCopyWith<$Res>
   $Res call(
       {List<Color> graphColors,
       double videoSize,
+      double playbackSpeed,
       Duration position,
       bool isPlaying,
       List<TimelineState> timelines});
@@ -126,6 +134,7 @@ class __$$ScreenRecorderOverviewStateImplCopyWithImpl<$Res>
   $Res call({
     Object? graphColors = null,
     Object? videoSize = null,
+    Object? playbackSpeed = null,
     Object? position = null,
     Object? isPlaying = null,
     Object? timelines = null,
@@ -138,6 +147,10 @@ class __$$ScreenRecorderOverviewStateImplCopyWithImpl<$Res>
       videoSize: null == videoSize
           ? _value.videoSize
           : videoSize // ignore: cast_nullable_to_non_nullable
+              as double,
+      playbackSpeed: null == playbackSpeed
+          ? _value.playbackSpeed
+          : playbackSpeed // ignore: cast_nullable_to_non_nullable
               as double,
       position: null == position
           ? _value.position
@@ -161,6 +174,7 @@ class _$ScreenRecorderOverviewStateImpl extends _ScreenRecorderOverviewState {
   const _$ScreenRecorderOverviewStateImpl(
       {required final List<Color> graphColors,
       required this.videoSize,
+      required this.playbackSpeed,
       required this.position,
       required this.isPlaying,
       required final List<TimelineState> timelines})
@@ -179,6 +193,8 @@ class _$ScreenRecorderOverviewStateImpl extends _ScreenRecorderOverviewState {
   @override
   final double videoSize;
   @override
+  final double playbackSpeed;
+  @override
   final Duration position;
   @override
   final bool isPlaying;
@@ -192,7 +208,7 @@ class _$ScreenRecorderOverviewStateImpl extends _ScreenRecorderOverviewState {
 
   @override
   String toString() {
-    return 'ScreenRecorderOverviewState(graphColors: $graphColors, videoSize: $videoSize, position: $position, isPlaying: $isPlaying, timelines: $timelines)';
+    return 'ScreenRecorderOverviewState(graphColors: $graphColors, videoSize: $videoSize, playbackSpeed: $playbackSpeed, position: $position, isPlaying: $isPlaying, timelines: $timelines)';
   }
 
   @override
@@ -204,6 +220,8 @@ class _$ScreenRecorderOverviewStateImpl extends _ScreenRecorderOverviewState {
                 .equals(other._graphColors, _graphColors) &&
             (identical(other.videoSize, videoSize) ||
                 other.videoSize == videoSize) &&
+            (identical(other.playbackSpeed, playbackSpeed) ||
+                other.playbackSpeed == playbackSpeed) &&
             (identical(other.position, position) ||
                 other.position == position) &&
             (identical(other.isPlaying, isPlaying) ||
@@ -217,6 +235,7 @@ class _$ScreenRecorderOverviewStateImpl extends _ScreenRecorderOverviewState {
       runtimeType,
       const DeepCollectionEquality().hash(_graphColors),
       videoSize,
+      playbackSpeed,
       position,
       isPlaying,
       const DeepCollectionEquality().hash(_timelines));
@@ -236,6 +255,7 @@ abstract class _ScreenRecorderOverviewState
   const factory _ScreenRecorderOverviewState(
           {required final List<Color> graphColors,
           required final double videoSize,
+          required final double playbackSpeed,
           required final Duration position,
           required final bool isPlaying,
           required final List<TimelineState> timelines}) =
@@ -246,6 +266,8 @@ abstract class _ScreenRecorderOverviewState
   List<Color> get graphColors;
   @override
   double get videoSize;
+  @override
+  double get playbackSpeed;
   @override
   Duration get position;
   @override

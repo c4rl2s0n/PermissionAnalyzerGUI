@@ -4,12 +4,15 @@ import 'package:permission_analyzer_gui/data/data.dart';
 
 class ConnectionTimeline {
   ConnectionTimeline({
-    required this.name,
+    String fallbackName = "Unknown",
     this.color,
     required this.test,
     required this.timeline,
-  });
-  String name;
+  }){
+    NetworkConnection? con = timeline.nonNulls.whereType<NetworkConnection>().firstOrNull;
+    name = con?.serverName ?? con?.endpoint.name ?? fallbackName;
+  }
+  late String name;
   Color? color;
   TestRun test;
   List<INetworkConnection?> timeline;

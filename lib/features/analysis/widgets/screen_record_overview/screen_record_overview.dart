@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,7 +6,6 @@ import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/logic/logic.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/screen_record_overview/logic/logic.dart';
-import 'package:permission_analyzer_gui/features/analysis/widgets/screen_record_overview/widgets/connection_live_chart.dart';
 
 import 'widgets/widgets.dart';
 
@@ -19,7 +17,7 @@ class ScreenRecordOverview extends StatelessWidget {
     return BlocBuilder<AnalysisCubit, AnalysisState>(
       builder: (context, analysisState) => BlocProvider(
         create: (context) =>
-            ScreenRecorderOverviewCubit(analysisState.visibleTests),
+            ScreenRecorderOverviewCubit(analysisState.enabledTests),
         child: BlocBuilder<ScreenRecorderOverviewCubit,
                 ScreenRecorderOverviewState>(
             builder: (context, overviewState) =>
@@ -39,7 +37,7 @@ class ScreenRecordOverview extends StatelessWidget {
         Expanded(child: _videoGrid(context, analysisState)),
         Margin.vertical(context.constants.largeSpacing),
         _liveChart(),
-        _controls(context),
+        const PlaybackControls(),
       ],
     );
   }
@@ -60,6 +58,7 @@ class ScreenRecordOverview extends StatelessWidget {
             double spacing = context.constants.spacing;
             int count =
                 (constraints.maxWidth / (state.videoSize + spacing)).floor();
+            ScreenRecorderOverviewCubit overviewCubit = context.overviewCubit;
             return GridView.count(
               crossAxisCount: count,
               mainAxisSpacing: spacing,
@@ -69,11 +68,11 @@ class ScreenRecordOverview extends StatelessWidget {
                   .map((t) => TestRunLiveView(
                         t,
                         size: Size.square(state.videoSize),
-                        onDurationUpdate: (p) =>
-                            context.overviewCubit.updatePlaybackPosition(p),
-                restartStream: context.overviewCubit.restartStream,
-                playPauseStream: context.overviewCubit.playPauseStream,
-                seekToStream: context.overviewCubit.seekToStream,
+                        onDurationUpdate: (p) => overviewCubit.updatePlaybackPosition(p),
+                        resetStream: overviewCubit.resetStream,
+                        playPauseStream: overviewCubit.playPauseStream,
+                        playbackSpeedStream: overviewCubit.playbackSpeedStream,
+                        seekToStream: overviewCubit.seekToStream,
                       ))
                   .toList(),
             );
@@ -93,65 +92,9 @@ class ScreenRecordOverview extends StatelessWidget {
         return ConnectionLiveChart(
           state.selectedTimelines,
           time: state.positionInSeconds,
+          height: 300,
         );
       },
     );
-  }
-
-  Widget _controls(BuildContext context) {
-    return BlocBuilder<ScreenRecorderOverviewCubit,
-        ScreenRecorderOverviewState>(
-      buildWhen: (oldState, state) => oldState.isPlaying != state.isPlaying,
-      builder: (context, state) {
-        return Row(
-          children: [
-            const Expanded(child: SizedBox()),
-            IconButton(
-              onPressed: () => context.overviewCubit.togglePlay(),
-              icon: Icon(
-                state.isPlaying ? context.icons.pause : context.icons.play,
-              ),
-            ),
-            IconButton(
-              onPressed: () => context.overviewCubit.restartReplay(),
-              icon: Icon(context.icons.restart),
-            ),
-            const Expanded(child: SizedBox()),
-            _infoLegend(context),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _infoLegend(BuildContext context) {
-    return BlocBuilder<ScreenRecorderOverviewCubit,
-            ScreenRecorderOverviewState>(
-        buildWhen: (oldState, state) => oldState.timelines != state.timelines,
-        builder: (context, state) {
-          return Tooltip(
-            richMessage: WidgetSpan(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                ...state.timelines.where((t) => t.selected).map<Widget>(
-                  (tl) => Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Icon(
-                        context.icons.mapMarker,
-                        color: tl.color,
-                      ),
-                      Margin.horizontal(context.constants.smallSpacing),
-                      Text("${tl.test.name}: ${tl.name}")
-                    ],
-                  ),
-                ),
-              ]),
-            ),
-            child: Icon(context.icons.info),
-          );
-        });
   }
 }

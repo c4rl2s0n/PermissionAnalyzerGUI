@@ -28,29 +28,33 @@ class FirewallSelector extends StatelessWidget {
 
   Widget _buildContainer(
       BuildContext context, FirewallSetting firewallSetting) {
-    return TapContainer(
-      backgroundColor: Colors.transparent,
-      onTap: (_) =>
-          context.testScenarioCubit.toggleFirewallState(firewallSetting.ip),
-      onSecondaryTap: (o) => _buildContextMenu(context, o, firewallSetting),
-      padding: EdgeInsets.symmetric(horizontal: context.constants.smallSpacing),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2.0),
-        child: Row(
-          children: [
-            Expanded(
-                child: Text(
-                    firewallSetting.endpoint?.hostname ?? firewallSetting.ip)),
-            firewallSetting.blocked
-                ? Icon(
-                    context.icons.cancel,
-                    color: context.colors.negative,
-                  )
-                : Icon(
-                    context.icons.check,
-                    color: context.colors.positive,
-                  ),
-          ],
+    return Optional.tooltip(
+      tooltip: firewallSetting.endpoint!.serverNames.join("\n"),
+      show: firewallSetting.endpoint?.hasServerName ?? false,
+      child: TapContainer(
+        backgroundColor: Colors.transparent,
+        onTap: (_) =>
+            context.testScenarioCubit.toggleFirewallState(firewallSetting.ip),
+        onSecondaryTap: (o) => _buildContextMenu(context, o, firewallSetting),
+        padding: EdgeInsets.symmetric(horizontal: context.constants.smallSpacing),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2.0),
+          child: Row(
+            children: [
+              Expanded(
+                  child: Text(
+                      firewallSetting.endpoint?.hostname ?? firewallSetting.ip)),
+              firewallSetting.blocked
+                  ? Icon(
+                      context.icons.cancel,
+                      color: context.colors.negative,
+                    )
+                  : Icon(
+                      context.icons.check,
+                      color: context.colors.positive,
+                    ),
+            ],
+          ),
         ),
       ),
     );

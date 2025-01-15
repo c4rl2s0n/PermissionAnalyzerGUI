@@ -15,7 +15,7 @@ abstract class INetworkConnection {
   String get serverNamesString => serverNames.join("\n");
   String get wiresharkFilter => "(${ips.map((ip) => "ip.addr == $ip").join(" or ")}) and (${protocols.map((p) => p.split(":").lastOrNull).nonNulls.join(" or ")})";
   String get protocolsString => _protocolsString;
-  String get flow => "(${endpoint.ip}; ${endpoint.name}; ${ports.join(",")}; ${protocolsString.replaceAll("\n", ",")})";
+  String get flow => "(${endpoint.ip}; ${serverNamesString.replaceAll("\n", "")}; ${ports.join(",")}; ${protocolsString.replaceAll("\n", ",")})";
   List<NetworkConnection> get connections;
 
   INetworkConnection get copy;

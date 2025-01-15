@@ -7,18 +7,21 @@ import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/screen_record_overview/logic/context_extension.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/screen_record_overview/logic/timeline_cubit.dart';
 
-
 class ConnectionLiveChart extends StatefulWidget {
   const ConnectionLiveChart(
     this.timelines, {
     this.time = 0,
     this.trafficLoadInPackets = false,
+    this.width,
+    this.height,
     super.key,
-  });
+  }) : assert(width != null || height != null);
 
   final bool trafficLoadInPackets;
   final List<TimelineState> timelines;
   final double time;
+  final double? height;
+  final double? width;
 
   @override
   State<ConnectionLiveChart> createState() => _ConnectionLiveChartState();
@@ -31,8 +34,11 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
   double maxY = 0;
 
   double time = 0;
+  bool visible = false;
 
   void _getMaxBounds() {
+    maxX = 0;
+    maxY = 0;
     for (var tl in widget.timelines) {
       // count frames (x-axis
       int frameCount = tl.data.length;
@@ -55,6 +61,11 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
     }
   }
 
+  void _updateVisibility() {
+    visible = widget.timelines.isNotEmpty;
+    setState(() {});
+  }
+
   @override
   void didUpdateWidget(ConnectionLiveChart oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -62,6 +73,9 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
         oldWidget.timelines != widget.timelines) {
       _getMaxBounds();
       setState(() {});
+    }
+    if(oldWidget.timelines != widget.timelines){
+      _updateVisibility();
     }
     if (oldWidget.time != widget.time) {
       setState(() {
@@ -73,50 +87,34 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
   @override
   void initState() {
     _getMaxBounds();
+    _updateVisibility();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 200,
-      child: Column(
-        children: [
-          Expanded(
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Expanded(child: _lineChart()),
-              ],
-            ),
-          ),
-          // SizedBox(
-          //   height: 50,
-          //   child: _legend(),
-          // ),
-        ],
+    return Optional(
+      buildOptional: (child) => AnimatedContainer(
+        height: widget.height == null ? null : visible ? widget.height : 0,
+        width: widget.width == null ? null : visible ? widget.width : 0,
+        duration: const Duration(milliseconds: 300),
+        child: Visibility(visible: visible, child: child),
       ),
-    );
-  }
-  Widget _legend(){
-    return Align(
-      alignment: Alignment.centerRight,
-      child: SingleChildScrollView(
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ...widget.timelines.map<Widget>((tl) => Row(
+      useOptional: widget.height != null || widget.width != null,
+      child: InfoContainer(
+        title: "Traffic Graph",
+        child: Column(
+          children: [
+            Expanded(
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
                 children: [
-                  Icon(
-                    context.icons.mapMarker,
-                    color: tl.color,
-                  ),
-                  Margin.horizontal(context.constants.smallSpacing),
-                  Text("${tl.test.name}: ${tl.name}")
+                  Expanded(child: _lineChart()),
                 ],
-              )).toList().insertBetweenItems(() => Margin.horizontal(context.constants.spacing))
-            ]),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -140,14 +138,15 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
     );
   }
 
-  ExtraLinesData get extraLines =>
-      ExtraLinesData(verticalLines: [VerticalLine(x: widget.time, color: Colors.yellowAccent)]);
+  ExtraLinesData get extraLines => ExtraLinesData(verticalLines: [
+        VerticalLine(x: widget.time, color: Colors.yellowAccent)
+      ]);
   LineTouchData get lineTouchData => LineTouchData(
         handleBuiltInTouches: true,
         touchCallback: (event, r) {
-          if(event is FlTapUpEvent || event is FlPanUpdateEvent){
+          if (event is FlTapUpEvent || event is FlPanUpdateEvent) {
             TouchLineBarSpot? closeSpot = r?.lineBarSpots?.firstOrNull;
-            if(closeSpot == null) return;
+            if (closeSpot == null) return;
             double posInSec = closeSpot.x;
             Duration pos = Duration(milliseconds: (posInSec * 1000).floor());
             context.overviewCubit.seekTo(pos);
@@ -226,7 +225,7 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
     );
     int interval = maxX <= 60 ? 5 : 10;
     int intVal = value.floor();
-    if(intVal % interval == 0) {
+    if (intVal % interval == 0) {
       return Text(
         value.toInt().toString(),
         style: style,

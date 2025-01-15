@@ -1,4 +1,5 @@
 export 'custom_edge_line_shape.dart';
+export 'custom_graph_style.dart';
 export 'endpoint_analysis_converter.dart';
 export 'graph_components.dart';
 export 'random_layout.dart';

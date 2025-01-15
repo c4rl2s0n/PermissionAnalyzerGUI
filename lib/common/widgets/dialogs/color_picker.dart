@@ -79,7 +79,7 @@ class _ColorPickerState extends State<ColorPicker> {
   @override
   void initState() {
     availableColors =  widget.availableColors ?? ColorPicker.colors;
-    selectedColor = widget.currentColor ?? availableColors.firstOrNull;
+    selectedColor = widget.currentColor;
     super.initState();
   }
 

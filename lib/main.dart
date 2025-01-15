@@ -1,8 +1,8 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:fvp/mdk.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -22,7 +22,9 @@ void main() async {
   );
   await Directory(documentsDirectory).create(recursive: true);
   String databaseFilename = "permission_analyzer_db.isar";
-  print(documentsDirectory);
+  if (kDebugMode) {
+    print(documentsDirectory);
+  }
 
   // initialize logging
   LoggingService.setupLogger(documentsDirectory, loglevel: Level.WARNING);

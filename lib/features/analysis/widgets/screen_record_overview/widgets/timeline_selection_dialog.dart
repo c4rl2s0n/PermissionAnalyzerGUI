@@ -3,8 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/screen_record_overview/logic/logic.dart';
-import 'package:permission_analyzer_gui/features/analysis/widgets/screen_record_overview/logic/timeline_cubit.dart';
-import 'package:permission_analyzer_gui/data/models/connection_timeline.dart';
+
 
 class TimelineSelectionDialog extends StatelessWidget {
   TimelineSelectionDialog(
@@ -39,7 +38,7 @@ class TimelineSelectionDialog extends StatelessWidget {
     return BlocProvider.value(
       value: overviewCubit,
       child: CustomDialog(
-        title: "Overview Settings",
+        title: "Timeline Selection",
         expand: false,
         content: _options(context),
         icon: Icon(context.icons.settings),
@@ -51,8 +50,15 @@ class TimelineSelectionDialog extends StatelessWidget {
   Widget _options(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
+          Row(children: [
+            Text("Test:", style: context.textTheme.labelMedium,),
+            Margin.horizontal(context.constants.spacing),
+            Text(test.name),
+          ],),
+          Margin.vertical(context.constants.spacing),
           ...timelines.map((t) => BlocProvider.value(
                 value: t,
                 child: BlocBuilder<TimelineCubit, TimelineState>(
@@ -83,7 +89,7 @@ class TimelineSelectionDialog extends StatelessWidget {
           if (color == null) return;
           timeline.setColor(color);
         },
-        availableColors: overviewCubit.state.freeColors,
+        availableColors: overviewCubit.state.graphColors,
         selectedColor: state.color,
       ),
     );

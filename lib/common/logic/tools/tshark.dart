@@ -70,7 +70,6 @@ class Tshark {
     for (String field in fields) {
       arguments.addAll(["-e", field]);
     }
-    print(arguments.join(" "));
     ProcessResult result = await run(arguments);
     try {
       return jsonDecode(result.outText);

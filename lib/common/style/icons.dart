@@ -48,6 +48,8 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
     this.play = Icons.play_circle_outline,
     this.pause = Icons.pause_circle_outline,
     this.restart = Icons.restart_alt,
+    this.screen = Icons.ondemand_video,
+    this.speed = Icons.speed,
   });
 
   final IconData infoPositive;
@@ -96,6 +98,8 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
   final IconData play;
   final IconData pause;
   final IconData restart;
+  final IconData screen;
+  final IconData speed;
 
   @override
   ThemeExtension<CustomIcons> copyWith() => this;

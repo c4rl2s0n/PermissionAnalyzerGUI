@@ -2,7 +2,7 @@ import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
-import 'package:permission_analyzer_gui/features/analysis/values.dart';
+import 'package:permission_analyzer_gui/features/analysis/colors.dart';
 import 'package:permission_analyzer_gui/features/analysis/logic/logic.dart';
 
 class TrafficGroupSelector extends StatelessWidget {
@@ -115,20 +115,31 @@ class TrafficGroupSelector extends StatelessWidget {
   }
 
   ExpansionIndicator _extensionIndicator(
-          BuildContext context, ITreeNode<dynamic> node) =>
-      ChevronIndicator.rightDown(
-        tree: node,
-        color: Colors.blue,
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.all(8),
-      );
+          BuildContext context, ITreeNode<dynamic> node) {
+    AnalysisTrafficGroupCubit group = node.data as AnalysisTrafficGroupCubit;
+    Color color = Colors.white70;
+    for (var tag in group.tags) {
+      if (onGraphTagColors.containsKey(tag)) {
+        color = onGraphTagColors[tag]!;
+        break;
+      }
+    }
+    return ChevronIndicator.rightDown(
+      tree: node,
+      color: color,
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.all(8),
+    );
+  }
 
   Widget _buildTreeNode(BuildContext context, TreeNode node) {
     AnalysisTrafficGroupCubit group = node.data as AnalysisTrafficGroupCubit;
     Color color = Colors.white70;
+    Color fontColor = Colors.black87;
     for (var tag in group.tags) {
       if (graphTagColors.containsKey(tag)) {
         color = graphTagColors[tag]!;
+        fontColor = onGraphTagColors[tag]!;
         break;
       }
     }
@@ -168,9 +179,9 @@ class TrafficGroupSelector extends StatelessWidget {
                 : color.withOpacity(context.constants.mediumColorOpacity),
             child: ListTile(
               leading: leading,
-              title: Text(group.name),
+              title: Text(group.name, style: context.textTheme.labelSmall?.copyWith(color: fontColor),),
               subtitle: state.parent != null
-                  ? Text(state.parent!.name)
+                  ? Text(state.parent!.name, style: context.textTheme.bodySmall?.copyWith(color: fontColor),)
                   : null,
               trailing: trailing,
             ),

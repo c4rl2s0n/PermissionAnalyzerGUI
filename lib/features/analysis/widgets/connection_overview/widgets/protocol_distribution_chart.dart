@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/logic/logic.dart';
-import 'package:permission_analyzer_gui/features/analysis/values.dart';
+import 'package:permission_analyzer_gui/features/analysis/colors.dart';
 
 class ProtocolDistributionChart extends StatelessWidget {
   const ProtocolDistributionChart({required this.connection, super.key});

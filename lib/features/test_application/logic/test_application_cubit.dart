@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:path/path.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 
 part 'test_application_cubit.freezed.dart';
@@ -47,32 +46,16 @@ class TestApplicationCubit extends Cubit<TestApplicationState> {
   ITestApplicationRepository testApplicationRepository;
   ITestScenarioRepository testScenarioRepository;
 
-  Future<TestScenario> newScenario() async {
-    String fileDirectory = await _getScenarioFileDirectory();
+  TestScenario newScenario() {
     TestScenario scenario = TestScenario(
       applicationId: state.id,
       applicationName: state.name,
-      fileDirectory: fileDirectory,
       device: state.application.device,
     );
     testScenarioRepository.update(scenario);
     emit(state.copyWith(
         scenarios: testScenarioRepository.getForApplication(state.id)));
     return scenario;
-  }
-
-  Future<String> _getScenarioFileDirectory() async {
-    int i = 0;
-    String fileDirectory = application.fileDirectory;
-    Directory fileDir = Directory(fileDirectory);
-    while (await fileDir.exists()) {
-      fileDirectory =
-          join(application.fileDirectory, i.toString().padLeft(4, "0"));
-      fileDir = Directory(fileDirectory);
-      i++;
-    }
-    await fileDir.create(recursive: true);
-    return fileDirectory;
   }
 
   Future delete() async {

@@ -178,7 +178,7 @@ extension TestScenarioExecutor on TestScenarioCubit {
     if (state.recordScreen) {
       // wait a short time for the device to properly store the screen record
       int delay =
-          10 - DateTime.timestamp().difference(testRunEndTime).inSeconds;
+          15 - DateTime.timestamp().difference(testRunEndTime).inSeconds;
       if (delay > 0) {
         await sleepSec(delay);
       }

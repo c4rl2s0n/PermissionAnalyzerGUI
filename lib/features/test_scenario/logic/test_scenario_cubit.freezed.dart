@@ -21,7 +21,6 @@ mixin _$TestScenarioState {
   String get applicationId => throw _privateConstructorUsedError;
   String get applicationName => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
-  String get fileDirectory => throw _privateConstructorUsedError;
   String get userInputRecord => throw _privateConstructorUsedError;
   String get device => throw _privateConstructorUsedError;
   AndroidInputDevice get deviceInput => throw _privateConstructorUsedError;
@@ -56,7 +55,6 @@ abstract class $TestScenarioStateCopyWith<$Res> {
       String applicationId,
       String applicationName,
       String name,
-      String fileDirectory,
       String userInputRecord,
       String device,
       AndroidInputDevice deviceInput,
@@ -90,7 +88,6 @@ class _$TestScenarioStateCopyWithImpl<$Res, $Val extends TestScenarioState>
     Object? applicationId = null,
     Object? applicationName = null,
     Object? name = null,
-    Object? fileDirectory = null,
     Object? userInputRecord = null,
     Object? device = null,
     Object? deviceInput = null,
@@ -123,10 +120,6 @@ class _$TestScenarioStateCopyWithImpl<$Res, $Val extends TestScenarioState>
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      fileDirectory: null == fileDirectory
-          ? _value.fileDirectory
-          : fileDirectory // ignore: cast_nullable_to_non_nullable
               as String,
       userInputRecord: null == userInputRecord
           ? _value.userInputRecord
@@ -190,7 +183,6 @@ abstract class _$$TestScenarioStateImplCopyWith<$Res>
       String applicationId,
       String applicationName,
       String name,
-      String fileDirectory,
       String userInputRecord,
       String device,
       AndroidInputDevice deviceInput,
@@ -222,7 +214,6 @@ class __$$TestScenarioStateImplCopyWithImpl<$Res>
     Object? applicationId = null,
     Object? applicationName = null,
     Object? name = null,
-    Object? fileDirectory = null,
     Object? userInputRecord = null,
     Object? device = null,
     Object? deviceInput = null,
@@ -255,10 +246,6 @@ class __$$TestScenarioStateImplCopyWithImpl<$Res>
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      fileDirectory: null == fileDirectory
-          ? _value.fileDirectory
-          : fileDirectory // ignore: cast_nullable_to_non_nullable
               as String,
       userInputRecord: null == userInputRecord
           ? _value.userInputRecord
@@ -317,7 +304,6 @@ class _$TestScenarioStateImpl extends _TestScenarioState {
       required this.applicationId,
       required this.applicationName,
       required this.name,
-      required this.fileDirectory,
       required this.userInputRecord,
       required this.device,
       required this.deviceInput,
@@ -344,8 +330,6 @@ class _$TestScenarioStateImpl extends _TestScenarioState {
   final String applicationName;
   @override
   final String name;
-  @override
-  final String fileDirectory;
   @override
   final String userInputRecord;
   @override
@@ -390,7 +374,7 @@ class _$TestScenarioStateImpl extends _TestScenarioState {
 
   @override
   String toString() {
-    return 'TestScenarioState(loading: $loading, loadingInfo: $loadingInfo, applicationId: $applicationId, applicationName: $applicationName, name: $name, fileDirectory: $fileDirectory, userInputRecord: $userInputRecord, device: $device, deviceInput: $deviceInput, networkInterface: $networkInterface, duration: $duration, numTestRuns: $numTestRuns, permissions: $permissions, recordScreen: $recordScreen, captureTraffic: $captureTraffic, testConstellations: $testConstellations, firewallSettings: $firewallSettings)';
+    return 'TestScenarioState(loading: $loading, loadingInfo: $loadingInfo, applicationId: $applicationId, applicationName: $applicationName, name: $name, userInputRecord: $userInputRecord, device: $device, deviceInput: $deviceInput, networkInterface: $networkInterface, duration: $duration, numTestRuns: $numTestRuns, permissions: $permissions, recordScreen: $recordScreen, captureTraffic: $captureTraffic, testConstellations: $testConstellations, firewallSettings: $firewallSettings)';
   }
 
   @override
@@ -406,8 +390,6 @@ class _$TestScenarioStateImpl extends _TestScenarioState {
             (identical(other.applicationName, applicationName) ||
                 other.applicationName == applicationName) &&
             (identical(other.name, name) || other.name == name) &&
-            (identical(other.fileDirectory, fileDirectory) ||
-                other.fileDirectory == fileDirectory) &&
             (identical(other.userInputRecord, userInputRecord) ||
                 other.userInputRecord == userInputRecord) &&
             (identical(other.device, device) || other.device == device) &&
@@ -439,7 +421,6 @@ class _$TestScenarioStateImpl extends _TestScenarioState {
       applicationId,
       applicationName,
       name,
-      fileDirectory,
       userInputRecord,
       device,
       deviceInput,
@@ -469,7 +450,6 @@ abstract class _TestScenarioState extends TestScenarioState {
           required final String applicationId,
           required final String applicationName,
           required final String name,
-          required final String fileDirectory,
           required final String userInputRecord,
           required final String device,
           required final AndroidInputDevice deviceInput,
@@ -494,8 +474,6 @@ abstract class _TestScenarioState extends TestScenarioState {
   String get applicationName;
   @override
   String get name;
-  @override
-  String get fileDirectory;
   @override
   String get userInputRecord;
   @override
