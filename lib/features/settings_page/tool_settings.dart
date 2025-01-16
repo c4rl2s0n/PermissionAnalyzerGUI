@@ -175,8 +175,8 @@ class ToolSettings extends StatelessWidget {
           oldState.recorderVersion != state.recorderVersion,
       builder: (context, state) {
         return SimpleSetting(
-          name: context.strings.recorderLocalSettings,
-          description: "Select the version that matches you target device (Android)",
+          name: "Device Architecture",
+          description: "Select the version that matches your target device (Android)",
           action:
           DropdownMenu<String>(
             key: Key(state.recorderVersion),
