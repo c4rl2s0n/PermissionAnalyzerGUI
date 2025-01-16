@@ -53,7 +53,7 @@ class NewApplicationDialogCubit extends Cubit<NewApplicationDialogState> {
         join(_settingsCubit.state.workingDirectory, state.applicationId);
 
     Directory outDir = Directory(outputDirectory);
-    if (await outDir.exists()) await outDir.delete(recursive: true);
+    if (state.applicationId.notEmpty && await outDir.exists()) await outDir.delete(recursive: true);
   }
 
   Future<String?> extractAppIcon() async {

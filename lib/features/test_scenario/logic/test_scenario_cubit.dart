@@ -103,12 +103,13 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
 
   Future delete() async {
     testScenarioRepository.delete(testScenario.id);
-
-    await _clearFiles();
+    if(state.name.notEmpty) {
+      await _clearFiles();
+    }
   }
 
   Future _clearFiles() async {
-    Directory fileDir = Directory(_workingDirectory); //state.fileDirectory);
+    Directory fileDir = Directory(_workingDirectory);
     if (await fileDir.exists()) {
       await fileDir.delete(recursive: true);
     }
