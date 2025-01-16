@@ -44,11 +44,14 @@ In order to use the tool, follow these steps to get started with analysing Andro
    2. the path of the **tshark**-executable
    3. choose the architecture of your mobile device
    4. select the connected Android device (if it is not shown, click the button to rescan for adb-devices)
+![Settings](./images_readme/settings.png)
+
 3. Go back to the main page and create a new application
    1. Select the device you want to use for testing
    2. Select the application you want to test (they are listed by their IDs, so you might have to lookup the ID on the app store or somewhere else)
    3. Enter the name of the application manually
    4. (optional and not important) On Linux/Mac, you can try to extract the app-icon from the application, but it might fail in case the icon has an unexpected filename
+![New Application](./images_readme/new_application.png)
 
 ### 4.2) Test Scenarios
 After selecting the application you want to test, you can create different test-scenarios.
@@ -59,6 +62,7 @@ A scenario defines some settings about the tests, including:
 * whether or not to capture the traffic
 * the number of tests to be performed (after running some tests, this number can only be increased to run more tests)
 * a record of user input can be created which will then be replayed at every test run ('Record Scenario' button)
+![Scenario](./images_readme/Scenario.png)
 
 
 #### 4.2.1) Test Constellations
@@ -89,6 +93,8 @@ This tab contains a table with relevant information, such as
 The selection of groups on this page will influence what content is displayed in the other tabs.
 **Tip**: Use the tree view on the right to select the data to analyze (deselecting a group will ignore all traffic within that group) and what data to show (groups to show will be visible in other tabs like the graph view etc.). 
 You can also use the "bytes/packets" option to choose the unit to measure the traffic volume (bytes or packets).
+![Groups](./images_readme/analysis_groups.png)
+
 
 #### 4.3.2) Connections Tab
 In this table, you will find detailed information about the observed connections, including IP addresses, names, locations, traffic volumes, ...
@@ -99,6 +105,7 @@ By right-clicking an entry of the table, you can show the whois record and copy 
 Use the 'Config' view to customize the table and also group the connections.
 Grouping connections will combine all connections with the same server name (SNI), domain or IP range x.y.z.0/24.
 This will also affect the representations on the other tabs (Graph and Geolocation).
+![Connections](./images_readme/analysis_connections.png)
 
 #### 4.3.3) Graph Tab
 This section shows the relationship between selected test groups.
@@ -106,19 +113,24 @@ It should make it easier to identify common/unique endpoints.
 
 **Note**: Hovering over the endpoints or connection lines will provide additional details.
 **Note**: Clicking on tags in the legend allows to show/hide the corresponding nodes in the graph.
+![Graph](./images_readme/analysis_graph.png)
 
 #### 4.3.4) Geolocation Tab
 This tab displays the geographical locations of the saved endpoints on a world map. 
 You can zoom in for more details.
 The size of the markers represent the traffic volume that goes to that location.
 The colors represent that share of the traffic volume for each test group.
+![Geolocation](./images_readme/analysis_map.png)
 
 #### 4.3.5) Recordings Tab
 If you enabled screen recording while setting up the tests, the recordings will appear here.
 
-You can also activate the option to display the value of individual test recordings in the "Weight of Traffic (MB)/Time" graph.
-Note: The best way to understand the tool is by experimenting with it.
+For each recording, the traffic timelines for individual connections (or a summary of all connections with the timeline 'Total') can be selected to be displayed in the 'Traffic Volume' chart.
+![Recordings](./images_readme/analysis_recordings.png)
+
+
+**Note**: The best way to understand the tool is to just play around with it :)
 
 
 ## Credits
-Thanks to [Cartucho](https://github.com/Cartucho) for the nice [repository](https://github.com/Cartucho/android-touch-record-replay) to record and replay touchscreen events, on which some parts of this project were built upon.
+Thanks to [Cartucho](https://github.com/Cartucho) for the nice [repository](https://github.com/Cartucho/android-touch-record-replay) to record and replay touchscreen events, which was the foundation for our record and replay feature (with some changes, but still very valuable resource!)
