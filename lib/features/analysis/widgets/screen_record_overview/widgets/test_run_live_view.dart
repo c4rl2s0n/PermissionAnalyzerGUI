@@ -181,12 +181,17 @@ class TestRunLiveViewState extends State<TestRunLiveView> {
       buildWhen: (oldState, state) =>
           oldState.timelines != state.timelines &&
           oldState.selectedTimelines != state.selectedTimelines,
-      builder: (context, overviewState) => Tooltip(
+      builder: (context, overviewState) {
+        List<TimelineState> timelines = overviewState.timelinesForTest(test, selectedOnly: true);
+        List<Color> selectedColors = timelines.map((t) => t.color).nonNulls.toList();
+        return Tooltip(
         richMessage: WidgetSpan(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ...overviewState.timelinesForTest(test, selectedOnly: true).map(
+              ...timelines.map(
                     (t) => Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           context.icons.mapMarker,
@@ -203,9 +208,10 @@ class TestRunLiveViewState extends State<TestRunLiveView> {
         ),
         child: Icon(
           context.icons.mapMarker,
+          color: selectedColors.length == 1 ? selectedColors.first : null,
           size: 18,
         ),
-      ),
+      );}
     );
   }
 

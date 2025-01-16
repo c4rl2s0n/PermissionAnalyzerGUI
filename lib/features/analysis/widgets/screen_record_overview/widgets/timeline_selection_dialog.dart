@@ -11,10 +11,7 @@ class TimelineSelectionDialog extends StatelessWidget {
     this.overviewCubit, {
     super.key,
   }) {
-    timelines = overviewCubit.timelineCubits
-        .where((t) => t.timeline.test == test)
-        .toList();
-    timelines.sort((a, b) => a.state.name.compareTo(b.state.name));
+    _prepareTimelines();
   }
 
   final TestRun test;
@@ -34,6 +31,22 @@ class TimelineSelectionDialog extends StatelessWidget {
         overviewCubit,
       ),
     );
+  }
+
+  void _prepareTimelines(){
+    timelines = overviewCubit.timelineCubits
+        .where((t) => t.timeline.test == test)
+        .toList();
+    timelines.sort((a, b) => a.state.name.compareTo(b.state.name));
+    timelines = [
+      ...timelines.where((t) => t.state.name == kTlTotal),
+      ...timelines.where((t) => t.state.name != kTlTotal),
+    ];
+    for(var t in timelines){
+      if(t.state.color == null){
+        t.setColor(Colors.cyan);
+      }
+    }
   }
 
   @override
@@ -100,11 +113,7 @@ class TimelineSelectionDialog extends StatelessWidget {
   }
 
   Iterable<Widget> _dialogEntries(BuildContext context) {
-    List<TimelineCubit> entries = [
-      ...timelines.where((t) => t.state.name == kTlTotal),
-      ...timelines.where((t) => t.state.name != kTlTotal),
-    ];
-    return entries.map((t) => BlocProvider.value(
+    return timelines.map((t) => BlocProvider.value(
           value: t,
           child: BlocBuilder<TimelineCubit, TimelineState>(
             buildWhen: (oldState, state) => oldState.name != state.name,
@@ -131,7 +140,7 @@ class TimelineSelectionDialog extends StatelessWidget {
           timeline.setColor(color);
         },
         availableColors: overviewCubit.state.graphColors,
-        selectedColor: state.color ?? Colors.cyan,
+        selectedColor: state.color,
       ),
     );
   }
