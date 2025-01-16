@@ -50,7 +50,7 @@ In order to use the tool, follow these steps to get started with analysing Andro
    3. Enter the name of the application manually
    4. (optional and not important) On Linux/Mac, you can try to extract the app-icon from the application, but it might fail in case the icon has an unexpected filename
 
-### 4.2) Scenarios
+### 4.2) Test Scenarios
 After selecting the application you want to test, you can create different test-scenarios.
 A scenario defines some settings about the tests, including:
 * the network interface to capture the traffic
@@ -58,5 +58,17 @@ A scenario defines some settings about the tests, including:
 * whether or not to record the screen during each test (in that case, the maximum test duration is 180 seconds)
 * whether or not to capture the traffic
 * the number of tests to be performed (after running some tests, this number can only be increased to run more tests)
+* a record of user input can be created which will then be replayed at every test run ('Record Scenario' button)
 
-Also, TestConstellations can be created, which contain a set of permissions and whether or not to
+
+#### 4.2.1) Test Constellations
+TestConstellations can be created, which contain a set of permissions their state (granted or revoked).
+Additionally, IP addresses that were captured with that application in previous tests can be blocked in a constellation to observe how the application reacts to that.
+If firewall settings were chosen, a name appendix should be set for the corresponding TestConstellation, to identify it better.
+This needs to be done manually, as there is currently no good way to give a name automatically.
+(Note: When two TestConstellations have the same name and appendix, there might be problems in the Analysis view)
+
+After configuring a constellation, click the button 'Add Constellations' to save them for the tests.
+Permissions can be set to **granted**, **revoked** or **testing**.
+When selecting **testing** for a permission, one constellation will be created with the permission granted and one with it being revoked.
+
