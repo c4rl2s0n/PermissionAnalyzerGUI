@@ -184,6 +184,7 @@ class TestRunLiveViewState extends State<TestRunLiveView> {
       builder: (context, overviewState) {
         List<TimelineState> timelines = overviewState.timelinesForTest(test, selectedOnly: true);
         List<Color> selectedColors = timelines.map((t) => t.color).nonNulls.toList();
+        if(timelines.isEmpty) return const SizedBox.shrink();
         return Tooltip(
         richMessage: WidgetSpan(
           child: Column(

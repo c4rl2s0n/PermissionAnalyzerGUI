@@ -33,17 +33,20 @@ class TimelineSelectionDialog extends StatelessWidget {
     );
   }
 
-  void _prepareTimelines(){
+  void _prepareTimelines() {
     timelines = overviewCubit.timelineCubits
         .where((t) => t.timeline.test == test)
         .toList();
-    timelines.sort((a, b) => a.state.name.compareTo(b.state.name));
-    timelines = [
-      ...timelines.where((t) => t.state.name == kTlTotal),
-      ...timelines.where((t) => t.state.name != kTlTotal),
-    ];
-    for(var t in timelines){
-      if(t.state.color == null){
+    timelines.sort(
+      (a, b) => a.state.name == kTlTotal
+          ? -1
+          : b.state.name == kTlTotal
+              ? 1
+              : a.state.name.compareTo(b.state.name),
+    );
+
+    for (var t in timelines) {
+      if (t.state.color == null) {
         t.setColor(Colors.cyan);
       }
     }

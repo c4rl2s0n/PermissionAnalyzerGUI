@@ -72,3 +72,53 @@ After configuring a constellation, click the button 'Add Constellations' to save
 Permissions can be set to **granted**, **revoked** or **testing**.
 When selecting **testing** for a permission, one constellation will be created with the permission granted and one with it being revoked.
 
+### 4.3) Analysis Tabs
+Once the tests are completed, you can navigate to the "Analysis" section (located at the top right, next to the settings).
+Depending on the page where you go to the Analysis page, will define the scope of data represented there (if you go from applications-view, all data from all applications will be shown; when going from within a scenario, only the data from that scenario will be analyzed).
+
+#### 4.3.1) Group Tab
+This tab shows the different 'Test Groups' that can be analyzed.
+A Test Group is a set of test runs and is represented in a tree structure.
+(Application > Scenario > Constellation > Test Run)
+
+This tab contains a table with relevant information, such as 
+* the number of tests performed
+* the minimum and maximum number of endpoints that were contacted within the tests
+* ...
+
+The selection of groups on this page will influence what content is displayed in the other tabs.
+**Tip**: Use the tree view on the right to select the data to analyze (deselecting a group will ignore all traffic within that group) and what data to show (groups to show will be visible in other tabs like the graph view etc.). 
+You can also use the "bytes/packets" option to choose the unit to measure the traffic volume (bytes or packets).
+
+#### 4.3.2) Connections Tab
+In this table, you will find detailed information about the observed connections, including IP addresses, names, locations, traffic volumes, ...
+Click 'Analyze Endpoints' to fetch data like DNS, Geolocation and WhoIs records.
+(Tip: this will only query the endpoints that have not been analyzed. Right-click, to force analyzing ALL endpoints)
+By right-clicking an entry of the table, you can show the whois record and copy a filter to use in Wireshark to show only the packets corresponding to that connection.
+
+Use the 'Config' view to customize the table and also group the connections.
+Grouping connections will combine all connections with the same server name (SNI), domain or IP range x.y.z.0/24.
+This will also affect the representations on the other tabs (Graph and Geolocation).
+
+#### 4.3.3) Graph Tab
+This section shows the relationship between selected test groups.
+It should make it easier to identify common/unique endpoints.
+
+**Note**: Hovering over the endpoints or connection lines will provide additional details.
+**Note**: Clicking on tags in the legend allows to show/hide the corresponding nodes in the graph.
+
+#### 4.3.4) Geolocation Tab
+This tab displays the geographical locations of the saved endpoints on a world map. 
+You can zoom in for more details.
+The size of the markers represent the traffic volume that goes to that location.
+The colors represent that share of the traffic volume for each test group.
+
+#### 4.3.5) Recordings Tab
+If you enabled screen recording while setting up the tests, the recordings will appear here.
+
+You can also activate the option to display the value of individual test recordings in the "Weight of Traffic (MB)/Time" graph.
+Note: The best way to understand the tool is by experimenting with it.
+
+
+## Credits
+Thanks to [Cartucho](https://github.com/Cartucho) for the nice [repository](https://github.com/Cartucho/android-touch-record-replay) to record and replay touchscreen events, on which some parts of this project were built upon.
