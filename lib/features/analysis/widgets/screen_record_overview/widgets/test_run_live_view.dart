@@ -15,6 +15,9 @@ class TestRunLiveView extends StatefulWidget {
     this.test, {
     this.size,
     this.onDurationUpdate,
+    this.initialPosition,
+    this.initialPlaybackSpeed,
+    this.initialIsPlaying = false,
     this.playPauseStream,
     this.resetStream,
     this.playbackSpeedStream,
@@ -24,6 +27,9 @@ class TestRunLiveView extends StatefulWidget {
   final TestRun test;
   final Size? size;
   final Function(Duration)? onDurationUpdate;
+  final Duration? initialPosition;
+  final double? initialPlaybackSpeed;
+  final bool initialIsPlaying;
   final Stream<bool>? playPauseStream;
   final Stream<void>? resetStream;
   final Stream<double>? playbackSpeedStream;
@@ -52,14 +58,16 @@ class TestRunLiveViewState extends State<TestRunLiveView> {
     if (widget.onDurationUpdate != null) {
       _controller?.addListener(() async {
         if (_controller?.value.hasError ?? false) {
-          Logger.root.warning("[${test.name}] Video Player Error: ${_controller?.value.errorDescription}");
+          Logger.root.warning(
+              "[${test.name}] Video Player Error: ${_controller?.value.errorDescription}");
         }
         Duration? position = await _controller?.position;
-        if (position != null){
+        if (position != null) {
           double newPosition = position.inMilliseconds / 1000;
-          if(newPosition > lastSecond + 1){
-            Logger.root.finer("[${test.name}] Playback Jump: Last $lastSecond -> Now ${position.inMilliseconds / 1000}");
-          }else {
+          if (newPosition > lastSecond + 1) {
+            Logger.root.finer(
+                "[${test.name}] Playback Jump: Last $lastSecond -> Now ${position.inMilliseconds / 1000}");
+          } else {
             widget.onDurationUpdate!(position);
             lastSecond = newPosition;
           }
@@ -67,10 +75,20 @@ class TestRunLiveViewState extends State<TestRunLiveView> {
       });
     }
     _controller?.setLooping(false);
-    _controller?.initialize().then((_) => _setupControlsListener());
-    //_controller?.play();
+    _controller?.initialize().then((_) => _onControllerInitialized());
   }
-
+  Future _onControllerInitialized()async{
+    if(widget.initialPosition != null){
+      await _seekTo(widget.initialPosition!);
+    }
+    if(widget.initialPlaybackSpeed != null){
+      await _controller?.setPlaybackSpeed(widget.initialPlaybackSpeed!);
+    }
+    if(widget.initialIsPlaying){
+      await _play();
+    }
+    _setupControlsListener();
+  }
   void _setupControlsListener() {
     // Restart
     listener.add(widget.resetStream?.listen((_) async {
@@ -97,22 +115,24 @@ class TestRunLiveViewState extends State<TestRunLiveView> {
     setState(() {});
   }
 
-  Future _seekTo(Duration pos)async{
-    if(_controller == null) return;
+  Future _seekTo(Duration pos) async {
+    if (_controller == null) return;
     lastSecond = pos.inMilliseconds / 1000;
     await _controller!.seekTo(pos);
-    if(!_controller!.value.isPlaying && isPlaying){
+    if (!_controller!.value.isPlaying && isPlaying) {
       await _controller!.play();
     }
     setState(() {});
   }
-  Future _play()async{
+
+  Future _play() async {
     await _controller?.play();
     setState(() {
       isPlaying = true;
     });
   }
-  Future _pause()async{
+
+  Future _pause() async {
     await _controller?.pause();
     setState(() {
       isPlaying = false;
@@ -161,19 +181,30 @@ class TestRunLiveViewState extends State<TestRunLiveView> {
       buildWhen: (oldState, state) =>
           oldState.timelines != state.timelines &&
           oldState.selectedTimelines != state.selectedTimelines,
-      builder: (context, overviewState) => Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: overviewState
-            .timelinesForTest(test, selectedOnly: true)
-            .map((t) => Tooltip(
-              message: t.name,
-              child: Icon(
-                    context.icons.mapMarker,
-                    color: t.color,
-                size: 18,
+      builder: (context, overviewState) => Tooltip(
+        richMessage: WidgetSpan(
+          child: Column(
+            children: [
+              ...overviewState.timelinesForTest(test, selectedOnly: true).map(
+                    (t) => Row(
+                      children: [
+                        Icon(
+                          context.icons.mapMarker,
+                          color: t.color,
+                          size: 18,
+                        ),
+                        Margin.horizontal(context.constants.spacing),
+                        Text(t.name),
+                      ],
+                    ),
                   ),
-            ))
-            .toList(),
+            ],
+          ),
+        ),
+        child: Icon(
+          context.icons.mapMarker,
+          size: 18,
+        ),
       ),
     );
   }

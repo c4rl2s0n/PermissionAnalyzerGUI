@@ -4,6 +4,8 @@ const String pkDbFile = 'pkDbFile';
 const String defaultRecorderDestinationPath = "/data/local/tmp/mysendevent";
 const String defaultInputRecordDestinationPath = "/data/local/tmp/record.txt";
 
+const String kTlTotal = "Total";
+
 // traffic group tags
 const String tEndpoint = "Endpoint";
 const String tIpOnly = "Only IP";

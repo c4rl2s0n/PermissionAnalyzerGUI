@@ -14,6 +14,9 @@ class TimelineCubit extends Cubit<TimelineState> {
   void toggleSelection() {
     emit(state.copyWith(selected: !state.selected));
   }
+  void setSelection(bool selected) {
+    emit(state.copyWith(selected: selected));
+  }
 
   void setColor(Color color) {
     timeline.color = color;

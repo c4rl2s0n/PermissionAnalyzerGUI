@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:permission_analyzer_gui/common/keys.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/widgets/screen_record_overview/logic/logic.dart';
-
 
 class TimelineSelectionDialog extends StatelessWidget {
   TimelineSelectionDialog(
     this.test,
     this.overviewCubit, {
     super.key,
-  }){
-    timelines = overviewCubit.timelineCubits.where((t) => t.timeline.test == test).toList();
-    timelines.sort((a,b) => a.state.name.compareTo(b.state.name));
+  }) {
+    timelines = overviewCubit.timelineCubits
+        .where((t) => t.timeline.test == test)
+        .toList();
+    timelines.sort((a, b) => a.state.name.compareTo(b.state.name));
   }
 
   final TestRun test;
@@ -51,34 +53,72 @@ class TimelineSelectionDialog extends StatelessWidget {
   Widget _options(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Row(children: [
-            Text("Test:", style: context.textTheme.labelMedium,),
-            Margin.horizontal(context.constants.spacing),
-            Text(test.name),
-          ],),
-          Margin.vertical(context.constants.spacing),
-          ...timelines.map((t) => BlocProvider.value(
-                value: t,
-                child: BlocBuilder<TimelineCubit, TimelineState>(
-                  buildWhen: (oldState, state) => oldState.name != state.name,
-                  builder: (context, state) {
-                    return MultiActionSetting(
-                      name: state.name,
-                      actions: [
-                        _colorPicker(context, t),
-                        _switch(context, t),
-                      ],
-                    );
-                  },
-                ),
-              ))
-        ].insertBetweenItems(
-            () => Margin.horizontal(context.constants.largeSpacing)),
-      ),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            _dialogFirstLine(context),
+            Margin.vertical(context.constants.spacing),
+            ..._dialogEntries(context),
+          ].insertBetweenItems(
+              () => Margin.horizontal(context.constants.largeSpacing))),
     );
+  }
+
+  Widget _dialogFirstLine(BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          "Test:",
+          style: context.textTheme.labelMedium,
+        ),
+        Margin.horizontal(context.constants.spacing),
+        Expanded(child: Text(test.name)),
+        IconButton(
+          onPressed: () {
+            for (var t in timelines) {
+              t.setSelection(false);
+            }
+          },
+          icon: Icon(
+            context.icons.cancel,
+            color: context.colors.negative,
+          ),
+        ),
+        IconButton(
+          onPressed: () {
+            for (var t in timelines) {
+              t.setSelection(true);
+            }
+          },
+          icon: Icon(
+            context.icons.check,
+            color: context.colors.positive,
+          ),
+        )
+      ],
+    );
+  }
+
+  Iterable<Widget> _dialogEntries(BuildContext context) {
+    List<TimelineCubit> entries = [
+      ...timelines.where((t) => t.state.name == kTlTotal),
+      ...timelines.where((t) => t.state.name != kTlTotal),
+    ];
+    return entries.map((t) => BlocProvider.value(
+          value: t,
+          child: BlocBuilder<TimelineCubit, TimelineState>(
+            buildWhen: (oldState, state) => oldState.name != state.name,
+            builder: (context, state) {
+              return MultiActionSetting(
+                name: state.name,
+                actions: [
+                  _colorPicker(context, t),
+                  _switch(context, t),
+                ],
+              );
+            },
+          ),
+        ));
   }
 
   Widget _colorPicker(BuildContext context, TimelineCubit timeline) {
@@ -91,7 +131,7 @@ class TimelineSelectionDialog extends StatelessWidget {
           timeline.setColor(color);
         },
         availableColors: overviewCubit.state.graphColors,
-        selectedColor: state.color,
+        selectedColor: state.color ?? Colors.cyan,
       ),
     );
   }

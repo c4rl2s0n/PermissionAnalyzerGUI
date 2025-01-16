@@ -157,7 +157,7 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
               .map((s) => LineTooltipItem(
                   widget.trafficLoadInPackets
                       ? s.y.toString()
-                      : s.y.readableFileSize(),
+                      : s.y.readableFileSize(base1024: false),
                   context.textTheme.labelSmall ?? const TextStyle()))
               .toList(),
           getTooltipColor: (touchedSpot) => Colors.blueGrey.withOpacity(0.8),
@@ -255,7 +255,7 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
       );
     } else {
       w = Text(
-        val.readableFileSize(),
+        val.readableFileSize(base1024: false),
         style: style,
         textAlign: TextAlign.center,
       );

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:permission_analyzer_gui/common/keys.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/models/connection_group.dart';
 import 'package:permission_analyzer_gui/features/analysis/models/endpoint_group.dart';
@@ -53,9 +54,8 @@ class TestRun {
 
   Map<String, List<INetworkConnection?>> _loadConnectionTimeline() {
     List<INetworkConnection?> emptyList = List.generate((durationInMs / 1000).ceil(), (_) => null);
-    String keyTotal = "Total";
     _connectionTimeline = {
-      keyTotal: List.of(emptyList),
+      kTlTotal: List.of(emptyList),
     };
     for(var con in connections){
       _connectionTimeline![con.ip] = List.of(emptyList);
@@ -97,7 +97,7 @@ class TestRun {
         totalEndpoint.endpoints.add(con.endpoint);
         frameTotal.connections.add(con);
       }
-      _connectionTimeline![keyTotal]![tsInSec] = frameTotal;
+      _connectionTimeline![kTlTotal]![tsInSec] = frameTotal;
 
       // go on with next packet in next timeframe
       tsInSec = max(0, packetTsInSec);
