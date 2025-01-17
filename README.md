@@ -105,6 +105,7 @@ In this table, you will find detailed information about the observed connections
 Click 'Analyze Endpoints' to fetch data like DNS, Geolocation and WhoIs records.
 (Tip: this will only query the endpoints that have not been analyzed. Right-click, to force analyzing ALL endpoints)
 By right-clicking an entry of the table, you can show the whois record and copy a filter to use in Wireshark to show only the packets corresponding to that connection.
+Selecting a connection in the table will show a chart with the distribution of the traffic load among the selected Traffic Groups and the different protocols. 
 
 Use the 'Config' view to customize the table and also group the connections.
 Grouping connections will combine all connections with the same server name (SNI), domain or IP range x.y.z.0/24.

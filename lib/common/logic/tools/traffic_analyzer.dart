@@ -99,7 +99,7 @@ class TrafficAnalyzer {
       tests.addAll(group.tests);
     }
     return getConnectionsFromTestRuns(
-      tests,
+      tests.distinctBy((t) => t.id),
       filtered: filtered,
       grouped: grouped,
     );
@@ -113,15 +113,16 @@ class TrafficAnalyzer {
     Map<String, NetworkConnection> connectionsMap = {};
     for (var test in tests) {
       for (NetworkConnection connection in test.connections) {
-        if (!connectionsMap.containsKey(connection.flow)) {
+        String key = "${connection.ip}:${connection.serverName}";
+        if (!connectionsMap.containsKey(key)) {
           // create copy of connection
-          connectionsMap[connection.flow] = connection.copy;
-          connectionsMap[connection.flow]!.testRuns = [test];
+          connectionsMap[key] = connection.copy;
+          connectionsMap[key]!.testRuns = [test];
         } else {
           // aggregate connection
-          NetworkConnection tc = connectionsMap[connection.flow]!;
+          NetworkConnection tc = connectionsMap[key]!;
           tc.packets.addAll(
-              test.packets.where((p) => p.ipSrc == tc.ip || p.ipDst == tc.ip));
+              test.packets.where((p) => (p.ipSrc == tc.ip || p.ipDst == tc.ip) && p.serverName == tc.serverName));
           if (!tc.testRuns.any((tr) => tr.id == test.id)) {
             tc.testRuns.add(test);
           }

@@ -63,11 +63,6 @@ class _ConnectionOverviewState extends State<ConnectionOverview> {
                         connection: state.selectedConnection!),
                     ProtocolDistributionChart(
                         connection: state.selectedConnection!),
-                    // Expanded(
-                    //   child: ConnectionTrafficOverview(
-                    //     state.selectedConnection!,
-                    //   ),
-                    // ),
                   ],
                 ),
               ),
