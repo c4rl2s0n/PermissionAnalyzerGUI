@@ -129,7 +129,7 @@ The colors represent that share of the traffic volume for each test group.
 
 ![Geolocation](./images_readme/analysis_map.png)
 
-#### 4.3.5) Recordings Tab
+#### 4.3.5) Recordings Tab (experimental)
 If you enabled screen recording while setting up the tests, the recordings will appear here.
 
 For each recording, the traffic timelines for individual connections (or a summary of all connections with the timeline 'Total') can be selected to be displayed in the 'Traffic Volume' chart.
