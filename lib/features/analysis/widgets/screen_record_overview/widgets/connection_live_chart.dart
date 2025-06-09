@@ -74,7 +74,7 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
       _getMaxBounds();
       setState(() {});
     }
-    if(oldWidget.timelines != widget.timelines){
+    if (oldWidget.timelines != widget.timelines) {
       _updateVisibility();
     }
     if (oldWidget.time != widget.time) {
@@ -95,8 +95,16 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
   Widget build(BuildContext context) {
     return Optional(
       buildOptional: (child) => AnimatedContainer(
-        height: widget.height == null ? null : visible ? widget.height : 0,
-        width: widget.width == null ? null : visible ? widget.width : 0,
+        height: widget.height == null
+            ? null
+            : visible
+                ? widget.height
+                : 0,
+        width: widget.width == null
+            ? null
+            : visible
+                ? widget.width
+                : 0,
         duration: const Duration(milliseconds: 300),
         child: Visibility(visible: visible, child: child),
       ),
@@ -120,7 +128,10 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
   }
 
   Widget _lineChart() {
-    return LineChart(_data());
+    return LineChart(
+      _data(),
+      duration: Duration(milliseconds: 420),
+    );
   }
 
   LineChartData _data() {
@@ -138,7 +149,38 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
     );
   }
 
-  ExtraLinesData get extraLines => ExtraLinesData(verticalLines: [
+  ExtraLinesData get extraLines => ExtraLinesData(horizontalLines: [
+        HorizontalLine(
+          // Dirty PoC... TODO: This whole page will be changed in the future...
+          y: (widget.timelines
+                      .map((tl) =>
+                          tl.data.nonNulls
+                              .map((d) => d.bytesTotal)
+                              .toList()
+                              .sortedCopy((int a, int b) => b.compareTo(a))
+                              .firstOrNull ??
+                          0)
+                      .toList()
+                      .sortedCopy((int a, int b) => b.compareTo(a))
+                      .firstOrNull ??
+                  0)
+              .toDouble(),
+          color: Colors.green,
+          strokeWidth: 2,
+          dashArray: [5, 10],
+          label: HorizontalLineLabel(
+            show: true,
+            alignment: Alignment.bottomRight,
+            //padding: const EdgeInsets.only(right: 5, top: 25),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+            labelResolver: (line) =>
+                'Max: ${line.y.readableFileSize(base1024: false)}',
+          ),
+        ),
+      ], verticalLines: [
         VerticalLine(x: widget.time, color: Colors.yellowAccent)
       ]);
   LineTouchData get lineTouchData => LineTouchData(
@@ -153,11 +195,10 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
           }
         },
         touchTooltipData: LineTouchTooltipData(
+          maxContentWidth: 420,
           getTooltipItems: (spots) => spots
               .map((s) => LineTooltipItem(
-                  widget.trafficLoadInPackets
-                      ? s.y.toString()
-                      : s.y.readableFileSize(base1024: false),
+                  "${widget.timelines[s.barIndex].test.name} - ${widget.timelines[s.barIndex].name}: ${(widget.trafficLoadInPackets ? s.y.toString() : s.y.readableFileSize(base1024: false))}",
                   context.textTheme.labelSmall ?? const TextStyle()))
               .toList(),
           getTooltipColor: (touchedSpot) => Colors.blueGrey.withOpacity(0.8),
@@ -179,7 +220,16 @@ class _ConnectionLiveChartState extends State<ConnectionLiveChart> {
           }
         }
       }
-      return LineChartBarData(spots: spots, color: tl.color);
+      return LineChartBarData(
+        spots: spots,
+        dashArray: [4],
+        barWidth: 1.5,
+        //shadow: Shadow(color: Colors.red, blurRadius: 4, offset: Offset(3, 3)),
+        isCurved: true,
+        belowBarData: BarAreaData(color: tl.color?.withAlpha(50), show: true),
+        preventCurveOverShooting: true,
+        color: tl.color,
+      );
     }).toList();
   }
 

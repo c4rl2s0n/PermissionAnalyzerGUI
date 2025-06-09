@@ -1,5 +1,9 @@
+import 'package:flutter/material.dart';
+
 const String pkAppDirectory = 'pkAppDirectory';
 const String pkDbFile = 'pkDbFile';
+
+final GlobalKey<ScaffoldMessengerState> messengerKey = GlobalKey<ScaffoldMessengerState>();
 
 const String defaultRecorderDestinationPath = "/data/local/tmp/mysendevent";
 const String defaultInputRecordDestinationPath = "/data/local/tmp/record.txt";

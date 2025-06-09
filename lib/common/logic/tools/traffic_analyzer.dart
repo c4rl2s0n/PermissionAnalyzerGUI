@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
 import 'package:permission_analyzer_gui/features/analysis/logic/logic.dart';
@@ -121,8 +124,9 @@ class TrafficAnalyzer {
         } else {
           // aggregate connection
           NetworkConnection tc = connectionsMap[key]!;
-          tc.packets.addAll(
-              test.packets.where((p) => (p.ipSrc == tc.ip || p.ipDst == tc.ip) && p.serverName == tc.serverName));
+          tc.packets.addAll(test.packets.where((p) =>
+              (p.ipSrc == tc.ip || p.ipDst == tc.ip) &&
+              p.serverName == tc.serverName));
           if (!tc.testRuns.any((tr) => tr.id == test.id)) {
             tc.testRuns.add(test);
           }
@@ -390,6 +394,13 @@ class TrafficAnalyzer {
 
   static Future<List<NetworkPacket>> extractPackets(
       Tshark tshark, String pcapFilePath) async {
+    if (!(await File(pcapFilePath).exists())) {
+      LoggingService.onError(const FlutterErrorDetails(
+        exception: "Pcap file does not exist!",
+        library: "Traffic Analyzer",
+      ));
+      return [];
+    }
     List<dynamic>? packetList = await tshark.pcapFieldsToJson(
       pcapFile: pcapFilePath,
       fields: [
@@ -445,7 +456,8 @@ class TrafficAnalyzer {
     }
 
     // Server Name Indication
-    String? serverName = packetData["tls.handshake.extensions_server_name"]?.first;
+    String? serverName =
+        packetData["tls.handshake.extensions_server_name"]?.first;
     if (serverName.empty && protocols.contains("tls")) {
       serverName = _lookupSniFromPacketHistory(
         ipSrc: ipSrc,
@@ -588,7 +600,8 @@ class TrafficAnalyzer {
   ) {
     List<NetworkConnection> groupConnections = [];
     for (var con in group.networkConnections) {
-      if (connections.any((c) => c.ip == con.ip && c.serverName == con.serverName)) {
+      if (connections
+          .any((c) => c.ip == con.ip && c.serverName == con.serverName)) {
         groupConnections.add(con);
       }
     }

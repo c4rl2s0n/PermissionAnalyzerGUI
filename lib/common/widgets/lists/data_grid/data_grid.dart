@@ -306,7 +306,7 @@ class _DataGridTestState<T> extends State<DataGrid<T>> {
                   : null,
           onSecondaryTap: widget.onDataSecondaryTap != null ? (p) => widget.onDataSecondaryTap!(entry, p) : null,
           backgroundColor: entry == selectedItem
-                  ? context.colors.highlight.withOpacity(0.3)
+                  ? context.colors.tertiary.withOpacity(0.3)
                   : context.colors.onBackground.withOpacity(0.1),
           padding:
               EdgeInsets.symmetric(horizontal: context.constants.smallSpacing),

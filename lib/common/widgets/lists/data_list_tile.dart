@@ -55,7 +55,7 @@ class DataListTile extends StatelessWidget {
             borderRadius:
                 BorderRadius.all(context.constants.roundedCornerRadius),
             splashColor: context.colors.secondary,
-            highlightColor: context.colors.highlight,
+            highlightColor: context.colors.tertiary,
             hoverColor: context.colors.onBackground
                 .withOpacity(context.constants.strongColorOpacity),
             splashFactory: InkRipple.splashFactory,

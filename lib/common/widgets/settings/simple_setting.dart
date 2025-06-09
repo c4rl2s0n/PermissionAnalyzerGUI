@@ -25,12 +25,12 @@ class SimpleSetting extends StatelessWidget {
             children: [
               Text(
                 name,
-                style: context.textTheme.labelMedium,
+                style: context.textTheme.titleMedium,
               ),
               if (description != null) ...[
                 Text(
                   description!,
-                  style: context.textTheme.bodyMedium,
+                  style: context.textTheme.labelMedium,
                 )
               ],
             ],

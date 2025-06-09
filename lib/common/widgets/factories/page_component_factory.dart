@@ -30,13 +30,13 @@ class PageComponentFactory {
     required String title,
     List<Widget>? actions,
   }) {
-    CustomColors colors = context.colors;
+    ColorAccessor colors = context.colors;
     IconThemeData iconTheme =
         context.themeData.iconTheme.copyWith(color: context.colors.onPrimary);
     return AppBar(
-      toolbarHeight: 35,
+      toolbarHeight: 45,
       titleTextStyle:
-          context.textTheme.headlineSmall?.copyWith(color: colors.onPrimary),
+          context.textTheme.headlineLarge?.copyWith(color: colors.onPrimary),
       title: Text(title),
       actionsIconTheme: iconTheme,
       actions: actions,

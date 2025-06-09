@@ -48,7 +48,14 @@ class SessionCubit extends Cubit<SessionState> {
     if (!_hasAdb) return;
     Adb adb = Adb(_settingsCubit);
     List<String> devices = await adb.devices();
-    emit(state.copyWith(adbDevices: devices));
+
+    // get list of applications for all connected devices
+    Map<String, List<String>> deviceApplications = {};
+    for (var dev in devices) {
+      deviceApplications[dev] =
+          await Adb(_settingsCubit, device: dev).getApplications();
+    }
+    emit(state.copyWith(deviceApplications: deviceApplications));
     if (state.adbDevice.isEmpty || !devices.contains(state.adbDevice)) {
       String? device = devices.firstOrNull;
       setAdbDevice(device);
@@ -76,7 +83,7 @@ class SessionState with _$SessionState {
 
   const factory SessionState({
     required String adbDevice,
-    required List<String> adbDevices,
+    required Map<String, List<String>> deviceApplications,
     required List<AndroidInputDevice> adbDeviceEventInputs,
     required List<TsharkNetworkInterface> networkInterfaces,
     required List<TestApplication> applications,
@@ -84,14 +91,19 @@ class SessionState with _$SessionState {
 
   factory SessionState.empty() => const SessionState(
         adbDevice: "",
-        adbDevices: [],
+        deviceApplications: {},
         adbDeviceEventInputs: [],
         networkInterfaces: [],
         applications: [],
       );
+
   bool get hasDevice => adbDevice.isNotEmpty;
 
+  List<String> get adbDevices => deviceApplications.keys.toList();
+
   bool deviceConnected(String device) => adbDevices.contains(device);
+  bool applicationInstalled(String appId) =>
+      deviceApplications[adbDevice]?.contains(appId) ?? false;
 
   List<AndroidInputDevice> get inputDevices {
     List<AndroidInputDevice> devices = List.of(adbDeviceEventInputs);

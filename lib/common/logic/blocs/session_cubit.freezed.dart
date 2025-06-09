@@ -17,7 +17,8 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$SessionState {
   String get adbDevice => throw _privateConstructorUsedError;
-  List<String> get adbDevices => throw _privateConstructorUsedError;
+  Map<String, List<String>> get deviceApplications =>
+      throw _privateConstructorUsedError;
   List<AndroidInputDevice> get adbDeviceEventInputs =>
       throw _privateConstructorUsedError;
   List<TsharkNetworkInterface> get networkInterfaces =>
@@ -39,7 +40,7 @@ abstract class $SessionStateCopyWith<$Res> {
   @useResult
   $Res call(
       {String adbDevice,
-      List<String> adbDevices,
+      Map<String, List<String>> deviceApplications,
       List<AndroidInputDevice> adbDeviceEventInputs,
       List<TsharkNetworkInterface> networkInterfaces,
       List<TestApplication> applications});
@@ -61,7 +62,7 @@ class _$SessionStateCopyWithImpl<$Res, $Val extends SessionState>
   @override
   $Res call({
     Object? adbDevice = null,
-    Object? adbDevices = null,
+    Object? deviceApplications = null,
     Object? adbDeviceEventInputs = null,
     Object? networkInterfaces = null,
     Object? applications = null,
@@ -71,10 +72,10 @@ class _$SessionStateCopyWithImpl<$Res, $Val extends SessionState>
           ? _value.adbDevice
           : adbDevice // ignore: cast_nullable_to_non_nullable
               as String,
-      adbDevices: null == adbDevices
-          ? _value.adbDevices
-          : adbDevices // ignore: cast_nullable_to_non_nullable
-              as List<String>,
+      deviceApplications: null == deviceApplications
+          ? _value.deviceApplications
+          : deviceApplications // ignore: cast_nullable_to_non_nullable
+              as Map<String, List<String>>,
       adbDeviceEventInputs: null == adbDeviceEventInputs
           ? _value.adbDeviceEventInputs
           : adbDeviceEventInputs // ignore: cast_nullable_to_non_nullable
@@ -101,7 +102,7 @@ abstract class _$$SessionStateImplCopyWith<$Res>
   @useResult
   $Res call(
       {String adbDevice,
-      List<String> adbDevices,
+      Map<String, List<String>> deviceApplications,
       List<AndroidInputDevice> adbDeviceEventInputs,
       List<TsharkNetworkInterface> networkInterfaces,
       List<TestApplication> applications});
@@ -121,7 +122,7 @@ class __$$SessionStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? adbDevice = null,
-    Object? adbDevices = null,
+    Object? deviceApplications = null,
     Object? adbDeviceEventInputs = null,
     Object? networkInterfaces = null,
     Object? applications = null,
@@ -131,10 +132,10 @@ class __$$SessionStateImplCopyWithImpl<$Res>
           ? _value.adbDevice
           : adbDevice // ignore: cast_nullable_to_non_nullable
               as String,
-      adbDevices: null == adbDevices
-          ? _value._adbDevices
-          : adbDevices // ignore: cast_nullable_to_non_nullable
-              as List<String>,
+      deviceApplications: null == deviceApplications
+          ? _value._deviceApplications
+          : deviceApplications // ignore: cast_nullable_to_non_nullable
+              as Map<String, List<String>>,
       adbDeviceEventInputs: null == adbDeviceEventInputs
           ? _value._adbDeviceEventInputs
           : adbDeviceEventInputs // ignore: cast_nullable_to_non_nullable
@@ -156,11 +157,11 @@ class __$$SessionStateImplCopyWithImpl<$Res>
 class _$SessionStateImpl extends _SessionState {
   const _$SessionStateImpl(
       {required this.adbDevice,
-      required final List<String> adbDevices,
+      required final Map<String, List<String>> deviceApplications,
       required final List<AndroidInputDevice> adbDeviceEventInputs,
       required final List<TsharkNetworkInterface> networkInterfaces,
       required final List<TestApplication> applications})
-      : _adbDevices = adbDevices,
+      : _deviceApplications = deviceApplications,
         _adbDeviceEventInputs = adbDeviceEventInputs,
         _networkInterfaces = networkInterfaces,
         _applications = applications,
@@ -168,12 +169,13 @@ class _$SessionStateImpl extends _SessionState {
 
   @override
   final String adbDevice;
-  final List<String> _adbDevices;
+  final Map<String, List<String>> _deviceApplications;
   @override
-  List<String> get adbDevices {
-    if (_adbDevices is EqualUnmodifiableListView) return _adbDevices;
+  Map<String, List<String>> get deviceApplications {
+    if (_deviceApplications is EqualUnmodifiableMapView)
+      return _deviceApplications;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_adbDevices);
+    return EqualUnmodifiableMapView(_deviceApplications);
   }
 
   final List<AndroidInputDevice> _adbDeviceEventInputs;
@@ -204,7 +206,7 @@ class _$SessionStateImpl extends _SessionState {
 
   @override
   String toString() {
-    return 'SessionState(adbDevice: $adbDevice, adbDevices: $adbDevices, adbDeviceEventInputs: $adbDeviceEventInputs, networkInterfaces: $networkInterfaces, applications: $applications)';
+    return 'SessionState(adbDevice: $adbDevice, deviceApplications: $deviceApplications, adbDeviceEventInputs: $adbDeviceEventInputs, networkInterfaces: $networkInterfaces, applications: $applications)';
   }
 
   @override
@@ -215,7 +217,7 @@ class _$SessionStateImpl extends _SessionState {
             (identical(other.adbDevice, adbDevice) ||
                 other.adbDevice == adbDevice) &&
             const DeepCollectionEquality()
-                .equals(other._adbDevices, _adbDevices) &&
+                .equals(other._deviceApplications, _deviceApplications) &&
             const DeepCollectionEquality()
                 .equals(other._adbDeviceEventInputs, _adbDeviceEventInputs) &&
             const DeepCollectionEquality()
@@ -228,7 +230,7 @@ class _$SessionStateImpl extends _SessionState {
   int get hashCode => Object.hash(
       runtimeType,
       adbDevice,
-      const DeepCollectionEquality().hash(_adbDevices),
+      const DeepCollectionEquality().hash(_deviceApplications),
       const DeepCollectionEquality().hash(_adbDeviceEventInputs),
       const DeepCollectionEquality().hash(_networkInterfaces),
       const DeepCollectionEquality().hash(_applications));
@@ -245,7 +247,7 @@ class _$SessionStateImpl extends _SessionState {
 abstract class _SessionState extends SessionState {
   const factory _SessionState(
       {required final String adbDevice,
-      required final List<String> adbDevices,
+      required final Map<String, List<String>> deviceApplications,
       required final List<AndroidInputDevice> adbDeviceEventInputs,
       required final List<TsharkNetworkInterface> networkInterfaces,
       required final List<TestApplication> applications}) = _$SessionStateImpl;
@@ -254,7 +256,7 @@ abstract class _SessionState extends SessionState {
   @override
   String get adbDevice;
   @override
-  List<String> get adbDevices;
+  Map<String, List<String>> get deviceApplications;
   @override
   List<AndroidInputDevice> get adbDeviceEventInputs;
   @override

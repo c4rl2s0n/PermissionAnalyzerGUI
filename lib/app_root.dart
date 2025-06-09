@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 import 'package:permission_analyzer_gui/common/common.dart';
+import 'package:permission_analyzer_gui/common/keys.dart';
 import 'package:permission_analyzer_gui/l10n/l10n.dart';
 
 import 'data/data.dart';
@@ -20,19 +21,22 @@ class AppRoot extends StatelessWidget {
       child: BlocBuilder<SettingsCubit, SettingsState>(
         buildWhen: (oldState, state) =>
             oldState.isDarkMode != state.isDarkMode ||
+            oldState.colorScheme != state.colorScheme ||
             oldState.language != state.language,
         builder: (context, state) {
           return MaterialApp(
             title: title,
+            scaffoldMessengerKey: messengerKey,
             debugShowCheckedModeBanner: false,
             debugShowMaterialGrid: false,
-            theme: getTheme(false),
-            darkTheme: getTheme(true),
+            theme: getTheme(false, flexScheme: state.colorScheme),
+            darkTheme: getTheme(true, flexScheme: state.colorScheme),
             themeMode: state.isDarkMode ? ThemeMode.dark : ThemeMode.light,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             locale: AppLocalizations.supportedLocales
                 .firstWhere((l) => l.languageCode == state.language),
+            navigatorObservers: [Modular.get<RouteObserver>()],
             home: Builder(
               builder: (context) => const SplashScreen(),
             ),

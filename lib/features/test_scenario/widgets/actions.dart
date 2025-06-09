@@ -65,24 +65,39 @@ class TestScenarioActions extends StatelessWidget {
   }
 
   Widget _recordButton() {
-    return BlocBuilder<TestScenarioCubit, TestScenarioState>(
-        buildWhen: (oldState, state) => oldState.hasTests != state.hasTests
-            || oldState.loading != state.loading,
-        builder: (context, state) {
-          bool isEnabled = !state.hasTests;
-          return Optional.tooltip(
-            tooltip: state.hasTests
-                ? "Tests have already been recorded for this scenario."
-                    : "",
-            show: !isEnabled,
-            child: IconTextButton(
-              onTap: () => context.testScenarioCubit.recordScenario(),
-              enabled: isEnabled,
-              text: "Record Scenario",
-              icon: Icon(context.icons.record),
-            ),
-          );
-        },
+    return BlocBuilder<SessionCubit, SessionState>(
+      buildWhen: (oldState, state) =>
+          oldState.adbDevices != state.adbDevices ||
+          oldState.deviceApplications != state.deviceApplications,
+      builder: (context, session) {
+        return BlocBuilder<TestScenarioCubit, TestScenarioState>(
+          buildWhen: (oldState, state) =>
+              oldState.hasTests != state.hasTests ||
+              oldState.loading != state.loading,
+          builder: (context, state) {
+            bool deviceConnected = session.deviceConnected(state.device);
+            bool appInstalled =
+                session.applicationInstalled(state.applicationId);
+            bool isEnabled = !state.hasTests && deviceConnected && appInstalled;
+            return Optional.tooltip(
+              tooltip: state.hasTests
+                  ? "Tests have already been recorded for this scenario."
+                  : !deviceConnected
+                      ? "Target device is not connected."
+                      : !appInstalled
+                          ? "The application is not installed on the device"
+                          : "",
+              show: !isEnabled,
+              child: IconTextButton(
+                onTap: () => context.testScenarioCubit.recordScenario(),
+                enabled: isEnabled,
+                text: "Record Scenario",
+                icon: Icon(context.icons.record),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -107,21 +122,27 @@ class TestScenarioActions extends StatelessWidget {
 
   Widget _runButton() {
     return BlocBuilder<SessionCubit, SessionState>(
-      buildWhen: (oldState, state) => oldState.adbDevices != state.adbDevices,
+      buildWhen: (oldState, state) =>
+          oldState.adbDevices != state.adbDevices ||
+          oldState.deviceApplications != state.deviceApplications,
       builder: (context, session) =>
           BlocBuilder<TestScenarioCubit, TestScenarioState>(
         buildWhen: (oldState, state) =>
             oldState.testConstellations != state.testConstellations,
         builder: (context, state) {
           bool deviceConnected = session.deviceConnected(state.device);
-          bool isEnabled =
-              state.testConstellations.isNotEmpty && deviceConnected;
+          bool appInstalled = session.applicationInstalled(state.applicationId);
+          bool isEnabled = state.testConstellations.isNotEmpty &&
+              deviceConnected &&
+              appInstalled;
           return Optional.tooltip(
             tooltip: state.testConstellations.isEmpty
                 ? "No test constellations are defined"
                 : !deviceConnected
                     ? "Target device is not connected."
-                    : "",
+                    : !appInstalled
+                        ? "The application is not installed on the device"
+                        : "",
             show: !isEnabled,
             child: IconTextButton(
               onTap:

@@ -226,7 +226,7 @@ class _EndpointMapState extends State<EndpointMap> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(2000),
-          color: context.colors.highlight
+          color: context.colors.tertiary
               .withOpacity(context.constants.lightColorOpacity),
           gradient: _computeGradient(
             context,
@@ -239,7 +239,7 @@ class _EndpointMapState extends State<EndpointMap> {
         child: Center(
           child: Text(
             markerCount.toString(),
-            style: TextStyle(color: context.colors.onHighlight),
+            style: TextStyle(color: context.colors.onTertiary),
           ),
         ),
       ),

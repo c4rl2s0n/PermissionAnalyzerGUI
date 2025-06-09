@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class ThemeConstants extends ThemeExtension<ThemeConstants> {
-  ThemeConstants({
+  const ThemeConstants({
     this.roundedCornerRadius = const Radius.circular(12),
     this.largeSpacing = 16,
     this.spacing = 12,
@@ -19,6 +19,7 @@ class ThemeConstants extends ThemeExtension<ThemeConstants> {
     this.dividerHeight = 5,
   });
   final Radius roundedCornerRadius;
+  BorderRadius get borderRadius => BorderRadius.all(roundedCornerRadius);
   final double largeSpacing;
   final double spacing;
   final double smallSpacing;

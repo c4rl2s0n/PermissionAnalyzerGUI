@@ -17,6 +17,7 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$SettingsState {
   bool get isDarkMode => throw _privateConstructorUsedError;
+  FlexScheme get colorScheme => throw _privateConstructorUsedError;
   String get language => throw _privateConstructorUsedError;
   bool get ignoreLocalTraffic => throw _privateConstructorUsedError;
   String get workingDirectory => throw _privateConstructorUsedError;
@@ -42,6 +43,7 @@ abstract class $SettingsStateCopyWith<$Res> {
   @useResult
   $Res call(
       {bool isDarkMode,
+      FlexScheme colorScheme,
       String language,
       bool ignoreLocalTraffic,
       String workingDirectory,
@@ -69,6 +71,7 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
   @override
   $Res call({
     Object? isDarkMode = null,
+    Object? colorScheme = null,
     Object? language = null,
     Object? ignoreLocalTraffic = null,
     Object? workingDirectory = null,
@@ -84,6 +87,10 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
           ? _value.isDarkMode
           : isDarkMode // ignore: cast_nullable_to_non_nullable
               as bool,
+      colorScheme: null == colorScheme
+          ? _value.colorScheme
+          : colorScheme // ignore: cast_nullable_to_non_nullable
+              as FlexScheme,
       language: null == language
           ? _value.language
           : language // ignore: cast_nullable_to_non_nullable
@@ -134,6 +141,7 @@ abstract class _$$SettingsStateImplCopyWith<$Res>
   @useResult
   $Res call(
       {bool isDarkMode,
+      FlexScheme colorScheme,
       String language,
       bool ignoreLocalTraffic,
       String workingDirectory,
@@ -159,6 +167,7 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? isDarkMode = null,
+    Object? colorScheme = null,
     Object? language = null,
     Object? ignoreLocalTraffic = null,
     Object? workingDirectory = null,
@@ -174,6 +183,10 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
           ? _value.isDarkMode
           : isDarkMode // ignore: cast_nullable_to_non_nullable
               as bool,
+      colorScheme: null == colorScheme
+          ? _value.colorScheme
+          : colorScheme // ignore: cast_nullable_to_non_nullable
+              as FlexScheme,
       language: null == language
           ? _value.language
           : language // ignore: cast_nullable_to_non_nullable
@@ -219,6 +232,7 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
 class _$SettingsStateImpl extends _SettingsState {
   const _$SettingsStateImpl(
       {required this.isDarkMode,
+      required this.colorScheme,
       required this.language,
       required this.ignoreLocalTraffic,
       required this.workingDirectory,
@@ -232,6 +246,8 @@ class _$SettingsStateImpl extends _SettingsState {
 
   @override
   final bool isDarkMode;
+  @override
+  final FlexScheme colorScheme;
   @override
   final String language;
   @override
@@ -253,7 +269,7 @@ class _$SettingsStateImpl extends _SettingsState {
 
   @override
   String toString() {
-    return 'SettingsState(isDarkMode: $isDarkMode, language: $language, ignoreLocalTraffic: $ignoreLocalTraffic, workingDirectory: $workingDirectory, adbPath: $adbPath, tsharkPath: $tsharkPath, recorderVersion: $recorderVersion, recorderPath: $recorderPath, recorderDestinationPath: $recorderDestinationPath, inputRecordDestinationPath: $inputRecordDestinationPath)';
+    return 'SettingsState(isDarkMode: $isDarkMode, colorScheme: $colorScheme, language: $language, ignoreLocalTraffic: $ignoreLocalTraffic, workingDirectory: $workingDirectory, adbPath: $adbPath, tsharkPath: $tsharkPath, recorderVersion: $recorderVersion, recorderPath: $recorderPath, recorderDestinationPath: $recorderDestinationPath, inputRecordDestinationPath: $inputRecordDestinationPath)';
   }
 
   @override
@@ -263,6 +279,8 @@ class _$SettingsStateImpl extends _SettingsState {
             other is _$SettingsStateImpl &&
             (identical(other.isDarkMode, isDarkMode) ||
                 other.isDarkMode == isDarkMode) &&
+            (identical(other.colorScheme, colorScheme) ||
+                other.colorScheme == colorScheme) &&
             (identical(other.language, language) ||
                 other.language == language) &&
             (identical(other.ignoreLocalTraffic, ignoreLocalTraffic) ||
@@ -289,6 +307,7 @@ class _$SettingsStateImpl extends _SettingsState {
   int get hashCode => Object.hash(
       runtimeType,
       isDarkMode,
+      colorScheme,
       language,
       ignoreLocalTraffic,
       workingDirectory,
@@ -311,6 +330,7 @@ class _$SettingsStateImpl extends _SettingsState {
 abstract class _SettingsState extends SettingsState {
   const factory _SettingsState(
       {required final bool isDarkMode,
+      required final FlexScheme colorScheme,
       required final String language,
       required final bool ignoreLocalTraffic,
       required final String workingDirectory,
@@ -324,6 +344,8 @@ abstract class _SettingsState extends SettingsState {
 
   @override
   bool get isDarkMode;
+  @override
+  FlexScheme get colorScheme;
   @override
   String get language;
   @override

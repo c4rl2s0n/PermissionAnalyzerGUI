@@ -17,6 +17,8 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$TestScenarioState {
   bool get loading => throw _privateConstructorUsedError;
+  bool get shouldReplay => throw _privateConstructorUsedError;
+  bool get hasChanges => throw _privateConstructorUsedError;
   String get loadingInfo => throw _privateConstructorUsedError;
   String get applicationId => throw _privateConstructorUsedError;
   String get applicationName => throw _privateConstructorUsedError;
@@ -51,6 +53,8 @@ abstract class $TestScenarioStateCopyWith<$Res> {
   @useResult
   $Res call(
       {bool loading,
+      bool shouldReplay,
+      bool hasChanges,
       String loadingInfo,
       String applicationId,
       String applicationName,
@@ -84,6 +88,8 @@ class _$TestScenarioStateCopyWithImpl<$Res, $Val extends TestScenarioState>
   @override
   $Res call({
     Object? loading = null,
+    Object? shouldReplay = null,
+    Object? hasChanges = null,
     Object? loadingInfo = null,
     Object? applicationId = null,
     Object? applicationName = null,
@@ -104,6 +110,14 @@ class _$TestScenarioStateCopyWithImpl<$Res, $Val extends TestScenarioState>
       loading: null == loading
           ? _value.loading
           : loading // ignore: cast_nullable_to_non_nullable
+              as bool,
+      shouldReplay: null == shouldReplay
+          ? _value.shouldReplay
+          : shouldReplay // ignore: cast_nullable_to_non_nullable
+              as bool,
+      hasChanges: null == hasChanges
+          ? _value.hasChanges
+          : hasChanges // ignore: cast_nullable_to_non_nullable
               as bool,
       loadingInfo: null == loadingInfo
           ? _value.loadingInfo
@@ -179,6 +193,8 @@ abstract class _$$TestScenarioStateImplCopyWith<$Res>
   @useResult
   $Res call(
       {bool loading,
+      bool shouldReplay,
+      bool hasChanges,
       String loadingInfo,
       String applicationId,
       String applicationName,
@@ -210,6 +226,8 @@ class __$$TestScenarioStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? loading = null,
+    Object? shouldReplay = null,
+    Object? hasChanges = null,
     Object? loadingInfo = null,
     Object? applicationId = null,
     Object? applicationName = null,
@@ -230,6 +248,14 @@ class __$$TestScenarioStateImplCopyWithImpl<$Res>
       loading: null == loading
           ? _value.loading
           : loading // ignore: cast_nullable_to_non_nullable
+              as bool,
+      shouldReplay: null == shouldReplay
+          ? _value.shouldReplay
+          : shouldReplay // ignore: cast_nullable_to_non_nullable
+              as bool,
+      hasChanges: null == hasChanges
+          ? _value.hasChanges
+          : hasChanges // ignore: cast_nullable_to_non_nullable
               as bool,
       loadingInfo: null == loadingInfo
           ? _value.loadingInfo
@@ -300,6 +326,8 @@ class __$$TestScenarioStateImplCopyWithImpl<$Res>
 class _$TestScenarioStateImpl extends _TestScenarioState {
   const _$TestScenarioStateImpl(
       {required this.loading,
+      required this.shouldReplay,
+      required this.hasChanges,
       required this.loadingInfo,
       required this.applicationId,
       required this.applicationName,
@@ -322,6 +350,10 @@ class _$TestScenarioStateImpl extends _TestScenarioState {
 
   @override
   final bool loading;
+  @override
+  final bool shouldReplay;
+  @override
+  final bool hasChanges;
   @override
   final String loadingInfo;
   @override
@@ -374,7 +406,7 @@ class _$TestScenarioStateImpl extends _TestScenarioState {
 
   @override
   String toString() {
-    return 'TestScenarioState(loading: $loading, loadingInfo: $loadingInfo, applicationId: $applicationId, applicationName: $applicationName, name: $name, userInputRecord: $userInputRecord, device: $device, deviceInput: $deviceInput, networkInterface: $networkInterface, duration: $duration, numTestRuns: $numTestRuns, permissions: $permissions, recordScreen: $recordScreen, captureTraffic: $captureTraffic, testConstellations: $testConstellations, firewallSettings: $firewallSettings)';
+    return 'TestScenarioState(loading: $loading, shouldReplay: $shouldReplay, hasChanges: $hasChanges, loadingInfo: $loadingInfo, applicationId: $applicationId, applicationName: $applicationName, name: $name, userInputRecord: $userInputRecord, device: $device, deviceInput: $deviceInput, networkInterface: $networkInterface, duration: $duration, numTestRuns: $numTestRuns, permissions: $permissions, recordScreen: $recordScreen, captureTraffic: $captureTraffic, testConstellations: $testConstellations, firewallSettings: $firewallSettings)';
   }
 
   @override
@@ -383,6 +415,10 @@ class _$TestScenarioStateImpl extends _TestScenarioState {
         (other.runtimeType == runtimeType &&
             other is _$TestScenarioStateImpl &&
             (identical(other.loading, loading) || other.loading == loading) &&
+            (identical(other.shouldReplay, shouldReplay) ||
+                other.shouldReplay == shouldReplay) &&
+            (identical(other.hasChanges, hasChanges) ||
+                other.hasChanges == hasChanges) &&
             (identical(other.loadingInfo, loadingInfo) ||
                 other.loadingInfo == loadingInfo) &&
             (identical(other.applicationId, applicationId) ||
@@ -417,6 +453,8 @@ class _$TestScenarioStateImpl extends _TestScenarioState {
   int get hashCode => Object.hash(
       runtimeType,
       loading,
+      shouldReplay,
+      hasChanges,
       loadingInfo,
       applicationId,
       applicationName,
@@ -446,6 +484,8 @@ class _$TestScenarioStateImpl extends _TestScenarioState {
 abstract class _TestScenarioState extends TestScenarioState {
   const factory _TestScenarioState(
           {required final bool loading,
+          required final bool shouldReplay,
+          required final bool hasChanges,
           required final String loadingInfo,
           required final String applicationId,
           required final String applicationName,
@@ -466,6 +506,10 @@ abstract class _TestScenarioState extends TestScenarioState {
 
   @override
   bool get loading;
+  @override
+  bool get shouldReplay;
+  @override
+  bool get hasChanges;
   @override
   String get loadingInfo;
   @override

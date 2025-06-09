@@ -41,6 +41,9 @@ dependencies:
   crypto: ^3.0.6
   fvp: ^0.29.0
   flutter_colorpicker: ^1.1.0
+  replay_bloc: ^0.2.7
+  flex_color_scheme: ^8.2.0
+  theme_tailor_annotation: ^3.0.2
 
 dev_dependencies:
   flutter_test:
@@ -52,6 +55,7 @@ dev_dependencies:
     version: ^3.1.0+1
     hosted: https://pub.isar-community.dev/
   freezed: ^2.5.7
+  theme_tailor: ^3.0.1
 
 flutter:
   uses-material-design: true

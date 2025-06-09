@@ -54,10 +54,16 @@ class Tshark {
   Future<Process> capture({
     required String pcapPath,
     required String interface,
-    required Duration duration,
+    Duration? duration,
   }) async {
     return await start(
-      ["-w", pcapPath, "-i", interface, "-a", "duration:${duration.inSeconds}"],
+      [
+        "-w",
+        pcapPath,
+        "-i",
+        interface,
+        if (duration != null) ...["-a", "duration:${duration.inSeconds}"],
+      ],
       //timeout: duration,
     );
   }
@@ -75,7 +81,7 @@ class Tshark {
       return jsonDecode(result.outText);
     } on Error catch (e) {
       Logger.root.warning("Error decoding pcap", e, e.stackTrace);
-    } on Exception catch (e){
+    } on Exception catch (e) {
       Logger.root.warning("Exception decoding pcap", e);
     }
     return null;

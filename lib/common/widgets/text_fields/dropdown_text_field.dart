@@ -65,7 +65,7 @@ class _DropdownTextFieldState extends State<DropdownTextField> {
       padding:
           widget.padding ?? EdgeInsets.only(bottom: context.constants.spacing),
       child: TextFormField(
-        style: theme.textTheme.bodyMedium,
+        style: theme.textTheme.bodyLarge,
         controller: controller,
         decoration: InputDecoration(
           border: getTextBoxBorder(context),
@@ -89,7 +89,7 @@ class _DropdownTextFieldState extends State<DropdownTextField> {
                 .map(
                   (v) => PopupMenuItem<String>(
                     value: v,
-                    child: Text(v),
+                    child: Text(v, style: context.textTheme.labelLarge,),
                   ),
                 )
                 .toList(),

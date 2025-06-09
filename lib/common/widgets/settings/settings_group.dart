@@ -16,7 +16,7 @@ class SettingsGroup extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: context.textTheme.headlineSmall),
+        Text(title, style: context.textTheme.headlineMedium),
         Margin.vertical(context.constants.largeSpacing),
         ...settings.insertBetweenItems(
             () => Margin.vertical(context.constants.spacing)),

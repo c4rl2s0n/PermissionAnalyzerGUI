@@ -28,48 +28,54 @@ const SettingsSchema = CollectionSchema(
       type: IsarType.object,
       target: r'AnalysisConfig',
     ),
-    r'ignoreLocalTraffic': PropertySchema(
+    r'colorScheme': PropertySchema(
       id: 2,
+      name: r'colorScheme',
+      type: IsarType.string,
+      enumMap: _SettingscolorSchemeEnumValueMap,
+    ),
+    r'ignoreLocalTraffic': PropertySchema(
+      id: 3,
       name: r'ignoreLocalTraffic',
       type: IsarType.bool,
     ),
     r'inputRecordDestinationPath': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'inputRecordDestinationPath',
       type: IsarType.string,
     ),
     r'isDarkMode': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'isDarkMode',
       type: IsarType.bool,
     ),
     r'language': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'language',
       type: IsarType.string,
     ),
     r'recorderDestinationPath': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'recorderDestinationPath',
       type: IsarType.string,
     ),
     r'recorderPath': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'recorderPath',
       type: IsarType.string,
     ),
     r'recorderVersion': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'recorderVersion',
       type: IsarType.string,
     ),
     r'tsharkPath': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'tsharkPath',
       type: IsarType.string,
     ),
     r'workingDirectory': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'workingDirectory',
       type: IsarType.string,
     )
@@ -108,6 +114,7 @@ int _settingsEstimateSize(
               value, allOffsets[AnalysisConfig]!, allOffsets);
     }
   }
+  bytesCount += 3 + object.colorScheme.name.length * 3;
   {
     final value = object.inputRecordDestinationPath;
     if (value != null) {
@@ -161,15 +168,16 @@ void _settingsSerialize(
     AnalysisConfigSchema.serialize,
     object.analysisConfig,
   );
-  writer.writeBool(offsets[2], object.ignoreLocalTraffic);
-  writer.writeString(offsets[3], object.inputRecordDestinationPath);
-  writer.writeBool(offsets[4], object.isDarkMode);
-  writer.writeString(offsets[5], object.language);
-  writer.writeString(offsets[6], object.recorderDestinationPath);
-  writer.writeString(offsets[7], object.recorderPath);
-  writer.writeString(offsets[8], object.recorderVersion);
-  writer.writeString(offsets[9], object.tsharkPath);
-  writer.writeString(offsets[10], object.workingDirectory);
+  writer.writeString(offsets[2], object.colorScheme.name);
+  writer.writeBool(offsets[3], object.ignoreLocalTraffic);
+  writer.writeString(offsets[4], object.inputRecordDestinationPath);
+  writer.writeBool(offsets[5], object.isDarkMode);
+  writer.writeString(offsets[6], object.language);
+  writer.writeString(offsets[7], object.recorderDestinationPath);
+  writer.writeString(offsets[8], object.recorderPath);
+  writer.writeString(offsets[9], object.recorderVersion);
+  writer.writeString(offsets[10], object.tsharkPath);
+  writer.writeString(offsets[11], object.workingDirectory);
 }
 
 Settings _settingsDeserialize(
@@ -185,15 +193,18 @@ Settings _settingsDeserialize(
       AnalysisConfigSchema.deserialize,
       allOffsets,
     ),
-    ignoreLocalTraffic: reader.readBoolOrNull(offsets[2]) ?? true,
-    inputRecordDestinationPath: reader.readStringOrNull(offsets[3]),
-    isDarkMode: reader.readBoolOrNull(offsets[4]) ?? true,
-    language: reader.readStringOrNull(offsets[5]) ?? "en",
-    recorderDestinationPath: reader.readStringOrNull(offsets[6]),
-    recorderPath: reader.readStringOrNull(offsets[7]),
-    recorderVersion: reader.readStringOrNull(offsets[8]),
-    tsharkPath: reader.readStringOrNull(offsets[9]),
-    workingDirectory: reader.readStringOrNull(offsets[10]),
+    colorScheme:
+        _SettingscolorSchemeValueEnumMap[reader.readStringOrNull(offsets[2])] ??
+            FlexScheme.amber,
+    ignoreLocalTraffic: reader.readBoolOrNull(offsets[3]) ?? true,
+    inputRecordDestinationPath: reader.readStringOrNull(offsets[4]),
+    isDarkMode: reader.readBoolOrNull(offsets[5]) ?? true,
+    language: reader.readStringOrNull(offsets[6]) ?? "en",
+    recorderDestinationPath: reader.readStringOrNull(offsets[7]),
+    recorderPath: reader.readStringOrNull(offsets[8]),
+    recorderVersion: reader.readStringOrNull(offsets[9]),
+    tsharkPath: reader.readStringOrNull(offsets[10]),
+    workingDirectory: reader.readStringOrNull(offsets[11]),
   );
   object.id = id;
   return object;
@@ -215,15 +226,17 @@ P _settingsDeserializeProp<P>(
         allOffsets,
       )) as P;
     case 2:
-      return (reader.readBoolOrNull(offset) ?? true) as P;
+      return (_SettingscolorSchemeValueEnumMap[
+              reader.readStringOrNull(offset)] ??
+          FlexScheme.amber) as P;
     case 3:
-      return (reader.readStringOrNull(offset)) as P;
-    case 4:
       return (reader.readBoolOrNull(offset) ?? true) as P;
-    case 5:
-      return (reader.readStringOrNull(offset) ?? "en") as P;
-    case 6:
+    case 4:
       return (reader.readStringOrNull(offset)) as P;
+    case 5:
+      return (reader.readBoolOrNull(offset) ?? true) as P;
+    case 6:
+      return (reader.readStringOrNull(offset) ?? "en") as P;
     case 7:
       return (reader.readStringOrNull(offset)) as P;
     case 8:
@@ -232,10 +245,153 @@ P _settingsDeserializeProp<P>(
       return (reader.readStringOrNull(offset)) as P;
     case 10:
       return (reader.readStringOrNull(offset)) as P;
+    case 11:
+      return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _SettingscolorSchemeEnumValueMap = {
+  r'material': r'material',
+  r'materialHc': r'materialHc',
+  r'blue': r'blue',
+  r'indigo': r'indigo',
+  r'hippieBlue': r'hippieBlue',
+  r'aquaBlue': r'aquaBlue',
+  r'brandBlue': r'brandBlue',
+  r'deepBlue': r'deepBlue',
+  r'sakura': r'sakura',
+  r'mandyRed': r'mandyRed',
+  r'red': r'red',
+  r'redWine': r'redWine',
+  r'purpleBrown': r'purpleBrown',
+  r'green': r'green',
+  r'money': r'money',
+  r'jungle': r'jungle',
+  r'greyLaw': r'greyLaw',
+  r'wasabi': r'wasabi',
+  r'gold': r'gold',
+  r'mango': r'mango',
+  r'amber': r'amber',
+  r'vesuviusBurn': r'vesuviusBurn',
+  r'deepPurple': r'deepPurple',
+  r'ebonyClay': r'ebonyClay',
+  r'barossa': r'barossa',
+  r'shark': r'shark',
+  r'bigStone': r'bigStone',
+  r'damask': r'damask',
+  r'bahamaBlue': r'bahamaBlue',
+  r'mallardGreen': r'mallardGreen',
+  r'espresso': r'espresso',
+  r'outerSpace': r'outerSpace',
+  r'blueWhale': r'blueWhale',
+  r'sanJuanBlue': r'sanJuanBlue',
+  r'rosewood': r'rosewood',
+  r'blumineBlue': r'blumineBlue',
+  r'flutterDash': r'flutterDash',
+  r'materialBaseline': r'materialBaseline',
+  r'verdunHemlock': r'verdunHemlock',
+  r'dellGenoa': r'dellGenoa',
+  r'redM3': r'redM3',
+  r'pinkM3': r'pinkM3',
+  r'purpleM3': r'purpleM3',
+  r'indigoM3': r'indigoM3',
+  r'blueM3': r'blueM3',
+  r'cyanM3': r'cyanM3',
+  r'tealM3': r'tealM3',
+  r'greenM3': r'greenM3',
+  r'limeM3': r'limeM3',
+  r'yellowM3': r'yellowM3',
+  r'orangeM3': r'orangeM3',
+  r'deepOrangeM3': r'deepOrangeM3',
+  r'blackWhite': r'blackWhite',
+  r'greys': r'greys',
+  r'sepia': r'sepia',
+  r'shadBlue': r'shadBlue',
+  r'shadGray': r'shadGray',
+  r'shadGreen': r'shadGreen',
+  r'shadNeutral': r'shadNeutral',
+  r'shadOrange': r'shadOrange',
+  r'shadRed': r'shadRed',
+  r'shadRose': r'shadRose',
+  r'shadSlate': r'shadSlate',
+  r'shadStone': r'shadStone',
+  r'shadViolet': r'shadViolet',
+  r'shadYellow': r'shadYellow',
+  r'shadZinc': r'shadZinc',
+  r'custom': r'custom',
+};
+const _SettingscolorSchemeValueEnumMap = {
+  r'material': FlexScheme.material,
+  r'materialHc': FlexScheme.materialHc,
+  r'blue': FlexScheme.blue,
+  r'indigo': FlexScheme.indigo,
+  r'hippieBlue': FlexScheme.hippieBlue,
+  r'aquaBlue': FlexScheme.aquaBlue,
+  r'brandBlue': FlexScheme.brandBlue,
+  r'deepBlue': FlexScheme.deepBlue,
+  r'sakura': FlexScheme.sakura,
+  r'mandyRed': FlexScheme.mandyRed,
+  r'red': FlexScheme.red,
+  r'redWine': FlexScheme.redWine,
+  r'purpleBrown': FlexScheme.purpleBrown,
+  r'green': FlexScheme.green,
+  r'money': FlexScheme.money,
+  r'jungle': FlexScheme.jungle,
+  r'greyLaw': FlexScheme.greyLaw,
+  r'wasabi': FlexScheme.wasabi,
+  r'gold': FlexScheme.gold,
+  r'mango': FlexScheme.mango,
+  r'amber': FlexScheme.amber,
+  r'vesuviusBurn': FlexScheme.vesuviusBurn,
+  r'deepPurple': FlexScheme.deepPurple,
+  r'ebonyClay': FlexScheme.ebonyClay,
+  r'barossa': FlexScheme.barossa,
+  r'shark': FlexScheme.shark,
+  r'bigStone': FlexScheme.bigStone,
+  r'damask': FlexScheme.damask,
+  r'bahamaBlue': FlexScheme.bahamaBlue,
+  r'mallardGreen': FlexScheme.mallardGreen,
+  r'espresso': FlexScheme.espresso,
+  r'outerSpace': FlexScheme.outerSpace,
+  r'blueWhale': FlexScheme.blueWhale,
+  r'sanJuanBlue': FlexScheme.sanJuanBlue,
+  r'rosewood': FlexScheme.rosewood,
+  r'blumineBlue': FlexScheme.blumineBlue,
+  r'flutterDash': FlexScheme.flutterDash,
+  r'materialBaseline': FlexScheme.materialBaseline,
+  r'verdunHemlock': FlexScheme.verdunHemlock,
+  r'dellGenoa': FlexScheme.dellGenoa,
+  r'redM3': FlexScheme.redM3,
+  r'pinkM3': FlexScheme.pinkM3,
+  r'purpleM3': FlexScheme.purpleM3,
+  r'indigoM3': FlexScheme.indigoM3,
+  r'blueM3': FlexScheme.blueM3,
+  r'cyanM3': FlexScheme.cyanM3,
+  r'tealM3': FlexScheme.tealM3,
+  r'greenM3': FlexScheme.greenM3,
+  r'limeM3': FlexScheme.limeM3,
+  r'yellowM3': FlexScheme.yellowM3,
+  r'orangeM3': FlexScheme.orangeM3,
+  r'deepOrangeM3': FlexScheme.deepOrangeM3,
+  r'blackWhite': FlexScheme.blackWhite,
+  r'greys': FlexScheme.greys,
+  r'sepia': FlexScheme.sepia,
+  r'shadBlue': FlexScheme.shadBlue,
+  r'shadGray': FlexScheme.shadGray,
+  r'shadGreen': FlexScheme.shadGreen,
+  r'shadNeutral': FlexScheme.shadNeutral,
+  r'shadOrange': FlexScheme.shadOrange,
+  r'shadRed': FlexScheme.shadRed,
+  r'shadRose': FlexScheme.shadRose,
+  r'shadSlate': FlexScheme.shadSlate,
+  r'shadStone': FlexScheme.shadStone,
+  r'shadViolet': FlexScheme.shadViolet,
+  r'shadYellow': FlexScheme.shadYellow,
+  r'shadZinc': FlexScheme.shadZinc,
+  r'custom': FlexScheme.custom,
+};
 
 Id _settingsGetId(Settings object) {
   return object.id;
@@ -486,6 +642,138 @@ extension SettingsQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'analysisConfig',
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition> colorSchemeEqualTo(
+    FlexScheme value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'colorScheme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      colorSchemeGreaterThan(
+    FlexScheme value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'colorScheme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition> colorSchemeLessThan(
+    FlexScheme value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'colorScheme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition> colorSchemeBetween(
+    FlexScheme lower,
+    FlexScheme upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'colorScheme',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition> colorSchemeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'colorScheme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition> colorSchemeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'colorScheme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition> colorSchemeContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'colorScheme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition> colorSchemeMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'colorScheme',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition> colorSchemeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'colorScheme',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterFilterCondition>
+      colorSchemeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'colorScheme',
+        value: '',
       ));
     });
   }
@@ -1638,6 +1926,18 @@ extension SettingsQuerySortBy on QueryBuilder<Settings, Settings, QSortBy> {
     });
   }
 
+  QueryBuilder<Settings, Settings, QAfterSortBy> sortByColorScheme() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'colorScheme', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterSortBy> sortByColorSchemeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'colorScheme', Sort.desc);
+    });
+  }
+
   QueryBuilder<Settings, Settings, QAfterSortBy> sortByIgnoreLocalTraffic() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ignoreLocalTraffic', Sort.asc);
@@ -1763,6 +2063,18 @@ extension SettingsQuerySortThenBy
   QueryBuilder<Settings, Settings, QAfterSortBy> thenByAdbPathDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'adbPath', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterSortBy> thenByColorScheme() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'colorScheme', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Settings, Settings, QAfterSortBy> thenByColorSchemeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'colorScheme', Sort.desc);
     });
   }
 
@@ -1901,6 +2213,13 @@ extension SettingsQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Settings, Settings, QDistinct> distinctByColorScheme(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'colorScheme', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Settings, Settings, QDistinct> distinctByIgnoreLocalTraffic() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'ignoreLocalTraffic');
@@ -1985,6 +2304,12 @@ extension SettingsQueryProperty
       analysisConfigProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'analysisConfig');
+    });
+  }
+
+  QueryBuilder<Settings, FlexScheme, QQueryOperations> colorSchemeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'colorScheme');
     });
   }
 

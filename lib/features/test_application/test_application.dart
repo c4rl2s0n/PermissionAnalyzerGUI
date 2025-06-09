@@ -93,12 +93,16 @@ class TestApplication extends StatelessWidget {
 
   Widget _newScenarioButton() {
     return BlocBuilder<SessionCubit, SessionState>(
-      buildWhen: (oldState, state) => oldState.adbDevices != state.adbDevices,
+      buildWhen: (oldState, state) =>
+          oldState.adbDevices != state.adbDevices ||
+          oldState.deviceApplications != state.deviceApplications,
       builder: (context, state) {
-        bool canCreateScenario = state.adbDevices.contains(application.device);
+        bool appInstalled = state.applicationInstalled(application.id);
+        bool canCreateScenario =
+            state.adbDevices.contains(application.device) && appInstalled;
         return Optional.tooltip(
           tooltip:
-              "Please connect the device the application was created with.",
+              "Please connect the device the application was created with and make sure the application is installed.",
           show: !canCreateScenario,
           child: IconTextButton(
               text: "New Scenario",

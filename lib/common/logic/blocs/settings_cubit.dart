@@ -1,3 +1,4 @@
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:permission_analyzer_gui/common/keys.dart';
@@ -20,6 +21,12 @@ class SettingsCubit extends Cubit<SettingsState> {
   void toggleDarkMode() {
     settings.isDarkMode = !settings.isDarkMode;
     emit(state.copyWith(isDarkMode: settings.isDarkMode));
+    saveSettings();
+  }
+
+  void setColorScheme(FlexScheme colorScheme){
+    settings.colorScheme = colorScheme;
+    emit(state.copyWith(colorScheme: settings.colorScheme));
     saveSettings();
   }
 
@@ -84,6 +91,7 @@ class SettingsState with _$SettingsState {
 
   const factory SettingsState({
     required bool isDarkMode,
+    required FlexScheme colorScheme,
     required String language,
     required bool ignoreLocalTraffic,
     required String workingDirectory,
@@ -97,6 +105,7 @@ class SettingsState with _$SettingsState {
 
   factory SettingsState.empty() => SettingsState(
         isDarkMode: true,
+        colorScheme: FlexScheme.amber,
         language: "en",
         ignoreLocalTraffic: true,
         workingDirectory: "",
@@ -110,6 +119,7 @@ class SettingsState with _$SettingsState {
 
   factory SettingsState.fromSettings(Settings settings) => SettingsState(
         isDarkMode: settings.isDarkMode,
+        colorScheme: settings.colorScheme,
         language: settings.language,
         ignoreLocalTraffic: settings.ignoreLocalTraffic,
         workingDirectory: settings.workingDirectory ?? "",

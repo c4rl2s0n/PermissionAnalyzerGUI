@@ -56,9 +56,11 @@ class _SimpleTextFieldState extends State<SimpleTextField> {
   @override
   void didUpdateWidget(covariant SimpleTextField oldTextField) {
     super.didUpdateWidget(oldTextField);
-    int cursorPos = controller.selection.baseOffset;
-    controller.text = widget.initialValue;
-    controller.selection = TextSelection.collapsed(offset: min(cursorPos, controller.text.length));
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      int cursorPos = controller.selection.baseOffset;
+      controller.text = widget.initialValue;
+      controller.selection = TextSelection.collapsed(offset: min(cursorPos, controller.text.length));
+    });
   }
 
   @override
@@ -82,18 +84,18 @@ class _SimpleTextFieldState extends State<SimpleTextField> {
       padding:
           widget.padding ?? EdgeInsets.only(bottom: context.constants.spacing),
       child: TextFormField(
-        enabled: widget.enabled,
-        style: theme.textTheme.bodyMedium,
+        readOnly: !widget.enabled,
+        style: theme.textTheme.bodyLarge,
         controller: controller,
         obscureText: obscured,
         obscuringCharacter: '*',
         decoration: InputDecoration(
-          border: getTextBoxBorder(context),
-          enabledBorder: getTextBoxBorder(context),
-          focusedBorder: getTextBoxBorder(context),
+          border: widget.enabled ? getTextBoxBorder(context) : null,
+          enabledBorder: widget.enabled ? getTextBoxBorder(context) : null,
+          focusedBorder: widget.enabled ? getTextBoxBorder(context) : null,
           focusedErrorBorder: getErrorTextBoxBorder(context),
-          labelStyle: theme.textTheme.labelMedium?.copyWith(
-              color: theme.textTheme.labelMedium?.color
+          labelStyle: theme.textTheme.labelLarge?.copyWith(
+              color: theme.textTheme.labelLarge?.color
                   ?.withOpacity(context.constants.lightColorOpacity)),
           labelText: widget.labelText,
           hintText: widget.hintText,

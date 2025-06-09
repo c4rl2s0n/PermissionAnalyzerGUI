@@ -101,14 +101,7 @@ class TestConstellationsOverview extends StatelessWidget {
           c.displayNameAppendix == s)
           ? "The name is already used"
           : null,
-      onChanged: (v) async {
-        tc.displayNameAppendix = v;
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (tc.displayNameAppendix == v && context.mounted) {
-            context.testScenarioCubit.storeScenario();
-          }
-        });
-      },
+      onChanged: (v) => tc.displayNameAppendix = v,
     );
   }
 }

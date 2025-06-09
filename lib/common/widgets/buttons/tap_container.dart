@@ -29,7 +29,7 @@ class TapContainer extends StatelessWidget {
       onPointerDown: (d) => pointerPosition = d.position,
       child: Material(
         color: !enabled
-            ? context.colors.disabled.withOpacity(0.1)
+            ? context.colors.disabledContainer.withOpacity(0.1)
             : backgroundColor ?? Colors.transparent,
         borderRadius: BorderRadius.all(context.constants.roundedCornerRadius),
         child: InkWell(
@@ -37,7 +37,7 @@ class TapContainer extends StatelessWidget {
             borderRadius:
                 BorderRadius.all(context.constants.roundedCornerRadius),
             splashColor: splashColor ?? context.colors.secondary,
-            highlightColor: context.colors.highlight,
+            highlightColor: context.colors.tertiary,
             hoverColor: context.colors.onBackground
                 .withOpacity(context.constants.strongColorOpacity),
             splashFactory: InkRipple.splashFactory,

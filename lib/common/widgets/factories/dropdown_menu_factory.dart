@@ -12,7 +12,7 @@ class DropDownMenuFactory {
       label: label,
       labelWidget: Text(
         label,
-        style: context.textTheme.labelSmall,
+        style: context.textTheme.labelLarge,
       ),
     );
   }

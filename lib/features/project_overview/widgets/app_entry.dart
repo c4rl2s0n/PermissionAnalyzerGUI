@@ -50,12 +50,8 @@ class AppEntry extends StatelessWidget {
                 )),
               ],
               Margin.vertical(context.constants.smallSpacing),
-              Text(
-                application.name,
-                style:
-                    context.textTheme.labelLarge?.copyWith(fontSize: width / 8),
-              ),
-              _deviceLabel(context),
+              _appName(),
+              _deviceLabel(),
               Margin.vertical(context.constants.smallSpacing),
             ],
           ),
@@ -64,33 +60,55 @@ class AppEntry extends StatelessWidget {
     );
   }
 
-  void _onAppSelect(BuildContext context)async{
+  void _onAppSelect(BuildContext context) async {
     // select the correct device for the application, if connected
-    if(context.session.state.deviceConnected(application.device)){
+    if (context.session.state.deviceConnected(application.device)) {
       context.session.setAdbDevice(application.device);
     }
-    if(context.mounted) {
-      context.navigator.navigateTo(
-          feature.TestApplication(application: application));
+    if (context.mounted) {
+      context.navigator
+          .navigateTo(feature.TestApplication(application: application));
     }
   }
-  void _handleContextMenu(BuildContext context, TapDownDetails details){
-      Map<String, void Function(BuildContext)> options = {
-        'Delete': (context) =>
-            context.projectOverviewCubit.delete(application)
-      };
-      ContextMenuFactory.showContextMenuOnTap(context, details, options.keys
-            .map((name) => ContextMenuItem(
-          name: name,
-          onTap: (context) => options[name]!(context),
-        icon: Icon(context.icons.remove, color: context.colors.error,)
-        ))
-            .toList(),
-      );
+
+  void _handleContextMenu(BuildContext context, TapDownDetails details) {
+    Map<String, void Function(BuildContext)> options = {
+      'Delete': (context) => context.projectOverviewCubit.delete(application)
+    };
+    ContextMenuFactory.showContextMenuOnTap(
+      context,
+      details,
+      options.keys
+          .map((name) => ContextMenuItem(
+              name: name,
+              onTap: (context) => options[name]!(context),
+              icon: Icon(
+                context.icons.remove,
+                color: context.colors.error,
+              )))
+          .toList(),
+    );
+  }
+
+  Widget _appName() {
+    return BlocBuilder<SessionCubit, SessionState>(
+      buildWhen: (oldState, state) =>
+          oldState.deviceApplications != state.deviceApplications,
+      builder: (context, state) {
+        bool appInstalled = state.applicationInstalled(application.id);
+        return Text(
+          application.name,
+          style: context.textTheme.labelLarge?.copyWith(
+            fontSize: width / 8,
+            color: appInstalled ? null : context.colors.negative,
+          ),
+        );
+      },
+    );
   }
 
   // print the name of the device, indicating if it is currently connected
-  Widget _deviceLabel(BuildContext context) {
+  Widget _deviceLabel() {
     return BlocBuilder<SessionCubit, SessionState>(
       buildWhen: (oldState, state) => oldState.adbDevices != state.adbDevices,
       builder: (context, state) {

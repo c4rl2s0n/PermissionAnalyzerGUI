@@ -50,6 +50,8 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
     this.restart = Icons.restart_alt,
     this.screen = Icons.ondemand_video,
     this.speed = Icons.speed,
+    this.undo = Icons.undo,
+    this.redo = Icons.redo,
   });
 
   final IconData infoPositive;
@@ -100,6 +102,8 @@ class CustomIcons extends ThemeExtension<CustomIcons> {
   final IconData restart;
   final IconData screen;
   final IconData speed;
+  final IconData undo;
+  final IconData redo;
 
   @override
   ThemeExtension<CustomIcons> copyWith() => this;

@@ -29,8 +29,8 @@ class IconTextButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color color = onTap == null || !enabled
-        ? context.colors.disabled
-        : this.color ?? context.colors.highlight;
+        ? context.colors.disabledContainer
+        : this.color ?? context.colors.primary;
     TextStyle? usedTextStyle =
         textStyle ?? context.textTheme.labelMedium?.copyWith(color: color);
     return TapContainer(

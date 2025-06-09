@@ -1,3 +1,4 @@
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:isar/isar.dart';
 
 import 'analysis_config.dart';
@@ -8,6 +9,7 @@ part 'settings.g.dart';
 class Settings {
   Settings({
     this.isDarkMode = true,
+    this.colorScheme = FlexScheme.amber,
     this.language = "en",
     this.ignoreLocalTraffic = true,
     this.workingDirectory,
@@ -24,6 +26,10 @@ class Settings {
 
   Id id = 1;
   bool isDarkMode;
+
+  @Enumerated(EnumType.name)
+  FlexScheme colorScheme;
+
   String language;
 
   bool ignoreLocalTraffic;

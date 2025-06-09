@@ -15,7 +15,8 @@ extension ContextSettingsAccessorExtension on BuildContext {
 
   // Theme
   ThemeData get themeData => Theme.of(this);
-  CustomColors get colors => themeData.extension<CustomColors>()!;
+  CustomColors get customColors => themeData.extension<CustomColors>()!;
+  ColorAccessor get colors => ColorAccessor(themeData.colorScheme, defaultColors: customColors);
   CustomIcons get icons => themeData.extension<CustomIcons>()!;
   AppLocalizations get strings => AppLocalizations.of(this)!;
   ThemeConstants get constants => themeData.extension<ThemeConstants>()!;

@@ -13,7 +13,7 @@ class NewApplicationDialogCubit extends Cubit<NewApplicationDialogState> {
     this._settingsCubit,
     this._sessionCubit,
     this.existingApplications,
-  ) : super(NewApplicationDialogState.empty()){
+  ) : super(NewApplicationDialogState.empty()) {
     selectAdbDevice(_sessionCubit.state.adbDevice);
   }
 
@@ -21,16 +21,16 @@ class NewApplicationDialogCubit extends Cubit<NewApplicationDialogState> {
   final SessionCubit _sessionCubit;
   final List<String> existingApplications;
 
-  Future selectAdbDevice(String device) async {
-    List<String> appIds = state.applications;
-    String appId = state.applicationId;
-    if (device != state.adbDevice) {
-      List<String> applications =
-          await Adb(_settingsCubit, device: device).getApplications();
-      appIds =
-          applications.where((a) => !existingApplications.contains(a)).toList();
-      appId = "";
+  void selectAdbDevice(String device) {
+    if (device == state.adbDevice ||
+        !_sessionCubit.state.adbDevices.contains(device)) {
+      return;
     }
+
+    List<String> applications = _sessionCubit.state.deviceApplications[device]!;
+    List<String> appIds =
+        applications.where((a) => !existingApplications.contains(a)).toList();
+    String appId = "";
     emit(state.copyWith(
       adbDevice: device,
       applications: appIds,
@@ -53,7 +53,9 @@ class NewApplicationDialogCubit extends Cubit<NewApplicationDialogState> {
         join(_settingsCubit.state.workingDirectory, state.applicationId);
 
     Directory outDir = Directory(outputDirectory);
-    if (state.applicationId.notEmpty && await outDir.exists()) await outDir.delete(recursive: true);
+    if (state.applicationId.notEmpty && await outDir.exists()) {
+      await outDir.delete(recursive: true);
+    }
   }
 
   Future<String?> extractAppIcon() async {

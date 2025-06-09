@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 import 'common/keys.dart';
@@ -30,6 +31,7 @@ class MainModule extends Module {
       databaseFilename,
       key: pkDbFile,
     );
+    i.addLazySingleton(() => RouteObserver());
   }
 
   @override

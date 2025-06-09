@@ -2,17 +2,21 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_analyzer_gui/common/common.dart';
 import 'package:permission_analyzer_gui/data/data.dart';
+import 'package:permission_analyzer_gui/features/test_scenario/logic/execution_modules/exeution_module.dart';
+import 'package:permission_analyzer_gui/features/test_scenario/logic/execution_modules/input_recording_module.dart';
+import 'package:permission_analyzer_gui/features/test_scenario/logic/execution_modules/input_replay_module.dart';
+import 'package:permission_analyzer_gui/features/test_scenario/logic/execution_modules/screen_record_module.dart';
+import 'package:permission_analyzer_gui/features/test_scenario/logic/execution_modules/traffic_capture_module.dart';
 
 part 'test_scenario_cubit.freezed.dart';
 part 'test_scenario_executor.dart';
 
-class TestScenarioCubit extends Cubit<TestScenarioState> {
+class TestScenarioCubit extends KeyboardReplayCubit<TestScenarioState> {
   TestScenarioCubit({
     required this.sessionCubit,
     required this.settingsCubit,
@@ -40,7 +44,6 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
         state.name,
       );
 
-  String get _videoStoragePathOnDevice => "/data/local/tmp/out.mp4";
 
   final SystemProcess _process = SystemProcess();
 
@@ -60,9 +63,27 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     return _tsharkService!;
   }
 
-  void _emit(TestScenarioState state) => emit(state);
-
   StreamSubscription? sessionListener;
+
+  void _emit(
+    TestScenarioState state, {
+    bool shouldReplay = true,
+    bool? dataChanges,
+  }) =>
+      (dataChanges ?? false)
+          ? emit(state.copyWith(
+              shouldReplay: shouldReplay,
+              hasChanges: true,
+            ))
+          : emit(state.copyWith(
+              shouldReplay: shouldReplay,
+            ));
+
+  void _emitLoading(TestScenarioState state) =>
+      _emit(state, shouldReplay: false);
+
+  @override
+  bool shouldReplay(TestScenarioState state) => state.shouldReplay;
 
   @override
   Future<void> close() async {
@@ -75,9 +96,10 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     sessionListener = sessionCubit.stream.listen((_) => checkDevice());
     if (_settings.tsharkPath.isEmpty) {
       testScenario.captureTraffic = false;
-      emit(state.copyWith(captureTraffic: testScenario.captureTraffic));
+      _emit(state.copyWith(captureTraffic: testScenario.captureTraffic));
     }
     checkDevice();
+    clearHistory();
   }
 
   Future checkDevice() async {
@@ -96,14 +118,16 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     await _clearFiles();
     _emit(TestScenarioState.fromScenario(
       testScenario,
-      firewallSettings:
-          applicationEndpoints.map((e) => FirewallSetting(ip: e.ip, endpoint: e)).toList(),
+      firewallSettings: applicationEndpoints
+          .map((e) => FirewallSetting(ip: e.ip, endpoint: e))
+          .toList(),
     ));
+    clearHistory();
   }
 
   Future delete() async {
     testScenarioRepository.delete(testScenario.id);
-    if(state.name.notEmpty) {
+    if (state.name.notEmpty) {
       await _clearFiles();
     }
   }
@@ -116,7 +140,8 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   }
 
   Future _loadAppPermissions() async {
-    var permissions = await _adb.getOptionalApplicationPermissions(state.applicationId);
+    var permissions =
+        await _adb.getOptionalApplicationPermissions(state.applicationId);
     testScenario.permissions = permissions
         .map((p) =>
             PermissionSetting(permission: p, state: PermissionState.revoked))
@@ -126,51 +151,58 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     for (var constellation in state.testConstellations) {
       constellation.permissions = List.of(testScenario.permissions);
     }
-    emit(state.copyWith(permissions: List.of(testScenario.permissions)));
-    storeScenario();
+    _emitLoading(
+        state.copyWith(permissions: List.of(testScenario.permissions)));
   }
 
   void _loadAppEndpoints() {
     applicationEndpoints =
         networkEndpointRepository.getByApplication(testScenario.applicationId);
-    emit(state.copyWith(
+    _emitLoading(state.copyWith(
         firewallSettings: applicationEndpoints
             .map((e) => FirewallSetting(ip: e.ip, endpoint: e))
             .toList()));
   }
 
+  bool get hasChanges => canUndo;
+
   void storeScenario() {
+    if (!hasChanges) return;
     testScenarioRepository.update(testScenario);
+    emit(state.copyWith(hasChanges: false));
+    clearHistory();
   }
 
   void setName(String name) {
     testScenario.name = name;
-    emit(state.copyWith(name: testScenario.name));
-    storeScenario();
+    _emit(state.copyWith(name: testScenario.name), dataChanges: true);
   }
 
   void setDuration(int seconds) {
     // emit twice to ensure ui is updated
     testScenario.durationInSeconds = seconds;
-    emit(state.copyWith(duration: testScenario.duration));
-    if (state.recordScreen && seconds > 180) {
+    bool valid = !(state.recordScreen && seconds > 180);
+    _emit(state.copyWith(duration: testScenario.duration),
+        shouldReplay: valid, dataChanges: true);
+    if (!valid) {
       seconds = 180;
       testScenario.durationInSeconds = seconds;
-      emit(state.copyWith(duration: testScenario.duration));
+      _emit(state.copyWith(duration: testScenario.duration));
+      SnackBarFactory.showWarningSnackbar(
+          "When using screen recording, the maximum duration is 180 seconds.");
     }
-    storeScenario();
   }
 
   void resetUserInput() {
     testScenario.userInputRecord = "";
-    emit(state.copyWith(userInputRecord: testScenario.userInputRecord));
-    storeScenario();
+    _emit(state.copyWith(userInputRecord: testScenario.userInputRecord),
+        dataChanges: true);
   }
 
   void setNumTestRuns(int numTestRuns) {
     testScenario.numTestRuns = numTestRuns;
-    emit(state.copyWith(numTestRuns: testScenario.numTestRuns));
-    storeScenario();
+    _emit(state.copyWith(numTestRuns: testScenario.numTestRuns),
+        dataChanges: true);
   }
 
   void _togglePermissionState(String permission) {
@@ -182,7 +214,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   }
 
   void _updatePermissionState() {
-    emit(state.copyWith(permissions: List.of(testScenario.permissions)));
+    _emit(state.copyWith(permissions: List.of(testScenario.permissions)));
   }
 
   void togglePermissionState(String permission) {
@@ -211,7 +243,7 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   }
 
   void toggleFirewallState(String ip) {
-    emit(state.copyWith(
+    _emit(state.copyWith(
         firewallSettings: _toggleFirewallState(state.firewallSettings, ip)));
   }
 
@@ -230,15 +262,16 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
         .map((f) =>
             f.blocked != blocked && _ipInRange(f.ip, ip, nParts) ? f.toggle : f)
         .toList();
-    emit(state.copyWith(firewallSettings: settings));
+    _emit(state.copyWith(firewallSettings: settings));
   }
 
   void setFirewallStateByDomain(String domain, bool blocked) {
     List<FirewallSetting> settings = state.firewallSettings
-        .map((f) =>
-            f.blocked != blocked && f.endpoint?.domainString == domain ? f.toggle : f)
+        .map((f) => f.blocked != blocked && f.endpoint?.domainString == domain
+            ? f.toggle
+            : f)
         .toList();
-    emit(state.copyWith(firewallSettings: settings));
+    _emit(state.copyWith(firewallSettings: settings));
   }
 
   void toggleAllFirewallStates() {
@@ -246,38 +279,36 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     for (var fw in state.firewallSettings) {
       firewallSettings.add(fw.toggle);
     }
-    emit(state.copyWith(firewallSettings: firewallSettings));
+    _emit(state.copyWith(firewallSettings: firewallSettings));
   }
 
   void resetAllFirewallStates() {
     List<FirewallSetting> firewallSettings =
         state.firewallSettings.map((f) => f.reset).toList();
-    emit(state.copyWith(firewallSettings: firewallSettings));
+    _emit(state.copyWith(firewallSettings: firewallSettings));
   }
 
   void toggleRecordScreen() {
     testScenario.recordScreen = !testScenario.recordScreen;
-    emit(state.copyWith(recordScreen: testScenario.recordScreen));
+    _emit(state.copyWith(recordScreen: testScenario.recordScreen),
+        dataChanges: true);
     setDuration(testScenario.durationInSeconds);
-    storeScenario();
   }
 
   void toggleCaptureTraffic() {
     testScenario.captureTraffic = !testScenario.captureTraffic;
-    emit(state.copyWith(captureTraffic: testScenario.captureTraffic));
-    storeScenario();
+    _emit(state.copyWith(captureTraffic: testScenario.captureTraffic),
+        dataChanges: true);
   }
 
   Future setEventInputDevice(AndroidInputDevice deviceInput) async {
     testScenario.deviceInput = deviceInput;
-    emit(state.copyWith(deviceInput: deviceInput));
-    storeScenario();
+    _emit(state.copyWith(deviceInput: deviceInput), dataChanges: true);
   }
 
   Future setNetworkInterface(TsharkNetworkInterface interface) async {
     testScenario.networkInterface = interface;
-    emit(state.copyWith(networkInterface: interface));
-    storeScenario();
+    _emit(state.copyWith(networkInterface: interface), dataChanges: true);
   }
 
   List<PermissionSetting> _getPermissionConstellation(
@@ -301,17 +332,17 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
   /// return the number of constellations that already existed
   Future<int> addConstellations() async {
     Map<String, NetworkEndpoint?> blockedIps = {};
-    for(var f in state.firewallSettings.where((f) => f.blocked)){
+    for (var f in state.firewallSettings.where((f) => f.blocked)) {
       blockedIps[f.ip] = f.endpoint;
     }
     // set one constellations with all testing permissions revoked for reference
     TestConstellation c = TestConstellation(
       permissions: testScenario.permissions
           .map((p) => PermissionSetting(
-          permission: p.permission,
-          state: p.state == PermissionState.granted
-              ? PermissionState.granted
-              : PermissionState.revoked))
+              permission: p.permission,
+              state: p.state == PermissionState.granted
+                  ? PermissionState.granted
+                  : PermissionState.revoked))
           .toList(),
       blockedIPs: List.of(blockedIps.keys),
       displayNameAppendix: blockedIps.keys.isNotEmpty ? "withFirewall" : "",
@@ -330,22 +361,28 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
     }
     // only add constellations that do not yet exist
     List<TestConstellation> newConstellations = constellations
-        .where((tc) => !testScenario.testConstellations
-            .any((tstc) => tc.equalTo(tstc)))
+        .where((tc) =>
+            !testScenario.testConstellations.any((tstc) => tc.equalTo(tstc)))
         .toList();
 
     // add list of endpoints after creating constellations with plain IP
-    for(var c in newConstellations){
-      c.blockedEndpoints = c.blockedIPs.map((ip) => blockedIps[ip]).nonNulls.toList();
+    for (var c in newConstellations) {
+      c.blockedEndpoints =
+          c.blockedIPs.map((ip) => blockedIps[ip]).nonNulls.toList();
     }
     testScenario.testConstellations = [
       ...testScenario.testConstellations,
       ...newConstellations,
     ];
-    emit(state.copyWith(testConstellations: testScenario.testConstellations));
-    storeScenario();
     // returns the number of constellations that already existed
-    return constellations.length - newConstellations.length;
+    int nDuplicates = constellations.length - newConstellations.length;
+    bool? dataChanges;
+    if (nDuplicates > 0) dataChanges = true;
+    _emit(
+      state.copyWith(testConstellations: testScenario.testConstellations),
+      dataChanges: dataChanges,
+    );
+    return nDuplicates;
   }
 
   void removeConstellation(TestConstellation tc) {
@@ -353,8 +390,10 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
         testScenario.testConstellations.toList();
     constellations.remove(tc);
     testScenario.testConstellations = constellations;
-    emit(state.copyWith(testConstellations: testScenario.testConstellations));
-    storeScenario();
+    _emit(
+      state.copyWith(testConstellations: testScenario.testConstellations),
+      dataChanges: true,
+    );
   }
 
   Future _setPermissions(List<PermissionSetting> permissions) async {
@@ -366,11 +405,13 @@ class TestScenarioCubit extends Cubit<TestScenarioState> {
       );
     }
   }
+
   Future _setupFirewall(List<String> blockedIPs) async {
     for (var ip in blockedIPs) {
       await _adb.blockIP(ip: ip);
     }
   }
+
   Future _restoreFirewall(List<String> blockedIPs) async {
     for (var ip in blockedIPs) {
       await _adb.allowIP(ip: ip);
@@ -384,6 +425,8 @@ class TestScenarioState with _$TestScenarioState {
 
   const factory TestScenarioState({
     required bool loading,
+    required bool shouldReplay,
+    required bool hasChanges,
     required String loadingInfo,
     required String applicationId,
     required String applicationName,
@@ -403,6 +446,8 @@ class TestScenarioState with _$TestScenarioState {
 
   factory TestScenarioState.empty() => const TestScenarioState(
         loading: false,
+        shouldReplay: true,
+        hasChanges: false,
         loadingInfo: "",
         applicationId: "",
         applicationName: "",
@@ -425,6 +470,8 @@ class TestScenarioState with _$TestScenarioState {
   }) =>
       TestScenarioState(
         loading: false,
+        shouldReplay: true,
+        hasChanges: false,
         loadingInfo: "",
         userInputRecord: scenario.userInputRecord,
         applicationId: scenario.applicationId,
